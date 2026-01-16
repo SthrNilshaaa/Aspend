@@ -24,7 +24,17 @@ jobs:
           channel: stable
 
       - name: Restore keystore
-        run: echo "$ANDROID_KEYSTORE" | base64 --decode > android/app/upload-keystore.jks
+        run: |
+          echo "$ANDROID_KEYSTORE" | base64 --decode > android/app/upload-keystore.jks
+          ls -lh android/app/upload-keystore.jks
+          file android/app/upload-keystore.jks
+
+
+      - name: Verify keystore
+        run: |
+          keytool -list \
+          -keystore android/app/upload-keystore.jks \
+          -storepass "$KEYSTORE_PASSWORD"
 
       - name: Create key.properties
         run: |
