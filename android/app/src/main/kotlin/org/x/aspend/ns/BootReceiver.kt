@@ -16,14 +16,12 @@ class BootReceiver : BroadcastReceiver() {
             Intent.ACTION_MY_PACKAGE_REPLACED -> {
                 Log.d(TAG, "Boot completed or package replaced")
 
-                // Start the transaction detection service if enabled
-                // This will be handled by the Flutter app when it starts
+                // Start the KeepAliveService to ensure transaction detection stays active
                 try {
-                    // You can add logic here to check if auto-detection is enabled
-                    // and start the service accordingly
-                    Log.d(TAG, "Boot receiver completed")
+                    Log.d(TAG, "Starting KeepAliveService from BootReceiver")
+                    KeepAliveService.startService(context)
                 } catch (e: Exception) {
-                    Log.e(TAG, "Error in boot receiver: ${e.message}")
+                    Log.e(TAG, "Error starting service from boot: ${e.message}")
                 }
             }
         }

@@ -2,41 +2,110 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:background="@drawable/widget_background"
-    android:gravity="center"
     android:orientation="vertical"
     android:padding="12dp">
 
-    <!-- Balance Display -->
+    <!-- Top Section: Balance -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:gravity="center"
-        android:orientation="horizontal">
+        android:orientation="vertical">
 
-        <ImageView
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:contentDescription="Balance Icon"
-            android:src="@drawable/ic_add"
-            android:tint="@color/teal_700" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-medium"
+            android:text="Total Balance"
+            android:textColor="@color/teal_300"
+            android:textSize="12sp" />
 
         <TextView
             android:id="@+id/widget_balance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:fontFamily="sans-serif-medium"
+            android:fontFamily="sans-serif-black"
             android:text="₹0.00"
-            android:textColor="@color/teal_700"
-            android:textSize="16sp"
+            android:textColor="@color/white"
+            android:textSize="22sp"
             android:textStyle="bold" />
-
     </LinearLayout>
 
-    <!-- Action Buttons -->
+    <!-- Middle Section: Stats (Only visible in larger sizes?) 
+         Actually, let's just make it compact but informative -->
+    <LinearLayout
+        android:id="@+id/stats_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="8dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <!-- Total Income -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif"
+                android:text="Income"
+                android:textColor="@color/gray_light"
+                android:textSize="10sp" />
+
+            <TextView
+                android:id="@+id/widget_income"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:text="₹0.00"
+                android:textColor="@color/green_600"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="20dp"
+            android:background="@color/gray_border"
+            android:alpha="0.3" />
+
+        <!-- Total Expense -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif"
+                android:text="Expense"
+                android:textColor="@color/gray_light"
+                android:textSize="10sp" />
+
+            <TextView
+                android:id="@+id/widget_expense"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:text="₹0.00"
+                android:textColor="@color/red_600"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Bottom Section: Quick Actions -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -44,12 +113,12 @@
         android:orientation="horizontal"
         android:weightSum="2">
 
-        <!-- Income Button -->
+        <!-- Add Income Button -->
         <LinearLayout
             android:id="@+id/income_button"
             android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_marginEnd="4dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="6dp"
             android:layout_weight="1"
             android:background="@drawable/widget_button_background"
             android:clickable="true"
@@ -59,9 +128,8 @@
             android:orientation="horizontal">
 
             <ImageView
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:contentDescription="Add Income"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
                 android:src="@drawable/ic_add"
                 android:tint="@color/green_600" />
 
@@ -74,15 +142,14 @@
                 android:textColor="@color/green_600"
                 android:textSize="12sp"
                 android:textStyle="bold" />
-
         </LinearLayout>
 
-        <!-- Expense Button -->
+        <!-- Add Expense Button -->
         <LinearLayout
             android:id="@+id/expense_button"
             android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="4dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="6dp"
             android:layout_weight="1"
             android:background="@drawable/widget_button_background"
             android:clickable="true"
@@ -92,9 +159,8 @@
             android:orientation="horizontal">
 
             <ImageView
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:contentDescription="Add Expense"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
                 android:src="@drawable/ic_remove"
                 android:tint="@color/red_600" />
 
@@ -107,9 +173,7 @@
                 android:textColor="@color/red_600"
                 android:textSize="12sp"
                 android:textStyle="bold" />
-
         </LinearLayout>
-
     </LinearLayout>
 
 </LinearLayout>

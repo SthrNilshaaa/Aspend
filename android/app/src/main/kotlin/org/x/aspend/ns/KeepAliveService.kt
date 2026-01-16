@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
@@ -43,7 +44,17 @@ class KeepAliveService : Service() {
 
         // Create and show notification for foreground service
         val notification = createNotification()
-        startForeground(NOTIFICATION_ID, notification)
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            try {
+                startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error starting foreground service: ${e.message}")
+                startForeground(NOTIFICATION_ID, notification)
+            }
+        } else {
+            startForeground(NOTIFICATION_ID, notification)
+        }
 
         // Return START_STICKY to restart service if killed
         return START_STICKY
@@ -85,4 +96,4 @@ class KeepAliveService : Service() {
             .setAutoCancel(false)
             .build()
     }
-} 
+}

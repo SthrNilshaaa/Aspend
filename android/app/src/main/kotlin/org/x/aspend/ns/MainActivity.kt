@@ -147,18 +147,22 @@ class MainActivity : FlutterFragmentActivity() {
         handleWidgetIntent(intent)
     }
 
-    private fun handleWidgetIntent(intent: Intent) {
+    private fun handleWidgetIntent(intent: Intent?) {
+        if (intent == null) return
+        
+        Log.d(TAG, "Handling intent action: ${intent.action}")
+        
         when (intent.action) {
             "ADD_INCOME" -> {
                 Log.d(TAG, "Widget: Add Income clicked")
-                // Send message to Flutter to show income dialog
                 channel.invokeMethod("showAddIncomeDialog", null)
+                intent.action = null // Clear the action
             }
 
             "ADD_EXPENSE" -> {
                 Log.d(TAG, "Widget: Add Expense clicked")
-                // Send message to Flutter to show expense dialog
                 channel.invokeMethod("showAddExpenseDialog", null)
+                intent.action = null // Clear the action
             }
         }
     }

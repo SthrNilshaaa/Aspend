@@ -30,13 +30,18 @@ class SmsReceiver : BroadcastReceiver() {
                         Log.d(TAG, "SMS received from $sender: $body")
 
                         // Send to Flutter for processing
-                        methodChannel?.invokeMethod(
-                            "onSmsReceived", mapOf(
-                                "sender" to sender,
-                                "body" to body,
-                                "timestamp" to message.timestampMillis
+                        val channel = methodChannel
+                        if (channel != null) {
+                            channel.invokeMethod(
+                                "onSmsReceived", mapOf(
+                                    "sender" to sender,
+                                    "body" to body,
+                                    "timestamp" to message.timestampMillis
+                                )
                             )
-                        )
+                        } else {
+                            Log.w(TAG, "MethodChannel not initialized. SMS skipped.")
+                        }
                     }
                 }
             } catch (e: Exception) {

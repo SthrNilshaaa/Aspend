@@ -40,15 +40,20 @@ class TransactionDetectionService : NotificationListenerService() {
             Log.d(TAG, "Notification received: $fullText")
 
             // Send to Flutter for processing
-            methodChannel?.invokeMethod(
-                "onNotificationReceived", mapOf(
-                    "title" to title,
-                    "text" to text,
-                    "bigText" to bigText,
-                    "fullText" to fullText,
-                    "packageName" to sbn.packageName
+            val channel = methodChannel
+            if (channel != null) {
+                channel.invokeMethod(
+                    "onNotificationReceived", mapOf(
+                        "title" to title,
+                        "text" to text,
+                        "bigText" to bigText,
+                        "fullText" to fullText,
+                        "packageName" to sbn.packageName
+                    )
                 )
-            )
+            } else {
+                Log.w(TAG, "MethodChannel not initialized. Notification skipped.")
+            }
 
         } catch (e: Exception) {
             Log.e(TAG, "Error processing notification: ${e.message}")
