@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
-import '../providers/theme_provider.dart';
+import '../view_models/theme_view_model.dart';
 import '../services/native_bridge.dart';
 import 'dart:async';
 import 'home_page.dart';
@@ -25,6 +25,14 @@ class _RootNavigationState extends State<RootNavigation>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   StreamSubscription<String>? _uiEventSubscription;
+
+  // Cache screens to avoid rebuilds and glitching
+  final List<Widget> _screens = [
+    HomePage(),
+    const PeopleTab(),
+    ChartPage(),
+    const SettingsPage(),
+  ];
 
   @override
   void initState() {
@@ -69,24 +77,16 @@ class _RootNavigationState extends State<RootNavigation>
         _selectedIndex = index;
       });
       HapticFeedback.lightImpact();
-      _pageController.animateToPage(
-        index,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+      // Using jumpToPage for snappier, non-glitchy tab switching
+      _pageController.jumpToPage(index);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
-    final isDark = context.watch<AppThemeProvider>().isDarkMode;
-    final List<Widget> screens = [
-      HomePage(),
-      const PeopleTab(),
-      ChartPage(),
-      const SettingsPage(),
-    ];
+    final isDark = context.watch<ThemeViewModel>().isDarkMode;
+
     return Scaffold(
         body: FadeTransition(
       opacity: _fadeAnimation,
@@ -94,7 +94,7 @@ class _RootNavigationState extends State<RootNavigation>
         children: [
           PageView(
             controller: _pageController,
-            children: screens,
+            children: _screens,
             onPageChanged: _onPageChanged,
             physics: const BouncingScrollPhysics(),
             scrollBehavior: MaterialScrollBehavior(),

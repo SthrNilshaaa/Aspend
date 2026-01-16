@@ -6,8 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
 import '../models/transaction.dart';
-import '../providers/theme_provider.dart';
-import '../providers/transaction_provider.dart';
+import '../view_models/theme_view_model.dart';
+import '../view_models/transaction_view_model.dart';
 import '../widgets/transaction_tile.dart';
 import '../widgets/balance_card.dart';
 import '../widgets/add_transaction_dialog.dart';
@@ -38,13 +38,31 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       if (!_scrollController.hasClients) return;
       final atTop = _scrollController.position.pixels <= 0;
       final shouldShowFab =
-          atTop || context.read<TransactionProvider>().transactions.isEmpty;
+          atTop || context.read<TransactionViewModel>().transactions.isEmpty;
       if (shouldShowFab != _showFab) {
         setState(() => _showFab = shouldShowFab);
       }
     });
 
+    // Handle incoming events from NativeBridge
     _uiEventSubscription = NativeBridge.uiEvents.listen((event) {
+      _handleUiEvent(event);
+    });
+
+    // Check for any events that were missed during Splash screen
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final pendingEvent = NativeBridge.consumePendingEvent();
+      if (pendingEvent != null) {
+        _handleUiEvent(pendingEvent);
+      }
+    });
+  }
+
+  void _handleUiEvent(String event) {
+    // Solid delay to ensure: Splash is gone (1.5s) -> Transition finished (0.3s) -> Home visible (0.4s)
+    // 2200ms ensures the user feels they have correctly "arrived" at the home screen.
+    Future.delayed(const Duration(milliseconds: 2200), () {
+      if (!mounted) return;
       if (event == 'SHOW_ADD_INCOME') {
         _showAddTransactionDialog(isIncome: true);
       } else if (event == 'SHOW_ADD_EXPENSE') {
@@ -72,12 +90,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = context.watch<AppThemeProvider>().isDarkMode;
-    final useAdaptive = context.watch<AppThemeProvider>().useAdaptiveColor;
-    final transactionProvider = context.watch<TransactionProvider>();
+    final themeViewModel = context.watch<ThemeViewModel>();
+    final transactionViewModel = context.watch<TransactionViewModel>();
 
     final txns =
-        _filteredTransactions ?? transactionProvider.sortedTransactions;
+        _filteredTransactions ?? transactionViewModel.sortedTransactions;
     final grouped = TransactionUtils.groupTransactionsByDate(txns);
 
     return Scaffold(
@@ -85,10 +102,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         controller: _scrollController,
         physics: const BouncingScrollPhysics(),
         slivers: [
-          _buildAppBar(context, theme, isDark, useAdaptive),
-          _buildBalanceSection(context, transactionProvider),
+          _buildAppBar(context, theme, themeViewModel.isDarkMode,
+              themeViewModel.useAdaptiveColor),
+          _buildBalanceSection(context, transactionViewModel),
           if (txns.isNotEmpty)
-            _buildTransactionList(grouped, theme, useAdaptive)
+            _buildTransactionList(
+                grouped, theme, themeViewModel.useAdaptiveColor)
           else
             _buildEmptyState(),
           SliverToBoxAdapter(
@@ -150,31 +169,39 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildBalanceSection(
-      BuildContext context, TransactionProvider provider) {
+      BuildContext context, TransactionViewModel viewModel) {
     return SliverToBoxAdapter(
       child: Column(
         children: [
-          BalanceCard(
-            balance: provider.totalBalance,
-            onBalanceUpdate: (newBalance) => provider.updateBalance(newBalance),
+          Padding(
+            padding: ResponsiveUtils.getResponsiveEdgeInsets(context,
+                horizontal: 16, vertical: 8),
+            child: BalanceCard(
+              balance: viewModel.totalBalance,
+              onBalanceUpdate: (newBalance) =>
+                  viewModel.updateBalance(newBalance),
+            ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: ResponsiveUtils.getResponsiveEdgeInsets(context,
+                horizontal: 16, vertical: 8),
             child: Row(
               children: [
-                const Icon(Icons.history, size: 20),
+                Icon(Icons.history,
+                    size: ResponsiveUtils.getResponsiveIconSize(context,
+                        mobile: 20, tablet: 24, desktop: 28)),
                 const SizedBox(width: 8),
                 Text('Recent Transactions',
                     style: GoogleFonts.nunito(
-                        fontSize: 18, fontWeight: FontWeight.bold)),
+                        fontSize: ResponsiveUtils.getResponsiveFontSize(context,
+                            mobile: 18, tablet: 20, desktop: 22),
+                        fontWeight: FontWeight.bold)),
                 const Spacer(),
                 IconButton(
-                  icon: Icon(
-                      provider.sortByNewestFirst
-                          ? Icons.arrow_downward
-                          : Icons.arrow_upward,
-                      size: 20),
-                  onPressed: () => provider.toggleSortOrder(),
+                  icon: Icon(Icons.sort_rounded,
+                      size: ResponsiveUtils.getResponsiveIconSize(context,
+                          mobile: 20, tablet: 24, desktop: 28)),
+                  onPressed: () => _showSortDialog(context, viewModel),
                 ),
               ],
             ),
@@ -196,13 +223,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: ResponsiveUtils.getResponsiveEdgeInsets(context,
+                    horizontal: 16, vertical: 8),
                 child: Text(
                   dateKey,
                   style: GoogleFonts.nunito(
                     fontWeight: FontWeight.bold,
                     color: theme.colorScheme.primary,
+                    fontSize: ResponsiveUtils.getResponsiveFontSize(context,
+                        mobile: 14, tablet: 16, desktop: 18),
                   ),
                 ),
               ),
@@ -268,7 +297,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               children: [
                 _buildActionFab(
                   icon: Icons.add,
-                  label: 'Income',
+                  label: '',
                   color: Colors.green,
                   onTap: () => _showAddTransactionDialog(isIncome: true),
                   theme: theme,
@@ -276,7 +305,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 const SizedBox(width: 8),
                 _buildActionFab(
                   icon: Icons.remove,
-                  label: 'Expense',
+                  label: '',
                   color: Colors.red,
                   onTap: () => _showAddTransactionDialog(isIncome: false),
                   theme: theme,
@@ -291,7 +320,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Widget _buildActionFab({
     required IconData icon,
-    required String label,
+    String? label,
     required Color color,
     required VoidCallback onTap,
     required ThemeData theme,
@@ -315,9 +344,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, color: color, size: 22),
-            const SizedBox(width: 8),
+            //const SizedBox(width: 8),
             Text(
-              label,
+              label!,
               style: GoogleFonts.nunito(
                 fontSize: 15,
                 fontWeight: FontWeight.bold,
@@ -353,7 +382,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 _filteredTransactions = query.isEmpty
                     ? null
                     : context
-                        .read<TransactionProvider>()
+                        .read<TransactionViewModel>()
                         .transactions
                         .where((t) =>
                             t.note.toLowerCase().contains(query) ||
@@ -369,8 +398,51 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
+  void _showSortDialog(BuildContext context, TransactionViewModel viewModel) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Sort By'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _sortOptionTile(context, viewModel, SortOption.dateNewest,
+                'Date: NewestFirst', Icons.calendar_today),
+            _sortOptionTile(context, viewModel, SortOption.dateOldest,
+                'Date: Oldest First', Icons.history),
+            _sortOptionTile(context, viewModel, SortOption.amountHighest,
+                'Amount: Highest', Icons.arrow_upward),
+            _sortOptionTile(context, viewModel, SortOption.amountLowest,
+                'Amount: Lowest', Icons.arrow_downward),
+            _sortOptionTile(context, viewModel, SortOption.category, 'Category',
+                Icons.category),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _sortOptionTile(BuildContext context, TransactionViewModel viewModel,
+      SortOption option, String title, IconData icon) {
+    final isSelected = viewModel.currentSortOption == option;
+    return ListTile(
+      leading:
+          Icon(icon, color: isSelected ? Theme.of(context).primaryColor : null),
+      title: Text(title,
+          style: GoogleFonts.nunito(
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+      onTap: () {
+        viewModel.setSortOption(option);
+        Navigator.pop(context);
+      },
+      trailing: isSelected
+          ? Icon(Icons.check, color: Theme.of(context).primaryColor)
+          : null,
+    );
+  }
+
   void _showAnalyticsDialog() {
-    final provider = context.read<TransactionProvider>();
+    final viewModel = context.read<TransactionViewModel>();
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -380,15 +452,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           children: [
             ListTile(
                 title: const Text('Total Income'),
-                trailing: Text('₹${provider.totalIncome.toStringAsFixed(2)}',
+                trailing: Text('₹${viewModel.totalIncome.toStringAsFixed(2)}',
                     style: const TextStyle(color: Colors.green))),
             ListTile(
                 title: const Text('Total Expenses'),
-                trailing: Text('₹${provider.totalSpend.toStringAsFixed(2)}',
+                trailing: Text('₹${viewModel.totalSpend.toStringAsFixed(2)}',
                     style: const TextStyle(color: Colors.red))),
             ListTile(
                 title: const Text('Net Balance'),
-                trailing: Text('₹${provider.totalBalance.toStringAsFixed(2)}')),
+                trailing:
+                    Text('₹${viewModel.totalBalance.toStringAsFixed(2)}')),
           ],
         ),
         actions: [

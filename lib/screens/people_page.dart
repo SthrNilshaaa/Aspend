@@ -8,10 +8,10 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:ui';
 import 'dart:io';
 import '../models/person.dart';
-import '../providers/person_provider.dart';
-import '../providers/theme_provider.dart';
-//import '../providers/person_transaction_provider.dart';
+import '../view_models/person_view_model.dart';
+import '../view_models/theme_view_model.dart';
 import '../person/person_details_page.dart';
+import '../utils/responsive_utils.dart';
 
 class PeopleTab extends StatefulWidget {
   const PeopleTab({super.key});
@@ -33,7 +33,7 @@ class _PeopleTabState extends State<PeopleTab> {
       if (!_scrollController.hasClients) return;
 
       final atTop = _scrollController.position.pixels <= 0;
-      final people = context.read<PersonProvider>().people;
+      final people = context.read<PersonViewModel>().people;
       final isEmpty = people.isEmpty;
       final shouldShowFab = atTop || isEmpty;
 
@@ -184,7 +184,7 @@ class _PeopleTabState extends State<PeopleTab> {
                   HapticFeedback.lightImpact();
                   final person =
                       Person(name: name, photoPath: selectedPhotoPath);
-                  context.read<PersonProvider>().addPerson(person);
+                  context.read<PersonViewModel>().addPerson(person);
                   Navigator.pop(context);
                 }
               },
@@ -226,7 +226,8 @@ class _PeopleTabState extends State<PeopleTab> {
             label,
             textAlign: TextAlign.center,
             style: GoogleFonts.nunito(
-              fontSize: 13,
+              fontSize: ResponsiveUtils.getResponsiveFontSize(context,
+                  mobile: 13, tablet: 15, desktop: 17),
               fontWeight: FontWeight.w600,
               color: theme.colorScheme.onSurfaceVariant.withOpacity(0.9),
             ),
@@ -237,13 +238,17 @@ class _PeopleTabState extends State<PeopleTab> {
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, color: color, size: 18),
+              Icon(icon,
+                  color: color,
+                  size: ResponsiveUtils.getResponsiveIconSize(context,
+                      mobile: 18, tablet: 22, desktop: 26)),
               const SizedBox(width: 5),
               Flexible(
                 child: Text(
-                  "₹${amount.toStringAsFixed(2)}", // Ensure currency symbol is correct
+                  "₹${amount.toStringAsFixed(2)}",
                   style: GoogleFonts.nunito(
-                    fontSize: 17,
+                    fontSize: ResponsiveUtils.getResponsiveFontSize(context,
+                        mobile: 17, tablet: 20, desktop: 24),
                     fontWeight: FontWeight.bold,
                     color: color,
                   ),
@@ -259,15 +264,15 @@ class _PeopleTabState extends State<PeopleTab> {
 
   @override
   Widget build(BuildContext context) {
-    final personProvider = context.watch<PersonProvider>();
-    final people = personProvider.people;
+    final personViewModel = context.watch<PersonViewModel>();
+    final people = personViewModel.people;
     final theme = Theme.of(context);
-    final isDark = context.watch<AppThemeProvider>().isDarkMode;
-    final useAdaptive = context.watch<AppThemeProvider>().useAdaptiveColor;
+    final themeViewModel = context.watch<ThemeViewModel>();
+    final isDark = themeViewModel.isDarkMode;
+    final useAdaptive = themeViewModel.useAdaptiveColor;
 
-    // NEW: Get the overall totals from the provider
-    final double totalYouGet = personProvider.overallTotalRent;
-    final double totalYouGive = personProvider.overallTotalGiven;
+    final double totalYouGet = personViewModel.overallTotalRent;
+    final double totalYouGive = personViewModel.overallTotalGiven;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -276,7 +281,7 @@ class _PeopleTabState extends State<PeopleTab> {
         physics: const BouncingScrollPhysics(),
         slivers: [
           SliverAppBar(
-            expandedHeight: 100,
+            expandedHeight: ResponsiveUtils.getResponsiveAppBarHeight(context),
             floating: true,
             pinned: true,
             elevation: 1,
@@ -286,7 +291,8 @@ class _PeopleTabState extends State<PeopleTab> {
                 'People',
                 style: GoogleFonts.nunito(
                   fontWeight: FontWeight.bold,
-                  fontSize: 24,
+                  fontSize: ResponsiveUtils.getResponsiveFontSize(context,
+                      mobile: 24, tablet: 28, desktop: 32),
                   color: theme.colorScheme.onSurface,
                 ),
               ),
@@ -335,10 +341,11 @@ class _PeopleTabState extends State<PeopleTab> {
           if (people.isNotEmpty)
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 8.0),
+                padding: ResponsiveUtils.getResponsiveEdgeInsets(context,
+                    horizontal: 16, vertical: 12),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 12.0),
+                  padding: ResponsiveUtils.getResponsiveEdgeInsets(context,
+                      horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                       color: theme.cardColor.withOpacity(0.85),
                       borderRadius: BorderRadius.circular(14),
@@ -432,7 +439,7 @@ class _PeopleTabState extends State<PeopleTab> {
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
                   final person = people[index];
-                  final total = personProvider.totalFor(person.name);
+                  final total = personViewModel.getTotalForPerson(person.name);
                   final isPositive = total >= 0;
 
                   return Container(
@@ -470,8 +477,16 @@ class _PeopleTabState extends State<PeopleTab> {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Container(
-                                width: 60,
-                                height: 60,
+                                width: ResponsiveUtils.getResponsiveIconSize(
+                                    context,
+                                    mobile: 60,
+                                    tablet: 72,
+                                    desktop: 84),
+                                height: ResponsiveUtils.getResponsiveIconSize(
+                                    context,
+                                    mobile: 60,
+                                    tablet: 72,
+                                    desktop: 84),
                                 decoration: BoxDecoration(
                                   color: person.photoPath != null
                                       ? Colors.transparent
@@ -479,7 +494,12 @@ class _PeopleTabState extends State<PeopleTab> {
                                           ? theme.colorScheme.primary
                                               .withOpacity(0.1)
                                           : Colors.teal.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(30),
+                                  borderRadius: BorderRadius.circular(
+                                      ResponsiveUtils.getResponsiveSpacing(
+                                          context,
+                                          mobile: 30,
+                                          tablet: 36,
+                                          desktop: 42)),
                                   border: person.photoPath != null
                                       ? Border.all(
                                           color: useAdaptive
@@ -495,8 +515,16 @@ class _PeopleTabState extends State<PeopleTab> {
                                         borderRadius: BorderRadius.circular(28),
                                         child: Image.file(
                                           File(person.photoPath!),
-                                          width: 56,
-                                          height: 56,
+                                          width: ResponsiveUtils
+                                              .getResponsiveIconSize(context,
+                                                  mobile: 56,
+                                                  tablet: 68,
+                                                  desktop: 80),
+                                          height: ResponsiveUtils
+                                              .getResponsiveIconSize(context,
+                                                  mobile: 56,
+                                                  tablet: 68,
+                                                  desktop: 80),
                                           fit: BoxFit.cover,
                                         ),
                                       )
@@ -505,7 +533,11 @@ class _PeopleTabState extends State<PeopleTab> {
                                         color: useAdaptive
                                             ? theme.colorScheme.primary
                                             : Colors.teal,
-                                        size: 30,
+                                        size: ResponsiveUtils
+                                            .getResponsiveIconSize(context,
+                                                mobile: 30,
+                                                tablet: 36,
+                                                desktop: 42),
                                       ),
                               ),
                               const SizedBox(width: 16),

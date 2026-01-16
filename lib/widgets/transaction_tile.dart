@@ -5,10 +5,12 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../models/transaction.dart';
-import '../providers/transaction_provider.dart';
-import '../providers/theme_provider.dart';
+import '../view_models/transaction_view_model.dart';
+import '../view_models/theme_view_model.dart';
 import '../utils/transaction_utils.dart';
+import '../utils/responsive_utils.dart';
 import 'image_preview_widgets.dart';
+import 'add_transaction_dialog.dart';
 
 class TransactionTile extends StatefulWidget {
   final Transaction transaction;
@@ -28,12 +30,15 @@ class _TransactionTileState extends State<TransactionTile> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = context.watch<AppThemeProvider>().isDarkMode;
-    final color = TransactionUtils.getCategoryColor(widget.transaction.category);
+    final themeViewModel = context.watch<ThemeViewModel>();
+    final isDark = themeViewModel.isDarkMode;
+    final color =
+        TransactionUtils.getCategoryColor(widget.transaction.category);
     final icon = TransactionUtils.getCategoryIcon(widget.transaction.category);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: ResponsiveUtils.getResponsiveEdgeInsets(context,
+          horizontal: 12, vertical: 4),
       child: InkWell(
         onTap: () => _showDetailsSheet(context, isDark),
         borderRadius: BorderRadius.circular(16),
@@ -53,13 +58,18 @@ class _TransactionTileState extends State<TransactionTile> {
           child: Row(
             children: [
               Container(
-                height: 48,
-                width: 48,
+                height: ResponsiveUtils.getResponsiveIconSize(context,
+                    mobile: 48, tablet: 56, desktop: 64),
+                width: ResponsiveUtils.getResponsiveIconSize(context,
+                    mobile: 48, tablet: 56, desktop: 64),
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(icon, color: color),
+                child: Icon(icon,
+                    color: color,
+                    size: ResponsiveUtils.getResponsiveIconSize(context,
+                        mobile: 24, tablet: 28, desktop: 32)),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -72,7 +82,8 @@ class _TransactionTileState extends State<TransactionTile> {
                           : widget.transaction.note,
                       style: GoogleFonts.nunito(
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: ResponsiveUtils.getResponsiveFontSize(context,
+                            mobile: 16, tablet: 18, desktop: 20),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -80,8 +91,10 @@ class _TransactionTileState extends State<TransactionTile> {
                     Text(
                       widget.transaction.account,
                       style: GoogleFonts.nunito(
-                        color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
-                        fontSize: 12,
+                        color:
+                            theme.textTheme.bodySmall?.color?.withOpacity(0.7),
+                        fontSize: ResponsiveUtils.getResponsiveFontSize(context,
+                            mobile: 12, tablet: 14, desktop: 16),
                       ),
                     ),
                   ],
@@ -94,8 +107,11 @@ class _TransactionTileState extends State<TransactionTile> {
                     "${widget.transaction.isIncome ? '+' : '-'}${NumberFormat.currency(symbol: '₹').format(widget.transaction.amount)}",
                     style: GoogleFonts.nunito(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: widget.transaction.isIncome ? Colors.green : Colors.red,
+                      fontSize: ResponsiveUtils.getResponsiveFontSize(context,
+                          mobile: 16, tablet: 18, desktop: 20),
+                      color: widget.transaction.isIncome
+                          ? Colors.green
+                          : Colors.red,
                     ),
                   ),
                   Text(
@@ -152,34 +168,46 @@ class _TransactionTileState extends State<TransactionTile> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
-              _buildDetailRow("Amount", 
-                "${widget.transaction.isIncome ? '+' : '-'}${NumberFormat.currency(symbol: '₹').format(widget.transaction.amount)}",
-                widget.transaction.isIncome ? Colors.green : Colors.red,
-                center: true),
+              _buildDetailRow(
+                  "Amount",
+                  "${widget.transaction.isIncome ? '+' : '-'}${NumberFormat.currency(symbol: '₹').format(widget.transaction.amount)}",
+                  widget.transaction.isIncome ? Colors.green : Colors.red,
+                  center: true),
               const Divider(height: 32),
-              _buildDetailRow("Category", widget.transaction.category, Theme.of(context).primaryColor),
-              _buildDetailRow("Account", widget.transaction.account, Theme.of(context).primaryColor),
-              _buildDetailRow("Date", DateFormat('EEEE, d MMMM yyyy').format(widget.transaction.date), Theme.of(context).primaryColor),
-              _buildDetailRow("Time", DateFormat('hh:mm a').format(widget.transaction.date), Theme.of(context).primaryColor),
+              _buildDetailRow("Category", widget.transaction.category,
+                  Theme.of(context).colorScheme.primary),
+              _buildDetailRow("Account", widget.transaction.account,
+                  Theme.of(context).colorScheme.primary),
+              _buildDetailRow(
+                  "Date",
+                  DateFormat('EEEE, d MMMM yyyy')
+                      .format(widget.transaction.date),
+                  Theme.of(context).colorScheme.onSurface),
+              _buildDetailRow(
+                  "Time",
+                  DateFormat('hh:mm a').format(widget.transaction.date),
+                  Theme.of(context).colorScheme.onSurface),
               if (widget.transaction.note.isNotEmpty)
-                 _buildDetailRow("Note", widget.transaction.note, Theme.of(context).primaryColor),
-              
-              if (widget.transaction.imagePaths != null && widget.transaction.imagePaths!.isNotEmpty) ...[
+                _buildDetailRow("Note", widget.transaction.note,
+                    Theme.of(context).colorScheme.onSurface),
+              if (widget.transaction.imagePaths != null &&
+                  widget.transaction.imagePaths!.isNotEmpty) ...[
                 const SizedBox(height: 24),
-                Text("Attachments", style: GoogleFonts.nunito(fontWeight: FontWeight.bold)),
+                Text("Attachments",
+                    style: GoogleFonts.nunito(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 SizedBox(
                   height: 100,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: widget.transaction.imagePaths!.length,
-                    itemBuilder: (context, index) => ImagePreviewWithInteraction(
+                    itemBuilder: (context, index) =>
+                        ImagePreviewWithInteraction(
                       imagePath: widget.transaction.imagePaths![index],
                     ),
                   ),
                 ),
               ],
-              
               const SizedBox(height: 40),
               Row(
                 children: [
@@ -190,7 +218,8 @@ class _TransactionTileState extends State<TransactionTile> {
                         _showDeleteConfirmation(context);
                       },
                       icon: const Icon(Icons.delete_outline, color: Colors.red),
-                      label: const Text("Delete", style: const TextStyle(color: Colors.red)),
+                      label: const Text("Delete",
+                          style: const TextStyle(color: Colors.red)),
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Colors.red),
                         padding: const EdgeInsets.symmetric(vertical: 12),
@@ -202,7 +231,15 @@ class _TransactionTileState extends State<TransactionTile> {
                     child: ElevatedButton.icon(
                       onPressed: () {
                         Navigator.pop(context);
-                        // TODO: Implement Edit
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (context) => AddTransactionDialog(
+                            isIncome: widget.transaction.isIncome,
+                            existingTransaction: widget.transaction,
+                          ),
+                        );
                       },
                       icon: const Icon(Icons.edit_outlined),
                       label: const Text("Edit"),
@@ -220,11 +257,13 @@ class _TransactionTileState extends State<TransactionTile> {
     );
   }
 
-  Widget _buildDetailRow(String label, String value, Color textColor, {bool center = false}) {
+  Widget _buildDetailRow(String label, String value, Color textColor,
+      {bool center = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
-        crossAxisAlignment: center ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+        crossAxisAlignment:
+            center ? CrossAxisAlignment.center : CrossAxisAlignment.start,
         children: [
           Text(
             label,
@@ -259,10 +298,13 @@ class _TransactionTileState extends State<TransactionTile> {
           ),
           TextButton(
             onPressed: () {
-              context.read<TransactionProvider>().deleteTransaction(widget.transaction);
+              context
+                  .read<TransactionViewModel>()
+                  .deleteTransaction(widget.transaction);
               Navigator.pop(context);
             },
-            child: const Text("Delete", style: const TextStyle(color: Colors.red)),
+            child:
+                const Text("Delete", style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),

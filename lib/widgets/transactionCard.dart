@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/transaction.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../providers/transaction_provider.dart';
+import '../view_models/transaction_view_model.dart';
 
 class TransactionCard extends StatelessWidget {
   final Transaction tx;
@@ -18,7 +18,8 @@ class TransactionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isIncome = tx.isIncome;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final amountText = "${isIncome ? '+' : '-'}₹${tx.amount.toStringAsFixed(2)}";
+    final amountText =
+        "${isIncome ? '+' : '-'}₹${tx.amount.toStringAsFixed(2)}";
 
     return GestureDetector(
       onTap: onTap,
@@ -78,7 +79,8 @@ class TransactionCard extends StatelessWidget {
     );
   }
 
-  void _showTransactionDetails(BuildContext context, Transaction tx, bool isDark) {
+  void _showTransactionDetails(
+      BuildContext context, Transaction tx, bool isDark) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -97,7 +99,8 @@ class TransactionCard extends StatelessWidget {
             _detailText("Note", tx.note.isNotEmpty ? tx.note : "—", isDark),
             _detailText("Category", tx.category, isDark),
             _detailText("Account", tx.account, isDark),
-            _detailText("Date", DateFormat.yMMMMEEEEd().format(tx.date), isDark),
+            _detailText(
+                "Date", DateFormat.yMMMMEEEEd().format(tx.date), isDark),
             _detailText("Type", tx.isIncome ? "Income" : "Expense", isDark),
           ],
         ),
@@ -109,10 +112,12 @@ class TransactionCard extends StatelessWidget {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              Provider.of<TransactionProvider>(context, listen: false)
+              Provider.of<TransactionViewModel>(context, listen: false)
                   .deleteTransaction(tx);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Transaction deleted"), duration: Duration(seconds: 2)),
+                const SnackBar(
+                    content: Text("Transaction deleted"),
+                    duration: Duration(seconds: 2)),
               );
             },
             child: Text("Delete", style: TextStyle(color: Colors.white)),

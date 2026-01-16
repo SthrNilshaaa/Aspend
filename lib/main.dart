@@ -10,10 +10,12 @@ import 'models/person.dart';
 import 'models/person_transaction.dart';
 import 'models/theme.dart';
 import 'models/transaction.dart';
-import 'providers/transaction_provider.dart';
-import 'providers/theme_provider.dart';
-import 'providers/person_provider.dart';
-import 'providers/person_transaction_provider.dart';
+import 'repositories/transaction_repository.dart';
+import 'repositories/person_repository.dart';
+import 'repositories/settings_repository.dart';
+import 'view_models/transaction_view_model.dart';
+import 'view_models/theme_view_model.dart';
+import 'view_models/person_view_model.dart';
 import 'screens/splash_screen.dart';
 import 'services/transaction_detection_service.dart';
 import 'services/native_bridge.dart';
@@ -64,13 +66,17 @@ void main() async {
 
   HomeWidget.registerBackgroundCallback(backgroundCallback);
 
+  final transactionRepo = TransactionRepository();
+  final personRepo = PersonRepository();
+  final settingsRepo = SettingsRepository();
+
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AppThemeProvider()),
-        ChangeNotifierProvider(create: (_) => TransactionProvider()),
-        ChangeNotifierProvider(create: (_) => PersonTransactionProvider()),
-        ChangeNotifierProvider(create: (_) => PersonProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeViewModel(settingsRepo)),
+        ChangeNotifierProvider(
+            create: (_) => TransactionViewModel(transactionRepo)),
+        ChangeNotifierProvider(create: (_) => PersonViewModel(personRepo)),
       ],
       child: const MyApp(),
     ),
@@ -91,10 +97,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return DynamicColorBuilder(
       builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
-        final themeProvider = context.watch<AppThemeProvider>();
+        final themeViewModel = context.watch<ThemeViewModel>();
 
-        final useAdaptive = themeProvider.useAdaptiveColor;
-        final customSeedColor = themeProvider.customSeedColor ?? Colors.teal;
+        final useAdaptive = themeViewModel.useAdaptiveColor;
+        final customSeedColor = themeViewModel.customSeedColor ?? Colors.teal;
         final lightSchemeFinal = useAdaptive
             ? (lightDynamic ??
                 ColorScheme.fromSeed(
@@ -155,7 +161,7 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Aspends Tracker',
-          themeMode: themeProvider.themeMode,
+          themeMode: themeViewModel.themeMode,
           theme: createTheme(lightSchemeFinal),
           darkTheme: createTheme(darkSchemeFinal),
           home: const SplashScreen(),

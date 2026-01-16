@@ -9,8 +9,8 @@ import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'dart:io';
 import '../models/person.dart';
 import '../models/person_transaction.dart';
-import '../providers/person_provider.dart';
-import '../providers/theme_provider.dart';
+import '../view_models/person_view_model.dart';
+import '../view_models/theme_view_model.dart';
 //import 'dart:async';
 import 'package:flutter/rendering.dart';
 
@@ -23,7 +23,8 @@ class PersonDetailPage extends StatefulWidget {
   State<PersonDetailPage> createState() => _PersonDetailPageState();
 }
 
-class _PersonDetailPageState extends State<PersonDetailPage> with TickerProviderStateMixin {
+class _PersonDetailPageState extends State<PersonDetailPage>
+    with TickerProviderStateMixin {
   late AnimationController _fadeController;
   late AnimationController _slideController;
   late Animation<double> _fadeAnimation;
@@ -34,12 +35,12 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
   @override
   void initState() {
     super.initState();
-    
+
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _slideController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
@@ -52,7 +53,8 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic));
+    ).animate(
+        CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic));
 
     _fadeController.forward();
     _slideController.forward();
@@ -60,10 +62,11 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
     _scrollController.addListener(() {
       if (!_scrollController.hasClients) return;
       final atTop = _scrollController.position.pixels <= 0;
-      final txs = context.read<PersonProvider>().transactionsFor(widget.person.name);
+      final txs =
+          context.read<PersonViewModel>().transactionsFor(widget.person.name);
       final isEmpty = txs.isEmpty;
       final shouldShowFab = atTop || isEmpty;
-      
+
       // Only update state if there's an actual change
       if (shouldShowFab != _showFab) {
         setState(() => _showFab = shouldShowFab);
@@ -81,13 +84,14 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<PersonProvider>();
-    final txs = provider.transactionsFor(widget.person.name);
-    final total = provider.totalFor(widget.person.name);
+    final viewModel = context.watch<PersonViewModel>();
+    final txs = viewModel.transactionsFor(widget.person.name);
+    final total = viewModel.getTotalForPerson(widget.person.name);
     final isPositive = total >= 0;
     final theme = Theme.of(context);
-    final isDark = context.watch<AppThemeProvider>().isDarkMode;
-    final useAdaptive = context.watch<AppThemeProvider>().useAdaptiveColor;
+    final themeViewModel = context.watch<ThemeViewModel>();
+    final isDark = themeViewModel.isDarkMode;
+    final useAdaptive = themeViewModel.useAdaptiveColor;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -103,24 +107,27 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
               child: Container(
                 decoration: BoxDecoration(
                   gradient: useAdaptive
-                    ? LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [theme.colorScheme.primary, theme.colorScheme.primaryContainer],
-                      )
-                    : isDark
                       ? LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            theme.colorScheme.primary,
+                            theme.colorScheme.primaryContainer
+                          ],
+                        )
+                      : isDark
+                          ? LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
                               colors: [
                                 theme.colorScheme.primary.withOpacity(0.8),
                                 theme.colorScheme.primaryContainer
                                     .withOpacity(0.8)
                               ],
                             )
-                      : LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                          : LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
                               //colors: [Colors.teal.shade100.withOpacity(0.8), Colors.teal.shade200.withOpacity(0.8)],
                               colors: [
                                 theme.colorScheme.primary.withOpacity(0.8),
@@ -168,7 +175,8 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
             icon: const Icon(Icons.add, size: 24),
             label: Text(
               'Add Transaction',
-              style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600),
+              style:
+                  GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             onPressed: () {
               _showAddTxDialog(context);
@@ -186,32 +194,34 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
               // Balance Card
               Container(
                 margin: const EdgeInsets.all(16),
-                                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: useAdaptive
-                                  ? [ theme.colorScheme.surface,
-                                  theme.colorScheme.surface.withOpacity(0.8),]
-                                  : [
-                                      theme.colorScheme.surface,
-                                      theme.colorScheme.surface.withOpacity(0.8),
-                                    ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: theme.colorScheme.outline.withOpacity(0.2),
-                                width: 1,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: theme.colorScheme.shadow.withOpacity(0.1),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: useAdaptive
+                          ? [
+                              theme.colorScheme.surface,
+                              theme.colorScheme.surface.withOpacity(0.8),
+                            ]
+                          : [
+                              theme.colorScheme.surface,
+                              theme.colorScheme.surface.withOpacity(0.8),
+                            ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: theme.colorScheme.outline.withOpacity(0.2),
+                      width: 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: theme.colorScheme.shadow.withOpacity(0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(24),
                     child: Row(
@@ -233,8 +243,12 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
                                       )
                                     : LinearGradient(
                                         colors: [
-                                          isPositive ? Colors.green : Colors.red,
-                                          isPositive ? Colors.green.withOpacity(0.8) : Colors.red.withOpacity(0.8),
+                                          isPositive
+                                              ? Colors.green
+                                              : Colors.red,
+                                          isPositive
+                                              ? Colors.green.withOpacity(0.8)
+                                              : Colors.red.withOpacity(0.8),
                                         ],
                                       ),
                             color: widget.person.photoPath != null
@@ -244,8 +258,12 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
                             border: widget.person.photoPath != null
                                 ? Border.all(
                                     color: useAdaptive
-                                        ? (isPositive ? Colors.green : Colors.red)
-                                        : (isPositive ? Colors.green : Colors.red),
+                                        ? (isPositive
+                                            ? Colors.green
+                                            : Colors.red)
+                                        : (isPositive
+                                            ? Colors.green
+                                            : Colors.red),
                                     width: 2,
                                   )
                                 : null,
@@ -261,8 +279,12 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
                                   ),
                                 )
                               : Icon(
-                                  isPositive ? Icons.trending_up : Icons.trending_down,
-                                  color: useAdaptive ? theme.colorScheme.onPrimaryContainer : Colors.white,
+                                  isPositive
+                                      ? Icons.trending_up
+                                      : Icons.trending_down,
+                                  color: useAdaptive
+                                      ? theme.colorScheme.onPrimaryContainer
+                                      : Colors.white,
                                   size: 30,
                                 ),
                         ),
@@ -275,7 +297,8 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
                                 'Total Balance',
                                 style: GoogleFonts.nunito(
                                   fontSize: 16,
-                                  color: theme.colorScheme.onSurface.withOpacity(0.7),
+                                  color: theme.colorScheme.onSurface
+                                      .withOpacity(0.7),
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -291,9 +314,10 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: isPositive 
+                            color: isPositive
                                 ? Colors.green.withOpacity(0.1)
                                 : Colors.red.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(16),
@@ -312,7 +336,7 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
                   ),
                 ),
               ),
-              
+
               // Transactions Header
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -328,7 +352,8 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: useAdaptive
                             ? theme.colorScheme.primary.withOpacity(0.1)
@@ -349,9 +374,9 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Transactions List
               Expanded(
                 child: txs.isEmpty
@@ -365,7 +390,8 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
                               decoration: BoxDecoration(
                                 color: useAdaptive
                                     ? theme.colorScheme.primary.withOpacity(0.1)
-                                    : theme.colorScheme.primary.withOpacity(0.1),
+                                    : theme.colorScheme.primary
+                                        .withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(50),
                               ),
                               child: Icon(
@@ -390,14 +416,15 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
                               'Add your first transaction with ${widget.person.name}',
                               style: GoogleFonts.nunito(
                                 fontSize: 14,
-                                color: theme.colorScheme.onSurface.withOpacity(0.7),
+                                color: theme.colorScheme.onSurface
+                                    .withOpacity(0.7),
                               ),
                               textAlign: TextAlign.center,
                             ),
                           ],
                         ),
                       )
-                                            : ListView.builder(
+                    : ListView.builder(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         itemCount: txs.length + 1, // +1 for bottom padding
                         itemBuilder: (c, i) {
@@ -405,16 +432,17 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
                           if (i == txs.length) {
                             return const SizedBox(height: 80);
                           }
-                          
+
                           final tx = txs[i];
                           final sign = tx.isIncome ? '+' : '-';
                           final isPositiveTx = tx.isIncome;
-                          
+
                           return AnimatedBuilder(
                             animation: _fadeController,
                             builder: (context, child) {
                               return Transform.translate(
-                                offset: Offset(0, 20 * (1 - _fadeController.value)),
+                                offset:
+                                    Offset(0, 20 * (1 - _fadeController.value)),
                                 child: Opacity(
                                   opacity: _fadeController.value,
                                   child: Container(
@@ -422,36 +450,47 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
                                     child: GestureDetector(
                                       onLongPress: () {
                                         HapticFeedback.lightImpact();
-                                        _showDeleteTransactionDialog(context, tx);
+                                        _showDeleteTransactionDialog(
+                                            context, tx);
                                       },
                                       child: ZoomTapAnimation(
                                         child: Container(
                                           decoration: BoxDecoration(
                                             gradient: LinearGradient(
                                               colors: useAdaptive
-                                                ? [ theme.colorScheme.surface,
-                                                theme.colorScheme.surface.withOpacity(0.8),]
-                                                : [
-                                                    theme.colorScheme.surface,
-                                                    theme.colorScheme.surface.withOpacity(0.8),
-                                                  ],
+                                                  ? [
+                                                      theme.colorScheme.surface,
+                                                      theme.colorScheme.surface
+                                                          .withOpacity(0.8),
+                                                    ]
+                                                  : [
+                                                      theme.colorScheme.surface,
+                                                      theme.colorScheme.surface
+                                                          .withOpacity(0.8),
+                                                    ],
                                               begin: Alignment.topLeft,
                                               end: Alignment.bottomRight,
                                             ),
-                                            borderRadius: BorderRadius.circular(16),
+                                            borderRadius:
+                                                BorderRadius.circular(16),
                                             border: Border.all(
                                               color: useAdaptive
-                                                  ? theme.colorScheme.primary.withOpacity(0.3)
+                                                  ? theme.colorScheme.primary
+                                                      .withOpacity(0.3)
                                                   : isDark
-                                                      ? Colors.teal.shade900.withOpacity(0.3)
-                                                      : Colors.teal.withOpacity(0.3),
+                                                      ? Colors.teal.shade900
+                                                          .withOpacity(0.3)
+                                                      : Colors.teal
+                                                          .withOpacity(0.3),
                                               width: 1,
                                             ),
                                             boxShadow: [
                                               BoxShadow(
                                                 color: useAdaptive
-                                                    ? theme.colorScheme.shadow.withOpacity(0.1)
-                                                    : theme.colorScheme.shadow.withOpacity(0.1),
+                                                    ? theme.colorScheme.shadow
+                                                        .withOpacity(0.1)
+                                                    : theme.colorScheme.shadow
+                                                        .withOpacity(0.1),
                                                 blurRadius: 8,
                                                 offset: const Offset(0, 2),
                                               ),
@@ -467,17 +506,39 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
                                                   decoration: BoxDecoration(
                                                     gradient: LinearGradient(
                                                       colors: useAdaptive
-                                                        ? [ isPositiveTx ? Colors.green : Colors.red,
-                                                        isPositiveTx ? Colors.green.withOpacity(0.8) : Colors.red.withOpacity(0.8),]
-                                                        : [
-                                                            isPositiveTx ? Colors.green : Colors.red,
-                                                            isPositiveTx ? Colors.green.withOpacity(0.8) : Colors.red.withOpacity(0.8),
-                                                          ],
+                                                          ? [
+                                                              isPositiveTx
+                                                                  ? Colors.green
+                                                                  : Colors.red,
+                                                              isPositiveTx
+                                                                  ? Colors.green
+                                                                      .withOpacity(
+                                                                          0.8)
+                                                                  : Colors.red
+                                                                      .withOpacity(
+                                                                          0.8),
+                                                            ]
+                                                          : [
+                                                              isPositiveTx
+                                                                  ? Colors.green
+                                                                  : Colors.red,
+                                                              isPositiveTx
+                                                                  ? Colors.green
+                                                                      .withOpacity(
+                                                                          0.8)
+                                                                  : Colors.red
+                                                                      .withOpacity(
+                                                                          0.8),
+                                                            ],
                                                     ),
-                                                    borderRadius: BorderRadius.circular(25),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            25),
                                                   ),
                                                   child: Icon(
-                                                    isPositiveTx ? Icons.add : Icons.remove,
+                                                    isPositiveTx
+                                                        ? Icons.add
+                                                        : Icons.remove,
                                                     color: Colors.white,
                                                     size: 24,
                                                   ),
@@ -485,53 +546,86 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
                                                 const SizedBox(width: 16),
                                                 Expanded(
                                                   child: Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
                                                     children: [
                                                       Text(
-                                                        tx.note.isEmpty ? 'No note' : tx.note,
-                                                        style: GoogleFonts.nunito(
+                                                        tx.note.isEmpty
+                                                            ? 'No note'
+                                                            : tx.note,
+                                                        style:
+                                                            GoogleFonts.nunito(
                                                           fontSize: 16,
-                                                          fontWeight: FontWeight.w600,
-                                                          color: theme.colorScheme.onSurface,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          color: theme
+                                                              .colorScheme
+                                                              .onSurface,
                                                         ),
-                                                    ),
+                                                      ),
                                                       const SizedBox(height: 4),
                                                       Text(
-                                                        DateFormat.yMMMd().add_jm().format(tx.date),
-                                                        style: GoogleFonts.nunito(
+                                                        DateFormat.yMMMd()
+                                                            .add_jm()
+                                                            .format(tx.date),
+                                                        style:
+                                                            GoogleFonts.nunito(
                                                           fontSize: 14,
-                                                          color: theme.colorScheme.onSurface.withOpacity(0.7),
+                                                          color: theme
+                                                              .colorScheme
+                                                              .onSurface
+                                                              .withOpacity(0.7),
                                                         ),
                                                       ),
                                                     ],
                                                   ),
                                                 ),
                                                 Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.end,
                                                   children: [
                                                     Text(
                                                       '$sign₹${tx.amount.abs().toStringAsFixed(2)}',
                                                       style: GoogleFonts.nunito(
                                                         fontSize: 18,
-                                                        fontWeight: FontWeight.bold,
-                                                        color: isPositiveTx ? Colors.green : Colors.red,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: isPositiveTx
+                                                            ? Colors.green
+                                                            : Colors.red,
                                                       ),
                                                     ),
                                                     const SizedBox(height: 4),
                                                     Container(
-                                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 6,
+                                                          vertical: 2),
                                                       decoration: BoxDecoration(
-                                                        color: isPositiveTx 
-                                                            ? Colors.green.withOpacity(0.1)
-                                                            : Colors.red.withOpacity(0.1),
-                                                        borderRadius: BorderRadius.circular(8),
+                                                        color: isPositiveTx
+                                                            ? Colors.green
+                                                                .withOpacity(
+                                                                    0.1)
+                                                            : Colors.red
+                                                                .withOpacity(
+                                                                    0.1),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(8),
                                                       ),
                                                       child: Text(
-                                                        isPositiveTx ? 'Credit' : 'Debit',
-                                                        style: GoogleFonts.nunito(
+                                                        isPositiveTx
+                                                            ? 'Credit'
+                                                            : 'Debit',
+                                                        style:
+                                                            GoogleFonts.nunito(
                                                           fontSize: 10,
-                                                          fontWeight: FontWeight.w600,
-                                                          color: isPositiveTx ? Colors.green : Colors.red,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          color: isPositiveTx
+                                                              ? Colors.green
+                                                              : Colors.red,
                                                         ),
                                                       ),
                                                     ),
@@ -580,12 +674,13 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
             onPressed: () => Navigator.pop(context),
             child: Text(
               'Cancel',
-              style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600),
+              style:
+                  GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ),
           ElevatedButton(
             onPressed: () {
-              context.read<PersonProvider>().deletePerson(widget.person);
+              context.read<PersonViewModel>().deletePerson(widget.person);
               HapticFeedback.lightImpact();
               Navigator.pop(context);
               Navigator.pop(context);
@@ -593,11 +688,13 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
             child: Text(
               'Delete',
-              style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600),
+              style:
+                  GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -605,7 +702,8 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
     );
   }
 
-  void _showDeleteTransactionDialog(BuildContext context, PersonTransaction tx) {
+  void _showDeleteTransactionDialog(
+      BuildContext context, PersonTransaction tx) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -627,23 +725,26 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
             onPressed: () => Navigator.pop(context),
             child: Text(
               'Cancel',
-              style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600),
+              style:
+                  GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ),
           ElevatedButton(
             onPressed: () {
-              context.read<PersonProvider>().deleteTransaction(tx);
+              context.read<PersonViewModel>().deleteTransaction(tx);
               HapticFeedback.lightImpact();
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
             child: Text(
               'Delete',
-              style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600),
+              style:
+                  GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -661,7 +762,8 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
       context: context,
       builder: (_) => StatefulBuilder(
         builder: (context, setSt) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Text(
             'Add Transaction',
             style: GoogleFonts.nunito(
@@ -691,7 +793,8 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
                   ),
                   filled: true,
                   fillColor: theme.colorScheme.surface,
-                  prefixIcon: Icon(Icons.currency_rupee, color: theme.colorScheme.primary),
+                  prefixIcon: Icon(Icons.currency_rupee,
+                      color: theme.colorScheme.primary),
                 ),
                 style: GoogleFonts.nunito(fontSize: 16),
                 keyboardType: TextInputType.number,
@@ -708,7 +811,8 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
                   ),
                   filled: true,
                   fillColor: theme.colorScheme.surface,
-                  prefixIcon: Icon(Icons.note_outlined, color: theme.colorScheme.primary),
+                  prefixIcon: Icon(Icons.note_outlined,
+                      color: theme.colorScheme.primary),
                 ),
                 style: GoogleFonts.nunito(fontSize: 16),
               ),
@@ -717,12 +821,14 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: theme.colorScheme.outline.withOpacity(0.5)),
+                  border: Border.all(
+                      color: theme.colorScheme.outline.withOpacity(0.5)),
                 ),
                 child: SwitchListTile(
                   title: Text(
                     'Is Income',
-                    style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600),
+                    style: GoogleFonts.nunito(
+                        fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                   subtitle: Text(
                     isIncome ? 'You received money' : 'You gave money',
@@ -749,7 +855,8 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
               },
               child: Text(
                 'Cancel',
-                style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600),
+                style: GoogleFonts.nunito(
+                    fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
             ElevatedButton(
@@ -763,20 +870,25 @@ class _PersonDetailPageState extends State<PersonDetailPage> with TickerProvider
                     date: DateTime.now(),
                     isIncome: isIncome,
                   );
-                  
-                  context.read<PersonProvider>().addTransaction(transaction);
+
+                  context
+                      .read<PersonViewModel>()
+                      .addPersonTransaction(transaction, widget.person.name);
                   Navigator.pop(context);
                 }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: theme.colorScheme.primary,
                 foregroundColor: theme.colorScheme.onPrimary,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
               child: Text(
                 'Add Transaction',
-                style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600),
+                style: GoogleFonts.nunito(
+                    fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
           ],

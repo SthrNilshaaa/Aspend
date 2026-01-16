@@ -7,8 +7,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'dart:ui';
 import '../models/transaction.dart';
-import '../providers/theme_provider.dart';
-import '../providers/transaction_provider.dart';
+import '../view_models/theme_view_model.dart';
+import '../view_models/transaction_view_model.dart';
 import '../widgets/transaction_tile.dart';
 import '../utils/responsive_utils.dart';
 
@@ -42,16 +42,17 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final transactionProvider = Provider.of<TransactionProvider>(context);
-    final transactions = transactionProvider.sortedTransactions;
-    final spends = transactionProvider.spends;
-    final incomes = transactionProvider.incomes;
-    final totalSpend = transactionProvider.totalSpend;
-    final totalIncome = transactionProvider.totalIncome;
+    final transactionViewModel = Provider.of<TransactionViewModel>(context);
+    final transactions = transactionViewModel.sortedTransactions;
+    final spends = transactionViewModel.spends;
+    final incomes = transactionViewModel.incomes;
+    final totalSpend = transactionViewModel.totalSpend;
+    final totalIncome = transactionViewModel.totalIncome;
     final hasData = totalSpend > 0 || totalIncome > 0;
     final theme = Theme.of(context);
-    final isDark = context.watch<AppThemeProvider>().isDarkMode;
-    final useAdaptive = context.watch<AppThemeProvider>().useAdaptiveColor;
+    final themeViewModel = context.watch<ThemeViewModel>();
+    final isDark = themeViewModel.isDarkMode;
+    final useAdaptive = themeViewModel.useAdaptiveColor;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -388,7 +389,7 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
 
   Widget _buildChartTabs(bool isDark) {
     final theme = Theme.of(context);
-    final useAdaptive = context.watch<AppThemeProvider>().useAdaptiveColor;
+    final useAdaptive = context.watch<ThemeViewModel>().useAdaptiveColor;
     return Container(
       margin: EdgeInsets.symmetric(
         horizontal: ResponsiveUtils.getResponsiveSpacing(context,
@@ -573,10 +574,10 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
                   barTouchData: const BarTouchData(enabled: false),
                   titlesData: FlTitlesData(
                     show: true,
-                    rightTitles:
-                        const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    topTitles:
-                        const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false)),
+                    topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false)),
                     bottomTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
@@ -651,7 +652,7 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
 
   Widget _buildCategoryChart(List<Transaction> transactions, bool isDark) {
     final theme = Theme.of(context);
-    final useAdaptive = context.watch<AppThemeProvider>().useAdaptiveColor;
+    final useAdaptive = context.watch<ThemeViewModel>().useAdaptiveColor;
     // Group by category
     Map<String, double> categoryData = {};
     for (var tx in transactions) {
@@ -758,7 +759,7 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
   List<Widget> _buildTransactionLists(
       List<Transaction> spends, List<Transaction> incomes, bool isDark) {
     final allTransactions = [...spends, ...incomes];
-    final grouped = Provider.of<TransactionProvider>(context, listen: false)
+    final grouped = Provider.of<TransactionViewModel>(context, listen: false)
         .groupedTransactions;
 
     return grouped.entries.map((entry) {
@@ -805,38 +806,38 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
       width: double.infinity,
       child: Center(
         child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
               width: ResponsiveUtils.getResponsiveIconSize(context,
                   mobile: 120, tablet: 140, desktop: 160),
               height: ResponsiveUtils.getResponsiveIconSize(context,
                   mobile: 120, tablet: 140, desktop: 160),
               decoration: BoxDecoration(
-              color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+                color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
                 borderRadius: BorderRadius.circular(
                     ResponsiveUtils.getResponsiveIconSize(context,
                         mobile: 60, tablet: 70, desktop: 80)),
               ),
-            child: Icon(
-              Icons.bar_chart,
+              child: Icon(
+                Icons.bar_chart,
                 size: ResponsiveUtils.getResponsiveIconSize(context,
                     mobile: 60, tablet: 70, desktop: 80),
                 color: isDark ? Colors.grey.shade600 : Colors.grey.shade400,
+              ),
             ),
-          ),
             SizedBox(
                 height: ResponsiveUtils.getResponsiveSpacing(context,
                     mobile: 24, tablet: 32, desktop: 40)),
             Text(
-            'No Data Available',
-            style: GoogleFonts.nunito(
+              'No Data Available',
+              style: GoogleFonts.nunito(
                 fontSize: ResponsiveUtils.getResponsiveFontSize(context,
                     mobile: 24, tablet: 28, desktop: 32),
                 fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : Colors.black87,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
             ),
-          ),
             SizedBox(
                 height: ResponsiveUtils.getResponsiveSpacing(context,
                     mobile: 8, tablet: 12, desktop: 16)),
@@ -845,15 +846,15 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
                   horizontal: 32, vertical: 0),
               child: Text(
                 'Add some transactions to see analytics',
-            style: GoogleFonts.nunito(
+                style: GoogleFonts.nunito(
                   fontSize: ResponsiveUtils.getResponsiveFontSize(context,
                       mobile: 16, tablet: 18, desktop: 20),
                   color: isDark ? Colors.white70 : Colors.black54,
-            ),
-            textAlign: TextAlign.center,
+                ),
+                textAlign: TextAlign.center,
               ),
             ),
-        ],
+          ],
         ),
       ),
     );

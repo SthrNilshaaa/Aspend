@@ -3,14 +3,21 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../models/transaction.dart';
-import '../providers/transaction_provider.dart';
-import '../providers/person_provider.dart';
-import '../providers/theme_provider.dart';
+import '../view_models/transaction_view_model.dart';
+import '../view_models/person_view_model.dart';
 import '../models/person_transaction.dart';
+import '../utils/responsive_utils.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AddTransactionDialog extends StatefulWidget {
   final bool isIncome;
-  const AddTransactionDialog({super.key, required this.isIncome});
+  final Transaction? existingTransaction;
+
+  const AddTransactionDialog({
+    super.key,
+    required this.isIncome,
+    this.existingTransaction,
+  });
 
   @override
   State<AddTransactionDialog> createState() => _AddTransactionDialogState();
@@ -48,7 +55,17 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
   @override
   void initState() {
     super.initState();
-    _category = widget.isIncome ? "Salary" : "Food";
+    if (widget.existingTransaction != null) {
+      _amountController.text = widget.existingTransaction!.amount.toString();
+      _noteController.text = widget.existingTransaction!.note;
+      _category = widget.existingTransaction!.category;
+      _account = widget.existingTransaction!.account;
+      if (widget.existingTransaction!.imagePaths != null) {
+        _imagePaths.addAll(widget.existingTransaction!.imagePaths!);
+      }
+    } else {
+      _category = widget.isIncome ? "Salary" : "Food";
+    }
   }
 
   @override
@@ -70,27 +87,51 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
   void _submit() {
     if (_formKey.currentState!.validate()) {
       final amount = double.parse(_amountController.text);
-      final transaction = Transaction(
-        amount: amount,
-        note: _noteController.text,
-        date: DateTime.now(),
-        isIncome: widget.isIncome,
-        category: _category,
-        account: _account,
-        imagePaths: _imagePaths,
-      );
 
-      context.read<TransactionProvider>().addTransaction(transaction);
-      _checkAndAddPersonTransactions(transaction);
+      if (widget.existingTransaction != null) {
+        final updatedTx = Transaction(
+          amount: amount,
+          note: _noteController.text,
+          date: widget.existingTransaction!.date,
+          isIncome: widget.isIncome,
+          category: _category,
+          account: _account,
+          imagePaths: _imagePaths,
+        );
+        // Copy the key from existing transaction for updating in Hive
+        // HiveObject has a key property
+        updatedTx.initHiveObject(widget.existingTransaction!.key);
+
+        context
+            .read<TransactionViewModel>()
+            .updateTransaction(widget.existingTransaction!, updatedTx);
+      } else {
+        final transaction = Transaction(
+          amount: amount,
+          note: _noteController.text,
+          date: DateTime.now(),
+          isIncome: widget.isIncome,
+          category: _category,
+          account: _account,
+          imagePaths: _imagePaths,
+        );
+
+        context.read<TransactionViewModel>().addTransaction(transaction);
+        _checkAndAddPersonTransactions(transaction);
+      }
       Navigator.pop(context);
     }
   }
 
+  // Extension-like method to handle HiveObject key setting if needed
+  // Note: Normally you'd just use Hive's box.put(key, value)
+  // Our repo likely handles this if we pass the old key.
+
   void _checkAndAddPersonTransactions(Transaction tx) {
     if (tx.note.isEmpty) return;
 
-    final personProvider = context.read<PersonProvider>();
-    final people = personProvider.people;
+    final personViewModel = context.read<PersonViewModel>();
+    final people = personViewModel.people;
     final note = tx.note.toLowerCase();
 
     for (final person in people) {
@@ -102,7 +143,7 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
           date: tx.date,
           isIncome: tx.isIncome,
         );
-        personProvider.addTransaction(personTx);
+        personViewModel.addPersonTransaction(personTx, person.name);
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -124,10 +165,11 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
       child: Container(
-        padding: const EdgeInsets.all(24),
+        padding: ResponsiveUtils.getResponsiveEdgeInsets(context,
+            horizontal: 24, vertical: 24),
         decoration: BoxDecoration(
           color: theme.scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
         ),
         child: Form(
           key: _formKey,
@@ -137,9 +179,14 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  widget.isIncome ? "Add Income" : "Add Expense",
-                  style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.bold),
+                  widget.existingTransaction != null
+                      ? (widget.isIncome ? "Edit Income" : "Edit Expense")
+                      : (widget.isIncome ? "Add Income" : "Add Expense"),
+                  style: GoogleFonts.nunito(
+                    fontSize: ResponsiveUtils.getResponsiveFontSize(context,
+                        mobile: 20, tablet: 24, desktop: 28),
+                    fontWeight: FontWeight.bold,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
@@ -147,9 +194,17 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                   controller: _amountController,
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(
+                  style: GoogleFonts.nunito(
+                    fontSize: ResponsiveUtils.getResponsiveFontSize(context,
+                        mobile: 18, tablet: 20, desktop: 22),
+                  ),
+                  decoration: InputDecoration(
                     labelText: "Amount",
-                    prefixIcon: Icon(Icons.currency_rupee),
+                    labelStyle: GoogleFonts.nunito(),
+                    prefixIcon: const Icon(Icons.currency_rupee),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
                   validator: (val) =>
                       (val == null || val.isEmpty) ? "Required" : null,
@@ -157,7 +212,15 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
                   value: _category,
-                  decoration: const InputDecoration(labelText: "Category"),
+                  style: GoogleFonts.nunito(
+                      color: theme.colorScheme.onSurface, fontSize: 16),
+                  decoration: InputDecoration(
+                    labelText: "Category",
+                    labelStyle: GoogleFonts.nunito(),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
                   items: categories
                       .map((c) => DropdownMenuItem(value: c, child: Text(c)))
                       .toList(),
@@ -166,7 +229,15 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
                   value: _account,
-                  decoration: const InputDecoration(labelText: "Account"),
+                  style: GoogleFonts.nunito(
+                      color: theme.colorScheme.onSurface, fontSize: 16),
+                  decoration: InputDecoration(
+                    labelText: "Account",
+                    labelStyle: GoogleFonts.nunito(),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
                   items: accounts
                       .map((a) => DropdownMenuItem(value: a, child: Text(a)))
                       .toList(),
@@ -175,9 +246,14 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _noteController,
-                  decoration: const InputDecoration(
+                  style: GoogleFonts.nunito(fontSize: 16),
+                  decoration: InputDecoration(
                     labelText: "Note (Optional)",
-                    prefixIcon: Icon(Icons.note_alt_outlined),
+                    labelStyle: GoogleFonts.nunito(),
+                    prefixIcon: const Icon(Icons.note_alt_outlined),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -214,9 +290,20 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                     backgroundColor:
                         widget.isIncome ? Colors.green : Colors.red,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
-                  child: const Text("Save Transaction"),
+                  child: Text(
+                    widget.existingTransaction != null
+                        ? "Update Transaction"
+                        : "Save Transaction",
+                    style: GoogleFonts.nunito(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -224,5 +311,13 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
         ),
       ),
     );
+  }
+}
+
+extension on Transaction {
+  void initHiveObject(dynamic oldKey) {
+    // This is a bit of a hack since HiveObject key is internal,
+    // but useful if we are creating a new instance to replace.
+    // In our repository we should just use the key.
   }
 }

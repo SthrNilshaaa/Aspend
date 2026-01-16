@@ -6,7 +6,7 @@ import 'dart:ui';
 import '../main.dart';
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
-import '../providers/theme_provider.dart';
+import '../view_models/theme_view_model.dart';
 import '../services/transaction_detection_service.dart';
 import '../services/native_bridge.dart';
 
@@ -210,7 +210,7 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
 
   Future<void> _showAutoDetectionSetup(BuildContext context) async {
     final theme = Theme.of(context);
-    final isDark = context.watch<AppThemeProvider>().isDarkMode;
+    final isDark = context.watch<ThemeViewModel>().isDarkMode;
 
     return showDialog(
       context: context,
@@ -353,7 +353,7 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final useAdaptive = context.watch<AppThemeProvider>().useAdaptiveColor;
+    final useAdaptive = context.watch<ThemeViewModel>().useAdaptiveColor;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -494,7 +494,7 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
   }
 
   Widget _buildSlide(IntroSlide slide, ThemeData theme, bool isDark) {
-    final useAdaptive = context.watch<AppThemeProvider>().useAdaptiveColor;
+    final useAdaptive = context.watch<ThemeViewModel>().useAdaptiveColor;
     final primary = theme.colorScheme.primary;
     final primaryContainer = theme.colorScheme.primaryContainer;
     return Padding(

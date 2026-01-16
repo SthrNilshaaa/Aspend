@@ -5,7 +5,7 @@ import 'package:home_widget/home_widget.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:provider/provider.dart';
-import '../providers/theme_provider.dart';
+import '../view_models/theme_view_model.dart';
 import '../utils/responsive_utils.dart';
 import 'intro_page.dart';
 import 'root_navigation.dart';
@@ -23,6 +23,7 @@ class _SplashScreenState extends State<SplashScreen>
   late Animation<double> _fade;
   late Animation<double> _scale;
   late Animation<Offset> _slide;
+  bool _isNavigated = false;
 
   @override
   void initState() {
@@ -43,57 +44,65 @@ class _SplashScreenState extends State<SplashScreen>
     );
     _controller.forward();
 
-    HomeWidget.initiallyLaunchedFromHomeWidget().then((Uri? uri) async {
-      if (uri != null && uri.host == 'addTransaction') {
-        if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const RootNavigation()),
+    _checkInitialLaunch();
+  }
+
+  Future<void> _checkInitialLaunch() async {
+    final Uri? uri = await HomeWidget.initiallyLaunchedFromHomeWidget();
+    bool isWidgetLaunch = uri != null && uri.host == 'addTransaction';
+
+    final box = await Hive.openBox('settings');
+    final introCompleted = box.get('introCompleted', defaultValue: false);
+    final appLockEnabled = box.get('appLockEnabled', defaultValue: false);
+
+    // Minimum splash duration - always show the splash screen so the user feels the "app opening"
+    // For widget launch, we can make it slightly faster (1s) but not instant.
+    await Future.delayed(Duration(seconds: isWidgetLaunch ? 1 : 2));
+
+    // If widget launch, we might want to skip app lock for convenience,
+    // but the user's flow says Splash > Home > Sheet, so standard auth is safer.
+    if (appLockEnabled && !isWidgetLaunch) {
+      try {
+        final localAuth = LocalAuthentication();
+        final canCheckDeviceSupport = await localAuth.isDeviceSupported();
+
+        if (canCheckDeviceSupport) {
+          final didAuthenticate = await localAuth.authenticate(
+            localizedReason: 'Authenticate to access Aspends Tracker',
+            options: const AuthenticationOptions(
+                biometricOnly: false, stickyAuth: true),
           );
+          if (!didAuthenticate) {
+            return;
+          }
         }
-      } else {
-        final box = await Hive.openBox('settings');
-        final introCompleted = box.get('introCompleted', defaultValue: false);
-        final appLockEnabled = box.get('appLockEnabled', defaultValue: false);
-
-        Future.delayed(const Duration(seconds: 2), () async {
-          if (appLockEnabled) {
-            try {
-              final localAuth = LocalAuthentication();
-              final canCheckDeviceSupport = await localAuth.isDeviceSupported();
-
-              if (canCheckDeviceSupport) {
-                final didAuthenticate = await localAuth.authenticate(
-                  localizedReason: 'Authenticate to access Aspends Tracker',
-                  options: const AuthenticationOptions(
-                      biometricOnly: false, stickyAuth: true),
-                );
-                if (!didAuthenticate) {
-                  return;
-                }
-              }
-            } catch (e) {
-              debugPrint('SplashScreen: Authentication error: $e');
-            }
-          }
-          if (mounted) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (_) =>
-                    introCompleted ? const RootNavigation() : const IntroPage(),
-              ),
-            );
-          }
-        });
+      } catch (e) {
+        debugPrint('SplashScreen: Authentication error: $e');
       }
-    });
+    }
+
+    if (mounted) {
+      _navigateToTarget(
+          introCompleted ? const RootNavigation() : const IntroPage());
+    }
+  }
+
+  void _navigateToTarget(Widget target) {
+    if (_isNavigated) return;
+    _isNavigated = true;
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => target),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
-    final useAdaptive = Provider.of<AppThemeProvider>(context).useAdaptiveColor;
+    final themeViewModel = Provider.of<ThemeViewModel>(context);
+    final useAdaptive = themeViewModel.useAdaptiveColor;
+
     return Scaffold(
       backgroundColor: useAdaptive ? theme.colorScheme.primary : Colors.teal,
       body: Container(
