@@ -1,13 +1,13 @@
 name: Flutter Android Release Build
 
 on:
-  workflow_dispatch:  # Allows manual trigger
+  workflow_dispatch:
   push:
     branches:
-      - main  # Trigger only on pushes to main
+      - main
 
 permissions:
-  contents: write  # Required to create GitHub Release and upload assets
+  contents: write
 
 jobs:
   build:
@@ -21,14 +21,12 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.32.4'  # Set your Flutter version
+          channel: stable
 
-      # 🔓 Step 1: Re-create the keystore from secret
       - name: Restore keystore
         run: echo "$ANDROID_KEYSTORE" | base64 --decode > android/app/upload-keystore.jks
 
-      # 🔧 Step 2: Create key.properties dynamically
-      - name: Write key.properties
+      - name: Create key.properties
         run: |
           cat <<EOF > android/key.properties
           storePassword=$KEYSTORE_PASSWORD
@@ -37,14 +35,14 @@ jobs:
           storeFile=upload-keystore.jks
           EOF
 
-      - name: clean
+      - name: Clean
         run: flutter clean
-        
+
       - name: Install dependencies
         run: flutter pub get
 
       - name: Build APKs with ABI splits
-        run: flutter build apk --split-per-abi
+        run: flutter build apk --split-per-abi --release
 
       - name: Upload APKs to GitHub Actions artifacts
         uses: actions/upload-artifact@v4
@@ -55,8 +53,8 @@ jobs:
       - name: Create GitHub Release and upload APKs
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v8 # Change version tag as needed
-          name: Release v8
+          tag_name: v${{ github.run_number }} # Auto-incrementing tag
+          name: Release ${{ github.run_number }}
           files: |
             build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
             build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
