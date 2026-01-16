@@ -1,15 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:provider/provider.dart';
-import 'package:flutter/material.dart';
 import '../models/person.dart';
 import '../models/person_transaction.dart';
-import '../providers/person_provider.dart';
-import '../providers/person_transaction_provider.dart';
 
 class PersonBackupHelper {
   static Future<void> exportToJsonAndShare() async {
@@ -41,37 +38,36 @@ class PersonBackupHelper {
 
   static Future<void> importFromJson(BuildContext context) async {
     try {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['json'],
-    );
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
 
-    if (result != null && result.files.single.path != null) {
-      final file = File(result.files.single.path!);
-      final contents = await file.readAsString();
+      if (result != null && result.files.single.path != null) {
+        final file = File(result.files.single.path!);
+        final contents = await file.readAsString();
 
-      final List<dynamic> jsonData = jsonDecode(contents);
+        final List<dynamic> jsonData = jsonDecode(contents);
 
-      final peopleBox = Hive.box<Person>('people');
-      final txBox = Hive.box<PersonTransaction>('personTransactions');
+        final peopleBox = Hive.box<Person>('people');
+        final txBox = Hive.box<PersonTransaction>('personTransactions');
 
-      for (var entry in jsonData) {
-        final person = Person.fromJson(entry['person']);
-        final personName = person.name;
+        for (var entry in jsonData) {
+          final person = Person.fromJson(entry['person']);
+          final personName = person.name;
 
-        if (!peopleBox.values.any((p) => p.name == personName)) {
-          await peopleBox.add(person);
+          if (!peopleBox.values.any((p) => p.name == personName)) {
+            await peopleBox.add(person);
+          }
+
+          for (var txJson in entry['transactions']) {
+            final tx = PersonTransaction.fromJson(txJson);
+            txBox.add(tx);
+          }
         }
-
-        for (var txJson in entry['transactions']) {
-          final tx = PersonTransaction.fromJson(txJson);
-          txBox.add(tx);
-        }
-      }
-      // Notify providers to reload data
-      if (context.mounted) {
-        context.read<PersonProvider>().loadPeople();
-        context.read<PersonTransactionProvider>().loadTransactions();
+        // Notify providers to reload data
+        if (context.mounted) {
+          // Reactive watchers will handle the UI update automatically
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('People data imported successfully!'),

@@ -10,11 +10,20 @@ class TransactionDetectionService {
 
   // Transaction patterns for different banks and services
   static final List<RegExp> _transactionPatterns = [
-    RegExp(r'Rs\.?(\d+(?:\.\d{2})?)\s*(?:credited|debited|paid|sent|received)',
+    // Pattern for "Rs. 100 credited/debited"
+    RegExp(
+        r'(?:Rs\.?|INR|₹)\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)\s*(?:credited|debited|paid|sent|received|spent|withdrawal|withdrawn)',
         caseSensitive: false),
-    RegExp(r'₹(\d+(?:\.\d{2})?)\s*(?:credited|debited|paid|sent|received)',
+    // Pattern for "credited/debited ... Rs. 100"
+    RegExp(
+        r'(?:credited|debited|paid|sent|received|spent|withdrawal|withdrawn).*?(?:Rs\.?|INR|₹)\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)',
         caseSensitive: false),
-    RegExp(r'(\d+(?:\.\d{2})?)\s*(?:credited|debited|paid|sent|received)',
+    // Pattern for UPI transactions
+    RegExp(
+        r'spent\s*(?:Rs\.?|INR|₹)\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)\s*on\s*UPI',
+        caseSensitive: false),
+    // Simple amount pattern as fallback
+    RegExp(r'(?:Rs\.?|INR|₹)\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)',
         caseSensitive: false),
   ];
 
@@ -29,8 +38,33 @@ class TransactionDetectionService {
     'paytm': 'Paytm',
     'phonepe': 'PhonePe',
     'googlepay': 'Google Pay',
+    'gpay': 'Google Pay',
     'amazonpay': 'Amazon Pay',
     'bhim': 'BHIM UPI',
+    'pnb': 'Punjab National Bank',
+    'bob': 'Bank of Baroda',
+    'canara': 'Canara Bank',
+    'idbi': 'IDBI Bank',
+    'indusind': 'IndusInd Bank',
+    'federal': 'Federal Bank',
+    'rbl': 'RBL Bank',
+    'hsbc': 'HSBC Bank',
+    'citi': 'Citi Bank',
+    'standard chartered': 'Standard Chartered',
+    'cred': 'CRED',
+    'zomato': 'Zomato',
+    'swiggy': 'Swiggy',
+    'uber': 'Uber',
+    'ola': 'Ola',
+    'amazon': 'Amazon',
+    'flipkart': 'Flipkart',
+    'slice': 'Slice',
+    'uni': 'Uni Card',
+    'onecard': 'OneCard',
+    'mobikwik': 'MobiKwik',
+    'freecharge': 'Freecharge',
+    'jio': 'JioPay',
+    'airtel': 'Airtel Payments Bank',
   };
 
   static Future<void> initialize() async {
@@ -51,7 +85,7 @@ class TransactionDetectionService {
       // Start notification monitoring
       await _startNotificationMonitoring();
 
-      // Start keep alive service to prevent app from being killed
+      // Start keep alive service
       await NativeBridge.startKeepAliveService();
 
       print('Transaction detection monitoring started successfully');
@@ -62,7 +96,6 @@ class TransactionDetectionService {
 
   static Future<void> stopMonitoring() async {
     try {
-      // Stop keep alive service
       await NativeBridge.stopKeepAliveService();
       print('Transaction detection monitoring stopped');
     } catch (e) {
@@ -71,24 +104,30 @@ class TransactionDetectionService {
   }
 
   static Future<void> _requestPermissions() async {
-    // Request notification access permission
-    final notificationStatus = await Permission.notification.request();
-    if (notificationStatus.isDenied) {
-      throw Exception(
-          'Notification permission is required for automatic transaction detection');
-    }
+    // Request notification permission
+    await Permission.notification.request();
 
-    // For now, we'll rely on the native Android implementation
-    // which handles permissions through the system settings
+    // Request SMS permission
+    await Permission.sms.request();
+
+    // Requesting ignore battery optimization is also important for background services
+    await NativeBridge.requestBatteryOptimization();
   }
 
   static Future<void> _startNotificationMonitoring() async {
-    // Notification monitoring will be handled through native bridge
-    print('Notification monitoring started through native bridge');
+    // Check if notification access is enabled
+    final hasAccess = await NativeBridge.checkNotificationPermission();
+    if (!hasAccess) {
+      await NativeBridge.requestNotificationPermission();
+    }
   }
 
-  static Future<void> processNotification(String title, String body) async {
+  static Future<void> processNotification(String title, String body,
+      {String? packageName}) async {
     try {
+      // Skip notifications from our own app
+      if (packageName == 'org.x.aspend.ns') return;
+
       final fullText = '$title $body';
       final detectedTransaction = _extractTransactionFromText(fullText);
       if (detectedTransaction != null) {
@@ -101,6 +140,13 @@ class TransactionDetectionService {
 
   static Future<void> processSmsMessage(String body) async {
     try {
+      // Ignore OTP messages
+      final lowerBody = body.toLowerCase();
+      if (lowerBody.contains('otp') ||
+          lowerBody.contains('verification code')) {
+        return;
+      }
+
       final detectedTransaction = _extractTransactionFromText(body);
       if (detectedTransaction != null) {
         await _addDetectedTransaction(detectedTransaction, 'SMS');
@@ -112,22 +158,35 @@ class TransactionDetectionService {
 
   static Transaction? _extractTransactionFromText(String text) {
     try {
-      // Try different patterns
+      final lowerText = text.toLowerCase();
+
+      // Look for amount
       for (final pattern in _transactionPatterns) {
         final match = pattern.firstMatch(text);
         if (match != null) {
-          final amountStr = match.group(1);
+          final amountStr = match.group(1)?.replaceAll(',', '');
           if (amountStr != null) {
             final amount = double.tryParse(amountStr);
             if (amount != null && amount > 0) {
               // Determine if it's income or expense based on keywords
-              final isIncome = text.toLowerCase().contains('credited') ||
-                  text.toLowerCase().contains('received');
+              bool isIncome = lowerText.contains('credited') ||
+                  lowerText.contains('received') ||
+                  lowerText.contains('depository') ||
+                  lowerText.contains('refund');
 
-              // Extract category from bank keywords
+              // If it contains both 'debited' and 'credited', we need to be careful
+              // Usually the last one is the actual action or we look for "to" or "from"
+              if (lowerText.contains('debited') ||
+                  lowerText.contains('paid') ||
+                  lowerText.contains('sent') ||
+                  lowerText.contains('spent')) {
+                isIncome = false;
+              }
+
+              // Extract category
               String category = 'Bank Transaction';
               for (final entry in _bankKeywords.entries) {
-                if (text.toLowerCase().contains(entry.key)) {
+                if (lowerText.contains(entry.key)) {
                   category = entry.value;
                   break;
                 }
@@ -135,17 +194,19 @@ class TransactionDetectionService {
 
               // Extract account info
               String account = 'Auto Detected';
-              if (text.toLowerCase().contains('upi')) {
+              if (lowerText.contains('upi')) {
                 account = 'UPI';
-              } else if (text.toLowerCase().contains('atm')) {
+              } else if (lowerText.contains('atm')) {
                 account = 'ATM';
-              } else if (text.toLowerCase().contains('net banking')) {
-                account = 'Net Banking';
+              } else if (lowerText.contains('card')) {
+                account = 'Card';
+              } else if (lowerText.contains('bank')) {
+                account = 'Bank';
               }
 
               return Transaction(
                 amount: amount,
-                note: 'Auto-detected from ${isIncome ? "credit" : "debit"}',
+                note: 'Auto-detected: ${isIncome ? "In" : "Out"}',
                 category: category,
                 account: account,
                 date: DateTime.now(),
@@ -164,20 +225,32 @@ class TransactionDetectionService {
   static Future<void> _addDetectedTransaction(
       Transaction transaction, String source) async {
     try {
-      // Open transaction box
+      // Open boxes
       final transactionBox = await Hive.openBox<Transaction>('transactions');
+      final balanceBox = await Hive.openBox<double>('balanceBox');
+
+      // Check for duplicates (within last 5 minutes)
+      final now = DateTime.now();
+      final isDuplicate = transactionBox.values.any((t) =>
+          t.amount == transaction.amount &&
+          t.isIncome == transaction.isIncome &&
+          now.difference(t.date).inMinutes.abs() < 5);
+
+      if (isDuplicate) {
+        print('Duplicate transaction detected from $source, skipping...');
+        return;
+      }
 
       // Add the transaction
       await transactionBox.add(transaction);
 
-      // Update balance
-      final balanceBox = await Hive.openBox<double>('balanceBox');
+      // Update balance - fixed key to currentBalance for consistency
       final currentBalance =
-          balanceBox.get('balance', defaultValue: 0.0) ?? 0.0;
+          balanceBox.get('currentBalance', defaultValue: 0.0) ?? 0.0;
       final newBalance = transaction.isIncome
           ? currentBalance + transaction.amount
           : currentBalance - transaction.amount;
-      await balanceBox.put('balance', newBalance);
+      await balanceBox.put('currentBalance', newBalance);
 
       print(
           'Auto-detected transaction added: ${transaction.amount} from $source');

@@ -1,14 +1,12 @@
 import 'dart:ui';
 
-import 'package:aspends_tracker/screens/settings_page.dart';
 import 'package:flutter/material.dart';
-import 'package:aspends_tracker/providers/theme_provider.dart';
+import '../view_models/theme_view_model.dart';
 import 'package:flutter/services.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
-import 'package:flutter/rendering.dart';
 //import 'dart:io';
 
 import '../backup/export_csv.dart';
@@ -16,9 +14,8 @@ import '../backup/import_csv.dart';
 import '../backup/person_backup_helper.dart';
 //import '../models/person.dart';
 import '../models/theme.dart';
-import '../providers/person_provider.dart';
-import '../providers/person_transaction_provider.dart';
-import '../providers/transaction_provider.dart';
+import '../view_models/transaction_view_model.dart';
+import '../view_models/person_view_model.dart';
 import '../services/pdf_service.dart';
 import '../services/transaction_detection_service.dart';
 import '../services/native_bridge.dart';
@@ -105,9 +102,10 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeViewModel = context.watch<ThemeViewModel>();
     final theme = Theme.of(context);
-    final isDark = context.watch<AppThemeProvider>().isDarkMode;
-    final useAdaptive = context.watch<AppThemeProvider>().useAdaptiveColor;
+    final isDark = themeViewModel.isDarkMode;
+    final useAdaptive = themeViewModel.useAdaptiveColor;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -245,19 +243,21 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Widget _buildSectionHeader(String title, IconData icon) {
     final theme = Theme.of(context);
-    final useAdaptive = context.watch<AppThemeProvider>().useAdaptiveColor;
+    final useAdaptive = context.watch<ThemeViewModel>().useAdaptiveColor;
     return Row(
       children: [
         Icon(
           icon,
           color: useAdaptive ? theme.colorScheme.primary : Colors.teal.shade600,
-          size: 20,
+          size: ResponsiveUtils.getResponsiveIconSize(context,
+              mobile: 20, tablet: 24, desktop: 28),
         ),
         const SizedBox(width: 8),
         Text(
           title,
           style: GoogleFonts.nunito(
-            fontSize: 20,
+            fontSize: ResponsiveUtils.getResponsiveFontSize(context,
+                mobile: 20, tablet: 22, desktop: 24),
             fontWeight: FontWeight.bold,
             color:
                 useAdaptive ? theme.colorScheme.primary : Colors.teal.shade700,
@@ -269,7 +269,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Widget _buildThemeCard(BuildContext context, bool isDark) {
     final theme = Theme.of(context);
-    final useAdaptive = context.watch<AppThemeProvider>().useAdaptiveColor;
+    final useAdaptive = context.watch<ThemeViewModel>().useAdaptiveColor;
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -311,13 +311,13 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 16),
             DropdownButtonHideUnderline(
               child: DropdownButton<AppTheme>(
-                value: context.watch<AppThemeProvider>().appTheme,
+                value: context.watch<ThemeViewModel>().appTheme,
                 isExpanded: true,
                 icon: const Icon(Icons.arrow_drop_down),
                 onChanged: (theme) {
                   HapticFeedback.lightImpact();
                   if (theme != null) {
-                    context.read<AppThemeProvider>().setTheme(theme);
+                    context.read<ThemeViewModel>().setTheme(theme);
                   }
                 },
                 items: AppTheme.values.map((theme) {
@@ -336,7 +336,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildAdaptiveColorSwitch(BuildContext context) {
-    final provider = context.watch<AppThemeProvider>();
+    final viewModel = context.watch<ThemeViewModel>();
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -354,10 +354,10 @@ class _SettingsPageState extends State<SettingsPage> {
           ],
         ),
         Switch(
-          value: provider.useAdaptiveColor,
+          value: viewModel.useAdaptiveColor,
           onChanged: (value) {
             HapticFeedback.lightImpact();
-            provider.setAdaptiveColor(value);
+            viewModel.setAdaptiveColor(value);
           },
         ),
       ],
@@ -365,8 +365,8 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildColorPickerTile(BuildContext context) {
-    final provider = context.watch<AppThemeProvider>();
-    final currentColor = provider.customSeedColor ?? Colors.teal;
+    final viewModel = context.watch<ThemeViewModel>();
+    final currentColor = viewModel.customSeedColor ?? Colors.teal;
     return _buildSettingsTile(
       icon: Icons.color_lens,
       title: "App Color",
@@ -393,7 +393,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 TextButton(
                   child: const Text('Reset'),
                   onPressed: () {
-                    provider.setCustomSeedColor(null);
+                    viewModel.setCustomSeedColor(null);
                     Navigator.of(context).pop();
                     _showSnackBar(context, 'App color reset to default!');
                   },
@@ -405,7 +405,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 ElevatedButton(
                   child: const Text('Select'),
                   onPressed: () {
-                    provider.setCustomSeedColor(selectedColor);
+                    viewModel.setCustomSeedColor(selectedColor);
                     Navigator.of(context).pop();
                     _showSnackBar(context, 'App color updated!');
                   },
@@ -539,7 +539,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _showAutoDetectionInfoDialog(BuildContext context) async {
     final theme = Theme.of(context);
-    final isDark = context.watch<AppThemeProvider>().isDarkMode;
+    final isDark = context.watch<ThemeViewModel>().isDarkMode;
 
     return showDialog(
       context: context,
@@ -795,7 +795,7 @@ class _SettingsPageState extends State<SettingsPage> {
         _buildSettingsTile(
           icon: Icons.info_outline,
           title: "Version",
-          subtitle: "5.7.6",
+          subtitle: "5.8.0",
           onTap: null,
         ),
         _buildSettingsTile(
@@ -828,25 +828,25 @@ class _SettingsPageState extends State<SettingsPage> {
     bool isDestructive = false,
     Widget? trailing,
   }) {
-    final theme = Theme.of(context);
-    final isDark = context.watch<AppThemeProvider>().isDarkMode;
     return ZoomTapAnimation(
       onTap: onTap,
       child: Card(
         elevation: 1,
-        margin: const EdgeInsets.only(bottom: 6),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.only(bottom: 8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: ListTile(
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          contentPadding: ResponsiveUtils.getResponsiveEdgeInsets(context,
+              horizontal: 16, vertical: 4),
           leading: Container(
-            width: 36,
-            height: 36,
+            width: ResponsiveUtils.getResponsiveIconSize(context,
+                mobile: 40, tablet: 48, desktop: 56),
+            height: ResponsiveUtils.getResponsiveIconSize(context,
+                mobile: 40, tablet: 48, desktop: 56),
             decoration: BoxDecoration(
               color: isDestructive
                   ? Colors.red.withOpacity(0.1)
                   : Colors.teal.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: isDestructive
                     ? Colors.red.withOpacity(0.3)
@@ -857,21 +857,24 @@ class _SettingsPageState extends State<SettingsPage> {
             child: Icon(
               icon,
               color: isDestructive ? Colors.red : Colors.teal,
-              size: 18,
+              size: ResponsiveUtils.getResponsiveIconSize(context,
+                  mobile: 20, tablet: 24, desktop: 28),
             ),
           ),
           title: Text(
             title,
             style: GoogleFonts.nunito(
               fontWeight: FontWeight.w600,
-              fontSize: 16,
+              fontSize: ResponsiveUtils.getResponsiveFontSize(context,
+                  mobile: 16, tablet: 18, desktop: 20),
               color: isDestructive ? Colors.red : null,
             ),
           ),
           subtitle: Text(
             subtitle,
             style: GoogleFonts.nunito(
-              fontSize: 13,
+              fontSize: ResponsiveUtils.getResponsiveFontSize(context,
+                  mobile: 13, tablet: 15, desktop: 17),
               color: Colors.grey.shade600,
             ),
           ),
@@ -898,7 +901,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   void _confirmDeleteAll(BuildContext context) {
     final isDark =
-        Provider.of<AppThemeProvider>(context, listen: false).isDarkMode;
+        Provider.of<ThemeViewModel>(context, listen: false).isDarkMode;
     final theme = Theme.of(context);
 
     showDialog(
@@ -948,12 +951,9 @@ class _SettingsPageState extends State<SettingsPage> {
               try {
                 final box = await Hive.openBox<double>('balanceBox');
                 await box.clear();
-                await Provider.of<TransactionProvider>(context, listen: false)
+                await Provider.of<TransactionViewModel>(context, listen: false)
                     .deleteAllData();
-                await Provider.of<PersonProvider>(context, listen: false)
-                    .deleteAllData();
-                await Provider.of<PersonTransactionProvider>(context,
-                        listen: false)
+                await Provider.of<PersonViewModel>(context, listen: false)
                     .deleteAllData();
                 Navigator.pop(context);
                 _showSnackBar(context, "All data deleted successfully!");
@@ -971,7 +971,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   void _confirmResetIntro(BuildContext context) async {
     final isDark =
-        Provider.of<AppThemeProvider>(context, listen: false).isDarkMode;
+        Provider.of<ThemeViewModel>(context, listen: false).isDarkMode;
     final theme = Theme.of(context);
 
     showDialog(

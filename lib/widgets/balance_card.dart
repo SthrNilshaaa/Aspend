@@ -3,8 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-import '../providers/theme_provider.dart';
-import '../providers/transaction_provider.dart';
+import '../view_models/theme_view_model.dart';
+import '../view_models/transaction_view_model.dart';
 import '../utils/responsive_utils.dart';
 
 class BalanceCard extends StatefulWidget {
@@ -56,17 +56,14 @@ class _BalanceCardState extends State<BalanceCard>
   Widget build(BuildContext context) {
     final isPositive = widget.balance >= 0;
     final theme = Theme.of(context);
-    final isDark = context.watch<AppThemeProvider>().isDarkMode;
-    final useAdaptive = context.watch<AppThemeProvider>().useAdaptiveColor;
+    final themeViewModel = context.watch<ThemeViewModel>();
+    final isDark = themeViewModel.isDarkMode;
+    final useAdaptive = themeViewModel.useAdaptiveColor;
 
     // Get transaction statistics
-    final transactionProvider = context.watch<TransactionProvider>();
-    final totalIncome = transactionProvider.transactions
-        .where((t) => t.isIncome)
-        .fold(0.0, (sum, t) => sum + t.amount);
-    final totalExpenses = transactionProvider.transactions
-        .where((t) => !t.isIncome)
-        .fold(0.0, (sum, t) => sum + t.amount);
+    final transactionViewModel = context.watch<TransactionViewModel>();
+    final totalIncome = transactionViewModel.totalIncome;
+    final totalExpenses = transactionViewModel.totalSpend;
 
     return GestureDetector(
       onLongPress: () {
