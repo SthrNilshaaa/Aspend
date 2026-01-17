@@ -36,7 +36,7 @@ jobs:
         run: |
           mkdir -p android/app
           echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > android/key.jks
-          ls -lh android/app/key.jks  
+          ls -lh android/key.jks  
 
       - name: Verify keystore
         run: |
