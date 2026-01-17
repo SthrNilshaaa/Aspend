@@ -46,11 +46,11 @@ jobs:
           
       - name: Create key.properties
         run: |
-          cat <<EOF > android/key.properties
+          cat <<EOF > key.properties
           storePassword=${{ secrets.KEYSTORE_PASSWORD }}
           keyPassword=${{ secrets.KEY_PASSWORD }}
           keyAlias=${{ secrets.KEY_ALIAS }}
-          storeFile=key.jks
+          storeFile=android/key.jks
           EOF
 
       - name: Clean
