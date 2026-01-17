@@ -35,13 +35,13 @@ jobs:
       - name: Restore keystore
         run: |
           mkdir -p android/app
-          echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > android/app/key.jks
+          echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > android/key.jks
           ls -lh android/app/key.jks  
 
       - name: Verify keystore
         run: |
           keytool -list \
-          -keystore android/app/key.jks \
+          -keystore android/key.jks \
           -storepass "${{ secrets.KEYSTORE_PASSWORD }}"
           
       - name: Create key.properties
