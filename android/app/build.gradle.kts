@@ -1,64 +1,25 @@
-import java.util.Properties
-import java.io.FileInputStream
-
-plugins {
-    id("com.android.application")
-    id("kotlin-android")
-    id("dev.flutter.flutter-gradle-plugin")
-}
-
-android {
-    namespace = "org.x.aspend.ns"
-    compileSdk = flutter.compileSdkVersion
-    ndkVersion = "27.0.12077973"
-
-    // --- Load key.properties ---
-    val keystoreProperties = Properties()
-    val keystorePropertiesFile = rootProject.file("key.properties")
-    if (keystorePropertiesFile.exists()) {
-        keystoreProperties.load(FileInputStream(keystorePropertiesFile))
-    }
-
-    signingConfigs {
-        create("release") {
-            if (keystorePropertiesFile.exists()) {
-                storeFile = file(keystoreProperties["storeFile"] as String)
-                storePassword = keystoreProperties["storePassword"] as String
-                keyAlias = keystoreProperties["keyAlias"] as String
-                keyPassword = keystoreProperties["keyPassword"] as String
+signingConfigs {
+    create("release") {
+        if (keystorePropertiesFile.exists()) {
+            val storeFilePath = keystoreProperties.getProperty("storeFile")
+            val storePassword = keystoreProperties.getProperty("storePassword")
+            val keyAlias = keystoreProperties.getProperty("keyAlias")
+            val keyPassword = keystoreProperties.getProperty("keyPassword")
+            
+            if (storeFilePath != null && storePassword != null && keyAlias != null && keyPassword != null) {
+                storeFile = file(storeFilePath)
+                this.storePassword = storePassword
+                this.keyAlias = keyAlias
+                this.keyPassword = keyPassword
+                
+                println("✓ Signing config loaded successfully")
+                println("  storeFile: $storeFilePath")
+                println("  keyAlias: $keyAlias")
+            } else {
+                println("⚠ Some signing properties are missing in key.properties")
             }
+        } else {
+            println("⚠ key.properties not found at: ${keystorePropertiesFile.absolutePath}")
         }
     }
-
-    defaultConfig {
-        applicationId = "org.x.aspend.ns"
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
-    }
-
-    buildTypes {
-        getByName("release") {
-            signingConfig = signingConfigs.getByName("release")
-            isMinifyEnabled = true
-            isShrinkResources = true
-        }
-        getByName("debug") {
-            // uses debug keystore
-        }
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
-    }
-}
-
-flutter {
-    source = "../.."
 }
