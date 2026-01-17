@@ -65,40 +65,7 @@ jobs:
           echo "Keystore exists at: $KEYSTORE_ABS_PATH ?"
           ls -la "$KEYSTORE_ABS_PATH"
 
-      - name: Test Gradle configuration
-        run: |
-          echo "=== Testing Gradle signing config ==="
-          cd android
-          
-          # Create a debug script to see what Gradle sees
-          cat > debug-signing.gradle << 'EOF'
-          println "\n=== Debug: Signing Configuration ==="
-          
-          val keystoreProperties = Properties()
-          val keystorePropertiesFile = rootProject.file("key.properties")
-          println("Looking for key.properties at: ${keystorePropertiesFile.absolutePath}")
-          println("File exists: ${keystorePropertiesFile.exists()}")
-          
-          if (keystorePropertiesFile.exists()) {
-              keystoreProperties.load(FileInputStream(keystorePropertiesFile))
-              println("Properties found:")
-              keystoreProperties.forEach { key, value ->
-                  println("  $key = $value")
-              }
-              
-              val storeFilePath = keystoreProperties.getProperty("storeFile")
-              println("storeFile from properties: $storeFilePath")
-              if (storeFilePath != null) {
-                  val file = file(storeFilePath)
-                  println("File exists at path: ${file.exists()}")
-                  println("File absolute path: ${file.absolutePath}")
-              }
-          }
-          EOF
-          
-          # Run the debug script
-          ./gradlew -I ../debug-signing.gradle signingReport
-
+    
       - name: Clean
         run: flutter clean
 
