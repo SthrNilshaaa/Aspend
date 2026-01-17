@@ -53,6 +53,18 @@ jobs:
           storeFile=android/app/key.jks
           EOF
 
+      - name: Debug file locations
+        run: |
+          echo "=== Project Root ==="
+          ls -la key.properties || echo "key.properties not in project root"
+          
+          echo "=== Android Directory ==="
+          ls -la android/key.properties || echo "key.properties not in android/"
+          
+          echo "=== What Gradle sees ==="
+          cd android
+          ./gradlew -q properties | grep -i keystore || echo "No keystore properties found"
+          
       - name: Clean
         run: flutter clean
 
