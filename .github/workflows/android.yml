@@ -18,31 +18,39 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          cache: true
+          cache-key: flutter-cache
+          cache-path: ${{ runner.tool_cache }}/flutter
 
       - name: Restore keystore
         run: |
-          echo "$ANDROID_KEYSTORE" | base64 --decode > android/app/upload-keystore.jks
-          ls -lh android/app/upload-keystore.jks
-          file android/app/upload-keystore.jks
-
+          mkdir -p android/app
+          echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > android/app/key.jks
+          ls -lh android/app/key.jks  
 
       - name: Verify keystore
         run: |
           keytool -list \
-          -keystore android/app/upload-keystore.jks \
-          -storepass "$KEYSTORE_PASSWORD"
-
+          -keystore android/app/key.jks \
+          -storepass "${{ secrets.KEYSTORE_PASSWORD }}"
+          
       - name: Create key.properties
         run: |
           cat <<EOF > android/key.properties
-          storePassword=$KEYSTORE_PASSWORD
-          keyPassword=$KEY_PASSWORD
-          keyAlias=$KEY_ALIAS
-          storeFile=upload-keystore.jks
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          storeFile=key.jks
           EOF
 
       - name: Clean
@@ -54,20 +62,36 @@ jobs:
       - name: Build APKs with ABI splits
         run: flutter build apk --split-per-abi --release
 
+      - name: List generated APKs
+        run: ls -la build/app/outputs/flutter-apk/*.apk
+
       - name: Upload APKs to GitHub Actions artifacts
         uses: actions/upload-artifact@v4
         with:
           name: split-apks
           path: build/app/outputs/flutter-apk/
+          retention-days: 30
 
       - name: Create GitHub Release and upload APKs
         uses: softprops/action-gh-release@v2
+        if: success()
         with:
-          tag_name: v${{ github.run_number }} # Auto-incrementing tag
-          name: Release ${{ github.run_number }}
+          tag_name: v${{ github.run_number }}
+          name: Release v${{ github.run_number }}
+          body: |
+            Android APK built from commit ${{ github.sha }}
+            
+            **Download:**
+            - app-arm64-v8a-release.apk (64-bit ARM)
+            - app-armeabi-v7a-release.apk (32-bit ARM)
+            - app-x86_64-release.apk (64-bit x86)
+            
+            **Commit:** ${{ github.sha }}
+            **Date:** ${{ github.event.head_commit.timestamp }}
+          draft: false
+          prerelease: false
           files: |
-            build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
-            build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
-            build/app/outputs/flutter-apk/app-x86_64-release.apk
+            build/app/outputs/flutter-apk/*.apk
+          fail_on_unmatched_files: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
