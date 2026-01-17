@@ -55,7 +55,7 @@ jobs:
           EOF
           
           echo "=== key.properties created ==="
-          echo "Location: $(pwd)/key.properties"
+          echo "Location: $(pwd)/android/app/key.properties"
           echo "Content:"
           cat key.properties
           echo ""
