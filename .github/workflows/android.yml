@@ -64,9 +64,6 @@ jobs:
           echo "=== What Gradle sees ==="
           cd android
           ./gradlew -q properties | grep -i keystore || echo "No keystore properties found"
-          
-      - name: Clean
-        run: flutter clean
 
       - name: Install dependencies
         run: flutter pub get
