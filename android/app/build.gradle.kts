@@ -14,7 +14,7 @@ android {
 
     // --- Load key.properties ---
     val keystoreProperties = Properties()
-    val keystorePropertiesFile = rootProject.file("key.properties")
+    val keystorePropertiesFile = File(rootDir.parentFile, "key.properties")
     if (keystorePropertiesFile.exists()) {
         keystoreProperties.load(FileInputStream(keystorePropertiesFile))
     }
