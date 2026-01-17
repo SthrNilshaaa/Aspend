@@ -73,10 +73,10 @@ jobs:
       - name: update dependencies
         run: flutter pub upgrade --major-versions
 
-      - name: Build APKs with ABI splits
+      - name: Build APK
         run: |
           echo "=== Building release APKs ==="
-          flutter build apk --split-per-abi --release --verbose
+          flutter build apk 
 
       - name: Upload APKs to GitHub Actions artifacts
         uses: actions/upload-artifact@v4
