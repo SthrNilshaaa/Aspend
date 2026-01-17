@@ -9,8 +9,8 @@ class ErrorHandler {
       SnackBar(
         content: Row(
           children: [
-            Icon(Icons.error_outline, color: Colors.white, size: 20),
-            SizedBox(width: 12),
+            const Icon(Icons.error_outline, color: Colors.white, size: 20),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
                 message,
@@ -43,8 +43,8 @@ class ErrorHandler {
       SnackBar(
         content: Row(
           children: [
-            Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
-            SizedBox(width: 12),
+            const Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
                 message,
@@ -77,8 +77,8 @@ class ErrorHandler {
       SnackBar(
         content: Row(
           children: [
-            Icon(Icons.warning_amber_outlined, color: Colors.white, size: 20),
-            SizedBox(width: 12),
+            const Icon(Icons.warning_amber_outlined, color: Colors.white, size: 20),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
                 message,
@@ -111,8 +111,8 @@ class ErrorHandler {
       SnackBar(
         content: Row(
           children: [
-            Icon(Icons.info_outline, color: Colors.white, size: 20),
-            SizedBox(width: 12),
+            const Icon(Icons.info_outline, color: Colors.white, size: 20),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
                 message,
@@ -206,8 +206,8 @@ class ErrorHandler {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            Icon(Icons.error_outline, color: Colors.red, size: 24),
-            SizedBox(width: 8),
+            const Icon(Icons.error_outline, color: Colors.red, size: 24),
+            const SizedBox(width: 8),
             Expanded(
               child: Text(
                 title,
@@ -230,9 +230,9 @@ class ErrorHandler {
               ),
             ),
             if (details != null) ...[
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Container(
-                padding: EdgeInsets.all(8),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(8),
@@ -307,12 +307,12 @@ class ErrorHandler {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         content: Row(
           children: [
-            SizedBox(
+            const SizedBox(
               width: 20,
               height: 20,
               child: CircularProgressIndicator(strokeWidth: 2),
             ),
-            SizedBox(width: 16),
+            const SizedBox(width: 16),
             Expanded(
               child: Text(
                 message,

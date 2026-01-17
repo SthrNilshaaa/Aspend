@@ -9,10 +9,10 @@ class _Cloud {
   static const _normal = Color(0xFFACCFDA);
 
   static const _assets = [
-    "assets/plane_indicator/cloud1.png",
-    "assets/plane_indicator/cloud2.png",
-    "assets/plane_indicator/cloud3.png",
-    "assets/plane_indicator/cloud4.png",
+    'assets/plane_indicator/cloud1.png',
+    'assets/plane_indicator/cloud2.png',
+    'assets/plane_indicator/cloud3.png',
+    'assets/plane_indicator/cloud4.png',
   ];
 
   AnimationController? controller;

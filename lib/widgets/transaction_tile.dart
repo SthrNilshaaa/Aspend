@@ -160,7 +160,7 @@ class _TransactionTileState extends State<TransactionTile> {
               ),
               const SizedBox(height: 24),
               Text(
-                "Transaction Details",
+                'Transaction Details',
                 style: GoogleFonts.nunito(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -169,31 +169,31 @@ class _TransactionTileState extends State<TransactionTile> {
               ),
               const SizedBox(height: 32),
               _buildDetailRow(
-                  "Amount",
+                  'Amount',
                   "${widget.transaction.isIncome ? '+' : '-'}${NumberFormat.currency(symbol: '₹').format(widget.transaction.amount)}",
                   widget.transaction.isIncome ? Colors.green : Colors.red,
                   center: true),
               const Divider(height: 32),
-              _buildDetailRow("Category", widget.transaction.category,
+              _buildDetailRow('Category', widget.transaction.category,
                   Theme.of(context).colorScheme.primary),
-              _buildDetailRow("Account", widget.transaction.account,
+              _buildDetailRow('Account', widget.transaction.account,
                   Theme.of(context).colorScheme.primary),
               _buildDetailRow(
-                  "Date",
+                  'Date',
                   DateFormat('EEEE, d MMMM yyyy')
                       .format(widget.transaction.date),
                   Theme.of(context).colorScheme.onSurface),
               _buildDetailRow(
-                  "Time",
+                  'Time',
                   DateFormat('hh:mm a').format(widget.transaction.date),
                   Theme.of(context).colorScheme.onSurface),
               if (widget.transaction.note.isNotEmpty)
-                _buildDetailRow("Note", widget.transaction.note,
+                _buildDetailRow('Note', widget.transaction.note,
                     Theme.of(context).colorScheme.onSurface),
               if (widget.transaction.imagePaths != null &&
                   widget.transaction.imagePaths!.isNotEmpty) ...[
                 const SizedBox(height: 24),
-                Text("Attachments",
+                Text('Attachments',
                     style: GoogleFonts.nunito(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 SizedBox(
@@ -218,8 +218,8 @@ class _TransactionTileState extends State<TransactionTile> {
                         _showDeleteConfirmation(context);
                       },
                       icon: const Icon(Icons.delete_outline, color: Colors.red),
-                      label: const Text("Delete",
-                          style: const TextStyle(color: Colors.red)),
+                      label: const Text('Delete',
+                          style: TextStyle(color: Colors.red)),
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Colors.red),
                         padding: const EdgeInsets.symmetric(vertical: 12),
@@ -242,7 +242,7 @@ class _TransactionTileState extends State<TransactionTile> {
                         );
                       },
                       icon: const Icon(Icons.edit_outlined),
-                      label: const Text("Edit"),
+                      label: const Text('Edit'),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
@@ -289,12 +289,12 @@ class _TransactionTileState extends State<TransactionTile> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Delete Transaction?"),
-        content: const Text("This action cannot be undone."),
+        title: const Text('Delete Transaction?'),
+        content: const Text('This action cannot be undone.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
+            child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () {
@@ -304,7 +304,7 @@ class _TransactionTileState extends State<TransactionTile> {
               Navigator.pop(context);
             },
             child:
-                const Text("Delete", style: const TextStyle(color: Colors.red)),
+                const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),

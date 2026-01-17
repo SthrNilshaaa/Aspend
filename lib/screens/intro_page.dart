@@ -22,59 +22,59 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   int _currentPage = 0;
-  String _selectedTheme = 'Default';
+  final String _selectedTheme = 'Default';
 
   final List<IntroSlide> _slides = [
     IntroSlide(
-      title: "Welcome to Aspends Tracker",
-      subtitle: "Your personal finance companion",
+      title: 'Welcome to Aspends Tracker',
+      subtitle: 'Your personal finance companion',
       description:
-          "Track your income, expenses, and manage your money with ease. Stay on top of your financial goals.",
+          'Track your income, expenses, and manage your money with ease. Stay on top of your financial goals.',
       icon: Icons.account_balance_wallet,
       color: Colors.teal,
     ),
     IntroSlide(
-      title: "Smart Transaction Tracking",
-      subtitle: "Organize your finances",
+      title: 'Smart Transaction Tracking',
+      subtitle: 'Organize your finances',
       description:
-          "Categorize transactions, add notes, and get detailed insights into your spending patterns.",
+          'Categorize transactions, add notes, and get detailed insights into your spending patterns.',
       icon: Icons.analytics,
       color: Colors.blue,
     ),
     IntroSlide(
-      title: "Person-to-Person Tracking",
-      subtitle: "Manage shared expenses",
+      title: 'Person-to-Person Tracking',
+      subtitle: 'Manage shared expenses',
       description:
-          "Track money you owe or are owed by others. Perfect for roommates, friends, and family.",
+          'Track money you owe or are owed by others. Perfect for roommates, friends, and family.',
       icon: Icons.people,
       color: Colors.green,
     ),
     IntroSlide(
-      title: "Beautiful Analytics",
-      subtitle: "Visualize your data",
+      title: 'Beautiful Analytics',
+      subtitle: 'Visualize your data',
       description:
-          "Charts and graphs help you understand your spending habits and financial trends.",
+          'Charts and graphs help you understand your spending habits and financial trends.',
       icon: Icons.pie_chart,
       color: Colors.orange,
     ),
     IntroSlide(
-      title: "Fully Offline",
-      subtitle: "Your data stays private",
+      title: 'Fully Offline',
+      subtitle: 'Your data stays private',
       description:
-          "All your financial data is stored locally on your device. No internet required, complete privacy.",
+          'All your financial data is stored locally on your device. No internet required, complete privacy.',
       icon: Icons.security,
       color: Colors.purple,
     ),
     IntroSlide(
-      title: "Auto Transaction Detection",
-      subtitle: "Smart & Automated",
+      title: 'Auto Transaction Detection',
+      subtitle: 'Smart & Automated',
       description:
-          "Automatically detect transactions from banking notifications. No more manual entry - your transactions are captured instantly!",
+          'Automatically detect transactions from banking notifications. No more manual entry - your transactions are captured instantly!',
       icon: Icons.auto_awesome,
       color: Colors.amber,
     ),
     IntroSlide(
-      title: "Ready to Start?",
+      title: 'Ready to Start?',
       subtitle: "Let's begin your journey",
       description:
           "You're all set! Start tracking your finances and take control of your money today.",
@@ -119,8 +119,8 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
         context: context,
         barrierDismissible: false,
         builder: (BuildContext context) {
-          return WillPopScope(
-            onWillPop: () async => false,
+          return PopScope(
+            canPop: false,
             child: Dialog(
               backgroundColor: Colors.transparent,
               child: Container(
@@ -220,10 +220,10 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            Icon(Icons.auto_awesome, color: Colors.amber, size: 24),
+            const Icon(Icons.auto_awesome, color: Colors.amber, size: 24),
             const SizedBox(width: 8),
             Text(
-              "Enable Auto Detection?",
+              'Enable Auto Detection?',
               style: GoogleFonts.nunito(
                 fontWeight: FontWeight.bold,
                 color: isDark ? Colors.white : Colors.black,
@@ -236,19 +236,19 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Would you like to enable automatic transaction detection?",
+              'Would you like to enable automatic transaction detection?',
               style: GoogleFonts.nunito(
                 fontWeight: FontWeight.w600,
                 color: isDark ? Colors.white70 : Colors.black87,
               ),
             ),
             const SizedBox(height: 12),
-            _buildFeatureItem("🔔 Monitor notifications",
-                "Detects banking transactions automatically"),
-            _buildFeatureItem("💰 Smart categorization",
-                "Categorizes transactions based on bank keywords"),
-            _buildFeatureItem("⚡ Real-time detection",
-                "Captures transactions as they happen"),
+            _buildFeatureItem('🔔 Monitor notifications',
+                'Detects banking transactions automatically'),
+            _buildFeatureItem('💰 Smart categorization',
+                'Categorizes transactions based on bank keywords'),
+            _buildFeatureItem('⚡ Real-time detection',
+                'Captures transactions as they happen'),
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(12),
@@ -258,7 +258,7 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
                 border: Border.all(color: Colors.amber.withOpacity(0.3)),
               ),
               child: Text(
-                "💡 You can enable this later in Settings if you skip now.",
+                '💡 You can enable this later in Settings if you skip now.',
                 style: GoogleFonts.nunito(
                   fontSize: 12,
                   color: Colors.amber.shade700,
@@ -270,7 +270,7 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
         actions: [
           TextButton(
             child: Text(
-              "Skip for now",
+              'Skip for now',
               style: TextStyle(color: theme.colorScheme.primary),
             ),
             onPressed: () {
@@ -280,7 +280,6 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
             },
           ),
           ElevatedButton(
-            child: const Text("Enable"),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.amber,
               foregroundColor: Colors.white,
@@ -303,6 +302,7 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
                 _navigateToMainApp();
               }
             },
+            child: const Text("Enable"),
           ),
         ],
       ),

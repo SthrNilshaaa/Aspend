@@ -246,9 +246,9 @@ class TransactionViewModel with ChangeNotifier {
       String formattedDate;
 
       if (txDate == today) {
-        formattedDate = "Today";
+        formattedDate = 'Today';
       } else if (txDate == yesterday) {
-        formattedDate = "Yesterday";
+        formattedDate = 'Yesterday';
       } else {
         formattedDate = _formatDate(tx.date);
       }

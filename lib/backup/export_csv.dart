@@ -8,15 +8,17 @@ import 'package:share_plus/share_plus.dart';
 class DataExporter {
   static Future<String> exportToJson() async {
     final box = Hive.box<Transaction>('transactions');
-    final transactions = box.values.map((t) => {
-      'amount': t.amount,
-      'note': t.note,
-      'category': t.category,
-      'account': t.account,
-      'date': t.date.toIso8601String(),
-      'isIncome': t.isIncome,
-      'imagePaths': t.imagePaths ?? [],
-    }).toList();
+    final transactions = box.values
+        .map((t) => {
+              'amount': t.amount,
+              'note': t.note,
+              'category': t.category,
+              'account': t.account,
+              'date': t.date.toIso8601String(),
+              'isIncome': t.isIncome,
+              'imagePaths': t.imagePaths ?? [],
+            })
+        .toList();
 
     final data = jsonEncode(transactions);
 
@@ -29,6 +31,6 @@ class DataExporter {
 
   static Future<void> shareBackupFile() async {
     final filePath = await exportToJson();
-    Share.shareXFiles([XFile(filePath)], text: 'Aspends Backup File');
+    await Share.shareXFiles([XFile(filePath)], text: 'Aspends Backup File');
   }
 }

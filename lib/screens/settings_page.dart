@@ -69,10 +69,8 @@ class _SettingsPageState extends State<SettingsPage> {
 
         final didAuthenticate = await localAuth.authenticate(
           localizedReason: 'Authenticate to enable app lock',
-          options: const AuthenticationOptions(
-            biometricOnly: false,
-            stickyAuth: true,
-          ),
+          biometricOnly: false,
+          persistAcrossBackgrounding: true,
         );
 
         if (!didAuthenticate) {
@@ -183,7 +181,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Theme Section
-                  _buildSectionHeader("Appearance", Icons.palette),
+                  _buildSectionHeader('Appearance', Icons.palette),
                   const SizedBox(height: 10),
                   _buildThemeCard(context, isDark),
                   if (!useAdaptive) ...[
@@ -197,22 +195,22 @@ class _SettingsPageState extends State<SettingsPage> {
                   const SizedBox(height: 18),
                   // Auto Detection Section
                   _buildSectionHeader(
-                      "Auto Transaction Detection", Icons.auto_awesome),
+                      'Auto Transaction Detection', Icons.auto_awesome),
                   const SizedBox(height: 10),
                   _buildAutoDetectionSection(context),
                   const SizedBox(height: 18),
                   // Backup & Export Section
-                  _buildSectionHeader("Backup & Export", Icons.backup),
+                  _buildSectionHeader('Backup & Export', Icons.backup),
                   const SizedBox(height: 10),
                   _buildBackupSection(context, isDark),
                   const SizedBox(height: 18),
                   // Data Management Section
-                  _buildSectionHeader("Data Management", Icons.storage),
+                  _buildSectionHeader('Data Management', Icons.storage),
                   const SizedBox(height: 10),
                   _buildDataManagementSection(context, isDark),
                   const SizedBox(height: 18),
                   // App Info Section
-                  _buildSectionHeader("App Information", Icons.info),
+                  _buildSectionHeader('App Information', Icons.info),
                   const SizedBox(height: 10),
                   _buildAppInfoSection(context, isDark),
                   const SizedBox(height: 8),
@@ -290,14 +288,14 @@ class _SettingsPageState extends State<SettingsPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Theme",
+                        'Theme',
                         style: GoogleFonts.nunito(
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
                         ),
                       ),
                       Text(
-                        "Choose your preferred theme",
+                        'Choose your preferred theme',
                         style: GoogleFonts.nunito(
                           fontSize: 14,
                           color: Colors.grey.shade600,
@@ -345,7 +343,7 @@ class _SettingsPageState extends State<SettingsPage> {
             Icon(Icons.color_lens, color: Colors.teal.shade600, size: 24),
             const SizedBox(width: 12),
             Text(
-              "Adaptive Android Color",
+              'Adaptive Android Color',
               style: GoogleFonts.nunito(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
@@ -369,8 +367,8 @@ class _SettingsPageState extends State<SettingsPage> {
     final currentColor = viewModel.customSeedColor ?? Colors.teal;
     return _buildSettingsTile(
       icon: Icons.color_lens,
-      title: "App Color",
-      subtitle: "Select a custom app color",
+      title: 'App Color',
+      subtitle: 'Select a custom app color',
       onTap: () async {
         Color selectedColor = currentColor;
         await showDialog(
@@ -421,8 +419,8 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildAppLockSection(BuildContext context) {
     return _buildSettingsTile(
       icon: Icons.lock,
-      title: "App Lock",
-      subtitle: "Require device authentication to open app",
+      title: 'App Lock',
+      subtitle: 'Require device authentication to open app',
       onTap: null,
       trailing: Switch(
         value: _appLockEnabled,
@@ -438,9 +436,9 @@ class _SettingsPageState extends State<SettingsPage> {
                 return;
               }
               final didAuthenticate = await localAuth.authenticate(
-                localizedReason: 'Enable app lock',
-                options: const AuthenticationOptions(
-                    biometricOnly: false, stickyAuth: true),
+                localizedReason: 'Authenticate to disable app lock',
+                biometricOnly: false,
+                persistAcrossBackgrounding: true,
               );
               if (!didAuthenticate) {
                 _showSnackBar(
@@ -464,8 +462,8 @@ class _SettingsPageState extends State<SettingsPage> {
       children: [
         _buildSettingsTile(
           icon: Icons.auto_awesome,
-          title: "Auto Transaction Detection",
-          subtitle: "Automatically detect transactions from notifications",
+          title: 'Auto Transaction Detection',
+          subtitle: 'Automatically detect transactions from notifications',
           onTap: null,
           trailing: FutureBuilder<bool>(
             future: TransactionDetectionService.isEnabled(),
@@ -521,8 +519,8 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
         _buildSettingsTile(
           icon: Icons.history,
-          title: "Process Recent Data",
-          subtitle: "Scan recent notifications for transactions",
+          title: 'Process Recent Data',
+          subtitle: 'Scan recent notifications for transactions',
           onTap: () async {
             HapticFeedback.lightImpact();
             try {
@@ -548,10 +546,10 @@ class _SettingsPageState extends State<SettingsPage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            Icon(Icons.auto_awesome, color: Colors.blue, size: 24),
+            const Icon(Icons.auto_awesome, color: Colors.blue, size: 24),
             const SizedBox(width: 8),
             Text(
-              "Auto Transaction Detection",
+              'Auto Transaction Detection',
               style: GoogleFonts.nunito(
                 fontWeight: FontWeight.bold,
                 color: isDark ? Colors.white : Colors.black,
@@ -564,7 +562,7 @@ class _SettingsPageState extends State<SettingsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "This feature will automatically detect transactions from:",
+              'This feature will automatically detect transactions from:',
               style: GoogleFonts.nunito(
                 fontWeight: FontWeight.w600,
                 color: isDark ? Colors.white70 : Colors.black87,
@@ -572,14 +570,14 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             const SizedBox(height: 12),
             _buildInfoItem(
-                "🔔 App notifications", "Monitors payment app notifications"),
-            _buildInfoItem("📱 Banking notifications",
-                "Detects UPI, ATM, and banking transactions"),
-            _buildInfoItem("💰 Automatic categorization",
-                "Categorizes transactions based on bank keywords"),
+                '🔔 App notifications', 'Monitors payment app notifications'),
+            _buildInfoItem('📱 Banking notifications',
+                'Detects UPI, ATM, and banking transactions'),
+            _buildInfoItem('💰 Automatic categorization',
+                'Categorizes transactions based on bank keywords'),
             const SizedBox(height: 12),
             Text(
-              "Required permissions:",
+              'Required permissions:',
               style: GoogleFonts.nunito(
                 fontWeight: FontWeight.w600,
                 color: isDark ? Colors.white70 : Colors.black87,
@@ -587,7 +585,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             const SizedBox(height: 8),
             _buildInfoItem(
-                "🔔 Notification access", "To monitor payment notifications"),
+                '🔔 Notification access', 'To monitor payment notifications'),
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(12),
@@ -609,7 +607,7 @@ class _SettingsPageState extends State<SettingsPage> {
         actions: [
           TextButton(
             child: Text(
-              "Cancel",
+              'Cancel',
               style: TextStyle(color: theme.colorScheme.primary),
             ),
             onPressed: () {
@@ -618,7 +616,6 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
           ElevatedButton(
-            child: const Text("Enable"),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blue,
               foregroundColor: Colors.white,
@@ -627,6 +624,7 @@ class _SettingsPageState extends State<SettingsPage> {
               HapticFeedback.lightImpact();
               Navigator.pop(context);
             },
+            child: const Text("Enable"),
           ),
         ],
       ),
@@ -671,36 +669,36 @@ class _SettingsPageState extends State<SettingsPage> {
       children: [
         _buildSettingsTile(
           icon: Icons.upload_file,
-          title: "Export Transactions",
-          subtitle: "Backup your data to CSV",
+          title: 'Export Transactions',
+          subtitle: 'Backup your data to CSV',
           onTap: () async {
             HapticFeedback.lightImpact();
             try {
               await DataExporter.shareBackupFile();
-              _showSnackBar(context, "Export completed successfully!");
+              _showSnackBar(context, 'Export completed successfully!');
             } catch (e) {
-              _showSnackBar(context, "Export failed: $e");
+              _showSnackBar(context, 'Export failed: $e');
             }
           },
         ),
         _buildSettingsTile(
           icon: Icons.download,
-          title: "Import Transactions",
-          subtitle: "Restore data from backup",
+          title: 'Import Transactions',
+          subtitle: 'Restore data from backup',
           onTap: () async {
             HapticFeedback.lightImpact();
             try {
               await DataImporter.importFromJson(context);
-              _showSnackBar(context, "Import completed successfully!");
+              _showSnackBar(context, 'Import completed successfully!');
             } catch (e) {
-              _showSnackBar(context, "Import failed: $e");
+              _showSnackBar(context, 'Import failed: $e');
             }
           },
         ),
         _buildSettingsTile(
           icon: Icons.picture_as_pdf,
-          title: "Export as PDF",
-          subtitle: "Generate PDF reports",
+          title: 'Export as PDF',
+          subtitle: 'Generate PDF reports',
           onTap: () async {
             HapticFeedback.lightImpact();
             try {
@@ -708,16 +706,16 @@ class _SettingsPageState extends State<SettingsPage> {
               await Printing.sharePdf(
                   bytes: await file.readAsBytes(),
                   filename: 'home_transactions.pdf');
-              _showSnackBar(context, "PDF exported successfully!");
+              _showSnackBar(context, 'PDF exported successfully!');
             } catch (e) {
-              _showSnackBar(context, "PDF export failed: $e");
+              _showSnackBar(context, 'PDF export failed: $e');
             }
           },
         ),
         _buildSettingsTile(
           icon: Icons.groups,
-          title: "Export People Data",
-          subtitle: "Backup people transactions",
+          title: 'Export People Data',
+          subtitle: 'Backup people transactions',
           onTap: () async {
             HapticFeedback.lightImpact();
             try {
@@ -725,9 +723,9 @@ class _SettingsPageState extends State<SettingsPage> {
               await Printing.sharePdf(
                   bytes: await file.readAsBytes(),
                   filename: 'person_transactions.pdf');
-              _showSnackBar(context, "People data exported!");
+              _showSnackBar(context, 'People data exported!');
             } catch (e) {
-              _showSnackBar(context, "People data export failed: $e");
+              _showSnackBar(context, 'People data export failed: $e');
             }
           },
         ),
@@ -740,36 +738,36 @@ class _SettingsPageState extends State<SettingsPage> {
       children: [
         _buildSettingsTile(
           icon: Icons.ios_share,
-          title: "Export People Data (JSON)",
-          subtitle: "Backup people and transactions",
+          title: 'Export People Data (JSON)',
+          subtitle: 'Backup people and transactions',
           onTap: () async {
             HapticFeedback.lightImpact();
             try {
               await PersonBackupHelper.exportToJsonAndShare();
-              _showSnackBar(context, "People data exported!");
+              _showSnackBar(context, 'People data exported!');
             } catch (e) {
-              _showSnackBar(context, "People data export failed: $e");
+              _showSnackBar(context, 'People data export failed: $e');
             }
           },
         ),
         _buildSettingsTile(
           icon: Icons.import_export,
-          title: "Import People Data (JSON)",
-          subtitle: "Restore people data from backup",
+          title: 'Import People Data (JSON)',
+          subtitle: 'Restore people data from backup',
           onTap: () async {
             HapticFeedback.lightImpact();
             try {
               await PersonBackupHelper.importFromJson(context);
-              _showSnackBar(context, "People data imported successfully!");
+              _showSnackBar(context, 'People data imported successfully!');
             } catch (e) {
-              _showSnackBar(context, "People data import failed: $e");
+              _showSnackBar(context, 'People data import failed: $e');
             }
           },
         ),
         _buildSettingsTile(
           icon: Icons.delete_forever,
-          title: "Delete All Data",
-          subtitle: "⚠️ This action cannot be undone",
+          title: 'Delete All Data',
+          subtitle: '⚠️ This action cannot be undone',
           isDestructive: true,
           onTap: () {
             HapticFeedback.lightImpact();
@@ -778,8 +776,8 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
         _buildSettingsTile(
           icon: Icons.refresh,
-          title: "Reset Intro",
-          subtitle: "Show intro screens again",
+          title: 'Reset Intro',
+          subtitle: 'Show intro screens again',
           onTap: () {
             HapticFeedback.lightImpact();
             _confirmResetIntro(context);
@@ -794,26 +792,26 @@ class _SettingsPageState extends State<SettingsPage> {
       children: [
         _buildSettingsTile(
           icon: Icons.info_outline,
-          title: "Version",
-          subtitle: "5.8.0",
+          title: 'Version',
+          subtitle: '5.8.0',
           onTap: null,
         ),
         _buildSettingsTile(
           icon: Icons.description,
-          title: "Privacy Policy",
-          subtitle: "Read our privacy policy",
+          title: 'Privacy Policy',
+          subtitle: 'Read our privacy policy',
           onTap: () {
             HapticFeedback.lightImpact();
-            _showSnackBar(context, "Privacy policy coming soon!");
+            _showSnackBar(context, 'Privacy policy coming soon!');
           },
         ),
         _buildSettingsTile(
           icon: Icons.help_outline,
-          title: "Help & Support",
-          subtitle: "Get help and contact support",
+          title: 'Help & Support',
+          subtitle: 'Get help and contact support',
           onTap: () {
             HapticFeedback.lightImpact();
-            _showSnackBar(context, "Help section coming soon!");
+            _showSnackBar(context, 'Help section coming soon!');
           },
         ),
       ],
@@ -911,10 +909,10 @@ class _SettingsPageState extends State<SettingsPage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            Icon(Icons.warning, color: Colors.red, size: 24),
+            const Icon(Icons.warning, color: Colors.red, size: 24),
             const SizedBox(width: 8),
             Text(
-              "Confirm Delete",
+              'Confirm Delete',
               style: GoogleFonts.nunito(
                 fontWeight: FontWeight.bold,
                 color: isDark ? Colors.white : Colors.black,
@@ -923,7 +921,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ],
         ),
         content: Text(
-          "Are you sure you want to delete all transactions and reset your balance? This action cannot be undone.",
+          'Are you sure you want to delete all transactions and reset your balance? This action cannot be undone.',
           style: GoogleFonts.nunito(
             color: isDark ? Colors.white70 : Colors.black87,
           ),
@@ -931,7 +929,7 @@ class _SettingsPageState extends State<SettingsPage> {
         actions: [
           TextButton(
             child: Text(
-              "Cancel",
+              'Cancel',
               style: TextStyle(color: theme.colorScheme.primary),
             ),
             onPressed: () {
@@ -941,7 +939,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           ElevatedButton.icon(
             icon: const Icon(Icons.delete),
-            label: const Text("Delete All"),
+            label: const Text('Delete All'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
@@ -956,11 +954,11 @@ class _SettingsPageState extends State<SettingsPage> {
                 await Provider.of<PersonViewModel>(context, listen: false)
                     .deleteAllData();
                 Navigator.pop(context);
-                _showSnackBar(context, "All data deleted successfully!");
+                _showSnackBar(context, 'All data deleted successfully!');
               } catch (e) {
                 Navigator.pop(context);
                 _showSnackBar(
-                    context, "Failed to delete all data. Please try again.");
+                    context, 'Failed to delete all data. Please try again.');
               }
             },
           ),
@@ -981,10 +979,10 @@ class _SettingsPageState extends State<SettingsPage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
-            Icon(Icons.refresh, color: Colors.orange, size: 24),
+            const Icon(Icons.refresh, color: Colors.orange, size: 24),
             const SizedBox(width: 8),
             Text(
-              "Reset Intro",
+              'Reset Intro',
               style: GoogleFonts.nunito(
                 fontWeight: FontWeight.bold,
                 color: isDark ? Colors.white : Colors.black,
@@ -993,7 +991,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ],
         ),
         content: Text(
-          "This will show the intro screens again the next time you open the app. Your data will remain unchanged.",
+          'This will show the intro screens again the next time you open the app. Your data will remain unchanged.',
           style: GoogleFonts.nunito(
             color: isDark ? Colors.white70 : Colors.black87,
           ),
@@ -1001,7 +999,7 @@ class _SettingsPageState extends State<SettingsPage> {
         actions: [
           TextButton(
             child: Text(
-              "Cancel",
+              'Cancel',
               style: TextStyle(color: theme.colorScheme.primary),
             ),
             onPressed: () {
@@ -1011,7 +1009,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           ElevatedButton.icon(
             icon: const Icon(Icons.refresh),
-            label: const Text("Reset"),
+            label: const Text('Reset'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.orange,
               foregroundColor: Colors.white,
@@ -1025,11 +1023,11 @@ class _SettingsPageState extends State<SettingsPage> {
                 final settingsBox = await Hive.openBox('settings');
                 await settingsBox.put('introCompleted', false);
                 Navigator.pop(context);
-                _showSnackBar(context, "Intro reset successfully!");
+                _showSnackBar(context, 'Intro reset successfully!');
               } catch (e) {
                 Navigator.pop(context);
                 _showSnackBar(
-                    context, "Failed to reset intro. Please try again.\n$e");
+                    context, 'Failed to reset intro. Please try again.\n$e');
               }
             },
           ),
@@ -1040,5 +1038,5 @@ class _SettingsPageState extends State<SettingsPage> {
 }
 
 extension StringCasingExtension on String {
-  String capitalize() => "${this[0].toUpperCase()}${substring(1)}";
+  String capitalize() => '${this[0].toUpperCase()}${substring(1)}';
 }

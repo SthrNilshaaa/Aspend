@@ -69,8 +69,8 @@ class _SplashScreenState extends State<SplashScreen>
         if (canCheckDeviceSupport) {
           final didAuthenticate = await localAuth.authenticate(
             localizedReason: 'Authenticate to access Aspends Tracker',
-            options: const AuthenticationOptions(
-                biometricOnly: false, stickyAuth: true),
+            biometricOnly: false,
+            persistAcrossBackgrounding: true,
           );
           if (!didAuthenticate) {
             return;

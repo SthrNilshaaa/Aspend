@@ -13,7 +13,7 @@ import '../widgets/transaction_tile.dart';
 import '../utils/responsive_utils.dart';
 
 class ChartPage extends StatefulWidget {
-  ChartPage({super.key});
+  const ChartPage({super.key});
 
   @override
   State<ChartPage> createState() => _ChartPageState();
@@ -21,7 +21,7 @@ class ChartPage extends StatefulWidget {
 
 class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
   late TabController _tabController;
-  int _selectedChartIndex = 0;
+  final int _selectedChartIndex = 0;
 
   @override
   void initState() {
@@ -193,7 +193,7 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
           Expanded(
             child: ZoomTapAnimation(
               child: _buildSummaryCard(
-                "Income",
+                'Income',
                 totalIncome,
                 Colors.green,
                 Icons.trending_up,
@@ -207,7 +207,7 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
           Expanded(
             child: ZoomTapAnimation(
               child: _buildSummaryCard(
-                "Expenses",
+                'Expenses',
                 totalSpend,
                 Colors.red,
                 Icons.trending_down,
@@ -221,7 +221,7 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
           Expanded(
             child: ZoomTapAnimation(
               child: _buildSummaryCard(
-                "Balance",
+                'Balance',
                 netBalance,
                 netBalance >= 0 ? Colors.blue : Colors.orange,
                 Icons.account_balance_wallet,
@@ -238,7 +238,7 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
               Expanded(
                 child: ZoomTapAnimation(
                   child: _buildSummaryCard(
-                    "Income",
+                    'Income',
                     totalIncome,
                     Colors.green,
                     Icons.trending_up,
@@ -252,7 +252,7 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
               Expanded(
                 child: ZoomTapAnimation(
                   child: _buildSummaryCard(
-                    "Expenses",
+                    'Expenses',
                     totalSpend,
                     Colors.red,
                     Icons.trending_down,
@@ -269,7 +269,7 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
             width: MediaQuery.of(context).size.width * 0.5,
             child: ZoomTapAnimation(
               child: _buildSummaryCard(
-                "Balance",
+                'Balance',
                 netBalance,
                 netBalance >= 0 ? Colors.blue : Colors.orange,
                 Icons.account_balance_wallet,
@@ -284,7 +284,7 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
           Expanded(
             child: ZoomTapAnimation(
               child: _buildSummaryCard(
-                "Income",
+                'Income',
                 totalIncome,
                 Colors.green,
                 Icons.trending_up,
@@ -298,7 +298,7 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
           Expanded(
             child: ZoomTapAnimation(
               child: _buildSummaryCard(
-                "Expenses",
+                'Expenses',
                 totalSpend,
                 Colors.red,
                 Icons.trending_down,
@@ -312,7 +312,7 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
           Expanded(
             child: ZoomTapAnimation(
               child: _buildSummaryCard(
-                "Balance",
+                'Balance',
                 netBalance,
                 netBalance >= 0 ? Colors.blue : Colors.orange,
                 Icons.account_balance_wallet,
@@ -456,10 +456,10 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
           fontWeight: FontWeight.w500,
           letterSpacing: 0.1,
         ),
-        tabs: [
-          const ZoomTapAnimation(child: Tab(text: "Overview")),
-          const ZoomTapAnimation(child: Tab(text: "Trends")),
-          const ZoomTapAnimation(child: Tab(text: "Categories")),
+        tabs: const [
+          ZoomTapAnimation(child: Tab(text: 'Overview')),
+          ZoomTapAnimation(child: Tab(text: 'Trends')),
+          ZoomTapAnimation(child: Tab(text: 'Categories')),
         ],
       ),
     );
@@ -475,7 +475,7 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
         child: Column(
           children: [
             Text(
-              "Income vs Expenses",
+              'Income vs Expenses',
               style: GoogleFonts.nunito(
                 fontSize: ResponsiveUtils.getResponsiveFontSize(context,
                     mobile: 16, tablet: 18, desktop: 20),
@@ -552,7 +552,7 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
         child: Column(
           children: [
             Text(
-              "Monthly Trends",
+              'Monthly Trends',
               style: GoogleFonts.nunito(
                 fontSize: ResponsiveUtils.getResponsiveFontSize(context,
                     mobile: 16, tablet: 18, desktop: 20),
@@ -671,7 +671,7 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
         child: Column(
           children: [
             Text(
-              "Spending by Category",
+              'Spending by Category',
               style: GoogleFonts.nunito(
                 fontSize: ResponsiveUtils.getResponsiveFontSize(context,
                     mobile: 16, tablet: 18, desktop: 20),
@@ -787,10 +787,10 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
             ),
             ...dayIncomes
                 .map((tx) => TransactionTile(transaction: tx, index: 0))
-                .toList(),
+                ,
             ...dayExpenses
                 .map((tx) => TransactionTile(transaction: tx, index: 0))
-                .toList(),
+                ,
             SizedBox(
                 height: ResponsiveUtils.getResponsiveSpacing(context,
                     mobile: 12, tablet: 16, desktop: 20)),
@@ -801,7 +801,7 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
   }
 
   Widget _buildEmptyState(bool isDark) {
-    return Container(
+    return SizedBox(
       height: MediaQuery.of(context).size.height * 0.6,
       width: double.infinity,
       child: Center(

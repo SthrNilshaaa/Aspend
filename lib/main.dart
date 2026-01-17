@@ -64,7 +64,7 @@ void main() async {
     debugPrint('Error initializing transaction detection services: $e');
   }
 
-  HomeWidget.registerBackgroundCallback(backgroundCallback);
+  HomeWidget.registerInteractivityCallback(backgroundCallback);
 
   final transactionRepo = TransactionRepository();
   final personRepo = PersonRepository();

@@ -36,7 +36,6 @@ jobs:
           echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > android/app/release.keystore
           echo "✅ Keystore saved to: $(pwd)/android/app/release.keystore"
           ls -lh android/app/release.keystore  
-
       - name: Verify keystore
         run: |
           keytool -list \
@@ -64,7 +63,6 @@ jobs:
           ls -la key.properties
           echo "Keystore exists at: $KEYSTORE_ABS_PATH ?"
           ls -la "$KEYSTORE_ABS_PATH"
-
     
       - name: Clean
         run: flutter clean
@@ -78,7 +76,7 @@ jobs:
       - name: Build APKs with ABI splits
         run: |
           echo "=== Building release APKs ==="
-          flutter build apk # --split-per-abi --release --verbose
+          flutter build apk --split-per-abi --release --verbose
 
       - name: Upload APKs to GitHub Actions artifacts
         uses: actions/upload-artifact@v4

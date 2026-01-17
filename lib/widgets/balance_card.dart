@@ -357,7 +357,7 @@ class _BalanceCardState extends State<BalanceCard>
             Icon(Icons.edit, color: theme.colorScheme.primary),
             const SizedBox(width: 8),
             Text(
-              "Edit Balance",
+              'Edit Balance',
               style: TextStyle(
                 color: isDark ? Colors.white : Colors.black,
                 fontWeight: FontWeight.bold,
@@ -369,8 +369,8 @@ class _BalanceCardState extends State<BalanceCard>
           controller: controller,
           keyboardType: TextInputType.number,
           decoration: InputDecoration(
-            labelText: "New Balance",
-            prefixText: "₹ ",
+            labelText: 'New Balance',
+            prefixText: '₹ ',
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -383,13 +383,13 @@ class _BalanceCardState extends State<BalanceCard>
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
-              "Cancel",
+              'Cancel',
               style: TextStyle(color: theme.colorScheme.primary),
             ),
           ),
           ElevatedButton.icon(
             icon: const Icon(Icons.save),
-            label: const Text("Save"),
+            label: const Text('Save'),
             style: ElevatedButton.styleFrom(
               backgroundColor: theme.colorScheme.primary,
               foregroundColor: Colors.white,
@@ -403,7 +403,7 @@ class _BalanceCardState extends State<BalanceCard>
                 // Show success message
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: const Text("Balance updated successfully!"),
+                    content: const Text('Balance updated successfully!'),
                     backgroundColor: Colors.green,
                     behavior: SnackBarBehavior.floating,
                     shape: RoundedRectangleBorder(
@@ -415,7 +415,7 @@ class _BalanceCardState extends State<BalanceCard>
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text("Please enter a valid number"),
+                    content: Text('Please enter a valid number'),
                     backgroundColor: Colors.red,
                     duration: Duration(seconds: 2),
                   ),

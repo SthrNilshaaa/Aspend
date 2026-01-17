@@ -86,7 +86,7 @@ class TransactionCard extends StatelessWidget {
       builder: (_) => AlertDialog(
         backgroundColor: isDark ? Colors.grey[900] : Colors.white,
         title: Text(
-          "Transaction Details",
+          'Transaction Details',
           style: TextStyle(
             color: isDark ? Colors.white : Colors.black,
           ),
@@ -95,19 +95,19 @@ class TransactionCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _detailText("Amount", "₹${tx.amount.toStringAsFixed(2)}", isDark),
-            _detailText("Note", tx.note.isNotEmpty ? tx.note : "—", isDark),
-            _detailText("Category", tx.category, isDark),
-            _detailText("Account", tx.account, isDark),
+            _detailText('Amount', '₹${tx.amount.toStringAsFixed(2)}', isDark),
+            _detailText('Note', tx.note.isNotEmpty ? tx.note : '—', isDark),
+            _detailText('Category', tx.category, isDark),
+            _detailText('Account', tx.account, isDark),
             _detailText(
-                "Date", DateFormat.yMMMMEEEEd().format(tx.date), isDark),
-            _detailText("Type", tx.isIncome ? "Income" : "Expense", isDark),
+                'Date', DateFormat.yMMMMEEEEd().format(tx.date), isDark),
+            _detailText('Type', tx.isIncome ? 'Income' : 'Expense', isDark),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text("Close", style: TextStyle(color: Colors.teal)),
+            child: const Text('Close', style: TextStyle(color: Colors.teal)),
           ),
           TextButton(
             onPressed: () {
@@ -116,11 +116,11 @@ class TransactionCard extends StatelessWidget {
                   .deleteTransaction(tx);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                    content: Text("Transaction deleted"),
+                    content: Text('Transaction deleted'),
                     duration: Duration(seconds: 2)),
               );
             },
-            child: Text("Delete", style: TextStyle(color: Colors.white)),
+            child: const Text('Delete', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -134,7 +134,7 @@ class TransactionCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "$label: ",
+            '$label: ',
             style: TextStyle(
               fontWeight: FontWeight.w600,
               color: isDark ? Colors.white : Colors.black,

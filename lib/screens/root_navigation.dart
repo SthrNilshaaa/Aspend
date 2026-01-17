@@ -28,7 +28,7 @@ class _RootNavigationState extends State<RootNavigation>
 
   // Cache screens to avoid rebuilds and glitching
   final List<Widget> _screens = [
-    HomePage(),
+    const HomePage(),
     const PeopleTab(),
     ChartPage(),
     const SettingsPage(),
@@ -94,10 +94,10 @@ class _RootNavigationState extends State<RootNavigation>
         children: [
           PageView(
             controller: _pageController,
-            children: _screens,
             onPageChanged: _onPageChanged,
             physics: const BouncingScrollPhysics(),
-            scrollBehavior: MaterialScrollBehavior(),
+            scrollBehavior: const MaterialScrollBehavior(),
+            children: _screens,
           ),
           Positioned(
             bottom: 18,
@@ -135,10 +135,10 @@ class _RootNavigationState extends State<RootNavigation>
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _buildBNBItem(Icons.home_outlined, 0, "Home"),
-                _buildBNBItem(Icons.person, 1, "Person"),
-                _buildBNBItem(Icons.auto_graph, 2, "Chart"),
-                _buildBNBItem(Icons.settings_outlined, 3, "Setting"),
+                _buildBNBItem(Icons.home_outlined, 0, 'Home'),
+                _buildBNBItem(Icons.person, 1, 'Person'),
+                _buildBNBItem(Icons.auto_graph, 2, 'Chart'),
+                _buildBNBItem(Icons.settings_outlined, 3, 'Setting'),
               ],
             ),
           ),

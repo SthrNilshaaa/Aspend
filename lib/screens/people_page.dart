@@ -245,7 +245,7 @@ class _PeopleTabState extends State<PeopleTab> {
               const SizedBox(width: 5),
               Flexible(
                 child: Text(
-                  "₹${amount.toStringAsFixed(2)}",
+                  '₹${amount.toStringAsFixed(2)}',
                   style: GoogleFonts.nunito(
                     fontSize: ResponsiveUtils.getResponsiveFontSize(context,
                         mobile: 17, tablet: 20, desktop: 24),
@@ -365,7 +365,7 @@ class _PeopleTabState extends State<PeopleTab> {
                     children: [
                       _buildSummaryInfo(
                         context,
-                        label: "Total You Get",
+                        label: 'Total You Get',
                         amount: totalYouGet,
                         color: Colors.green.shade600,
                         icon: Icons.arrow_circle_down_rounded,
@@ -378,7 +378,7 @@ class _PeopleTabState extends State<PeopleTab> {
                       ),
                       _buildSummaryInfo(
                         context,
-                        label: "Total You Give",
+                        label: 'Total You Give',
                         amount: totalYouGive,
                         color: Colors.red.shade600,
                         icon: Icons.arrow_circle_up_rounded,
@@ -414,7 +414,7 @@ class _PeopleTabState extends State<PeopleTab> {
                     ),
                     const SizedBox(height: 24),
                     Text(
-                      "No people added yet",
+                      'No people added yet',
                       style: GoogleFonts.nunito(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -423,7 +423,7 @@ class _PeopleTabState extends State<PeopleTab> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      "Add people to track transactions with them",
+                      'Add people to track transactions with them',
                       style: GoogleFonts.nunito(
                         fontSize: 16,
                         color: theme.colorScheme.onSurface.withOpacity(0.7),
@@ -555,7 +555,7 @@ class _PeopleTabState extends State<PeopleTab> {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      "Tap to view transactions",
+                                      'Tap to view transactions',
                                       style: GoogleFonts.nunito(
                                         fontSize: 14,
                                         color: theme.colorScheme.onSurface
@@ -609,7 +609,7 @@ class _PeopleTabState extends State<PeopleTab> {
                 childCount: people.length,
               ),
             ),
-          SliverToBoxAdapter(
+          const SliverToBoxAdapter(
               child: SizedBox(height: 80)), // Your existing SizedBox
         ],
       ),

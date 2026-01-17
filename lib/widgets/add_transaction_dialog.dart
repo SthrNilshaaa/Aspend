@@ -28,29 +28,29 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
   late String _category;
-  String _account = "Cash";
+  String _account = 'Cash';
   final List<String> _imagePaths = [];
   final ImagePicker _picker = ImagePicker();
 
   final List<String> incomeCategories = [
-    "Salary",
-    "Freelance",
-    "Investment",
-    "Gift",
-    "Refund",
-    "Other"
+    'Salary',
+    'Freelance',
+    'Investment',
+    'Gift',
+    'Refund',
+    'Other'
   ];
   final List<String> expenseCategories = [
-    "Food",
-    "Transport",
-    "Shopping",
-    "Bills",
-    "Entertainment",
-    "Health",
-    "Education",
-    "Other"
+    'Food',
+    'Transport',
+    'Shopping',
+    'Bills',
+    'Entertainment',
+    'Health',
+    'Education',
+    'Other'
   ];
-  final List<String> accounts = ["Cash", "Online", "Credit Card", "Bank"];
+  final List<String> accounts = ['Cash', 'Online', 'Credit Card', 'Bank'];
 
   @override
   void initState() {
@@ -64,7 +64,7 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
         _imagePaths.addAll(widget.existingTransaction!.imagePaths!);
       }
     } else {
-      _category = widget.isIncome ? "Salary" : "Food";
+      _category = widget.isIncome ? 'Salary' : 'Food';
     }
   }
 
@@ -180,8 +180,8 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
               children: [
                 Text(
                   widget.existingTransaction != null
-                      ? (widget.isIncome ? "Edit Income" : "Edit Expense")
-                      : (widget.isIncome ? "Add Income" : "Add Expense"),
+                      ? (widget.isIncome ? 'Edit Income' : 'Edit Expense')
+                      : (widget.isIncome ? 'Add Income' : 'Add Expense'),
                   style: GoogleFonts.nunito(
                     fontSize: ResponsiveUtils.getResponsiveFontSize(context,
                         mobile: 20, tablet: 24, desktop: 28),
@@ -199,7 +199,7 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                         mobile: 18, tablet: 20, desktop: 22),
                   ),
                   decoration: InputDecoration(
-                    labelText: "Amount",
+                    labelText: 'Amount',
                     labelStyle: GoogleFonts.nunito(),
                     prefixIcon: const Icon(Icons.currency_rupee),
                     border: OutlineInputBorder(
@@ -207,15 +207,15 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                     ),
                   ),
                   validator: (val) =>
-                      (val == null || val.isEmpty) ? "Required" : null,
+                      (val == null || val.isEmpty) ? 'Required' : null,
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  value: _category,
+                  initialValue: _category,
                   style: GoogleFonts.nunito(
                       color: theme.colorScheme.onSurface, fontSize: 16),
                   decoration: InputDecoration(
-                    labelText: "Category",
+                    labelText: 'Category',
                     labelStyle: GoogleFonts.nunito(),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -228,11 +228,11 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  value: _account,
+                  initialValue: _account,
                   style: GoogleFonts.nunito(
                       color: theme.colorScheme.onSurface, fontSize: 16),
                   decoration: InputDecoration(
-                    labelText: "Account",
+                    labelText: 'Account',
                     labelStyle: GoogleFonts.nunito(),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -248,7 +248,7 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                   controller: _noteController,
                   style: GoogleFonts.nunito(fontSize: 16),
                   decoration: InputDecoration(
-                    labelText: "Note (Optional)",
+                    labelText: 'Note (Optional)',
                     labelStyle: GoogleFonts.nunito(),
                     prefixIcon: const Icon(Icons.note_alt_outlined),
                     border: OutlineInputBorder(
@@ -281,7 +281,7 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                 OutlinedButton.icon(
                   onPressed: _pickImage,
                   icon: const Icon(Icons.add_a_photo_outlined),
-                  label: const Text("Add Attachment"),
+                  label: const Text('Add Attachment'),
                 ),
                 const SizedBox(height: 24),
                 ElevatedButton(
@@ -297,8 +297,8 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                   ),
                   child: Text(
                     widget.existingTransaction != null
-                        ? "Update Transaction"
-                        : "Save Transaction",
+                        ? 'Update Transaction'
+                        : 'Save Transaction',
                     style: GoogleFonts.nunito(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,

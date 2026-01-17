@@ -36,7 +36,7 @@ class SettingsRepository {
 
   Future<void> setCustomSeedColor(Color? color) async {
     if (color != null) {
-      await _settingsBox.put(_customColorKey, color.value);
+      await _settingsBox.put(_customColorKey, color.toARGB32());
     } else {
       await _settingsBox.delete(_customColorKey);
     }

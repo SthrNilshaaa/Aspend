@@ -96,7 +96,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(70),
+        preferredSize: const Size.fromHeight(70),
         child: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -149,7 +149,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
           ),
           actions: [
             IconButton(
-              icon: Icon(
+              icon: const Icon(
                 Icons.delete_outline,
                 color: Colors.red,
                 size: 24,
