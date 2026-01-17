@@ -10,7 +10,7 @@ plugins {
 android {
     namespace = "org.x.aspend.ns"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = "27.0.12077973"
+    ndkVersion = flutter.ndkVersion
 
     // --- Load key.properties ---
     val keystoreProperties = Properties()
