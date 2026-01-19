@@ -7,12 +7,14 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import '../models/person.dart';
 import '../models/person_transaction.dart';
 import '../view_models/person_view_model.dart';
 import '../view_models/theme_view_model.dart';
+import '../widgets/modern_card.dart';
+import '../utils/error_handler.dart';
 //import 'dart:async';
-import 'package:flutter/rendering.dart';
 
 class PersonDetailPage extends StatefulWidget {
   final Person person;
@@ -85,8 +87,12 @@ class _PersonDetailPageState extends State<PersonDetailPage>
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<PersonViewModel>();
-    final txs = viewModel.transactionsFor(widget.person.name);
-    final total = viewModel.getTotalForPerson(widget.person.name);
+    final person = viewModel.people.firstWhere(
+      (p) => p.key == widget.person.key,
+      orElse: () => widget.person,
+    );
+    final txs = viewModel.transactionsFor(person.name);
+    final total = viewModel.getTotalForPerson(person.name);
     final isPositive = total >= 0;
     final theme = Theme.of(context);
     final themeViewModel = context.watch<ThemeViewModel>();
@@ -120,19 +126,21 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                               colors: [
-                                theme.colorScheme.primary.withOpacity(0.8),
+                                theme.colorScheme.primary
+                                    .withValues(alpha: 0.8),
                                 theme.colorScheme.primaryContainer
-                                    .withOpacity(0.8)
+                                    .withValues(alpha: 0.8)
                               ],
                             )
                           : LinearGradient(
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
-                              //colors: [Colors.teal.shade100.withOpacity(0.8), Colors.teal.shade200.withOpacity(0.8)],
+                              //colors: [Colors.teal.shade100.withValues(alpha: 0.8), Colors.teal.shade200.withValues(alpha: 0.8)],
                               colors: [
-                                theme.colorScheme.primary.withOpacity(0.8),
+                                theme.colorScheme.primary
+                                    .withValues(alpha: 0.8),
                                 theme.colorScheme.primaryContainer
-                                    .withOpacity(0.8)
+                                    .withValues(alpha: 0.8)
                               ],
                             ),
                 ),
@@ -140,7 +148,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
             ),
           ),
           title: Text(
-            widget.person.name,
+            person.name,
             style: GoogleFonts.nunito(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -156,8 +164,15 @@ class _PersonDetailPageState extends State<PersonDetailPage>
               ),
               onPressed: () {
                 HapticFeedback.heavyImpact();
-                _showDeleteConfirmation(context);
+                _showDeleteConfirmation(context, person);
               },
+            ),
+            IconButton(
+              icon: const Icon(
+                Icons.edit_outlined,
+                size: 24,
+              ),
+              onPressed: () => _showEditPersonDialog(context, person),
             ),
           ],
         ),
@@ -179,7 +194,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                   GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             onPressed: () {
-              _showAddTxDialog(context);
+              _showAddTxDialog(context, person);
               HapticFeedback.lightImpact();
             },
           ),
@@ -191,148 +206,101 @@ class _PersonDetailPageState extends State<PersonDetailPage>
           position: _slideAnimation,
           child: Column(
             children: [
-              // Balance Card
-              Container(
-                margin: const EdgeInsets.all(16),
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: useAdaptive
-                          ? [
-                              theme.colorScheme.surface,
-                              theme.colorScheme.surface.withOpacity(0.8),
-                            ]
-                          : [
-                              theme.colorScheme.surface,
-                              theme.colorScheme.surface.withOpacity(0.8),
-                            ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: theme.colorScheme.outline.withOpacity(0.2),
-                      width: 1,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: theme.colorScheme.shadow.withOpacity(0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 60,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            gradient: widget.person.photoPath != null
-                                ? null
-                                : useAdaptive
-                                    ? LinearGradient(
-                                        colors: [
-                                          theme.colorScheme.primaryContainer,
-                                          theme.colorScheme.secondaryContainer,
-                                        ],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                      )
-                                    : LinearGradient(
-                                        colors: [
-                                          isPositive
-                                              ? Colors.green
-                                              : Colors.red,
-                                          isPositive
-                                              ? Colors.green.withOpacity(0.8)
-                                              : Colors.red.withOpacity(0.8),
-                                        ],
-                                      ),
-                            color: widget.person.photoPath != null
-                                ? Colors.transparent
-                                : null,
-                            borderRadius: BorderRadius.circular(30),
-                            border: widget.person.photoPath != null
-                                ? Border.all(
-                                    color: useAdaptive
-                                        ? (isPositive
-                                            ? Colors.green
-                                            : Colors.red)
-                                        : (isPositive
-                                            ? Colors.green
-                                            : Colors.red),
-                                    width: 2,
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: ModernCard(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: theme.colorScheme.primary
+                                  .withValues(alpha: 0.1),
+                            ),
+                            child: person.photoPath != null
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(30),
+                                    child: Image.file(
+                                      File(person.photoPath!),
+                                      fit: BoxFit.cover,
+                                    ),
                                   )
-                                : null,
-                          ),
-                          child: widget.person.photoPath != null
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(28),
-                                  child: Image.file(
-                                    File(widget.person.photoPath!),
-                                    width: 56,
-                                    height: 56,
-                                    fit: BoxFit.cover,
+                                : Icon(
+                                    isPositive
+                                        ? Icons.trending_up
+                                        : Icons.trending_down,
+                                    color: isPositive
+                                        ? Colors.greenAccent.shade700
+                                        : Colors.redAccent,
+                                    size: 30,
                                   ),
-                                )
-                              : Icon(
-                                  isPositive
-                                      ? Icons.trending_up
-                                      : Icons.trending_down,
-                                  color: useAdaptive
-                                      ? theme.colorScheme.onPrimaryContainer
-                                      : Colors.white,
-                                  size: 30,
+                          ),
+                          const SizedBox(width: 20),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Current Balance',
+                                  style: GoogleFonts.nunito(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey,
+                                  ),
                                 ),
-                        ),
-                        const SizedBox(width: 20),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Total Balance',
+                                Text(
+                                  '₹${total.abs().toStringAsFixed(2)}',
+                                  style: GoogleFonts.nunito(
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.w900,
+                                    color: isPositive
+                                        ? Colors.greenAccent.shade700
+                                        : Colors.redAccent,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (total != 0) ...[
+                        const SizedBox(height: 20),
+                        ZoomTapAnimation(
+                          onTap: () => _settleBalance(context, total, person),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primary,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: theme.colorScheme.primary
+                                      .withValues(alpha: 0.3),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: Text(
+                                'Settle Balance',
                                 style: GoogleFonts.nunito(
-                                  fontSize: 16,
-                                  color: theme.colorScheme.onSurface
-                                      .withOpacity(0.7),
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 15,
                                 ),
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '₹${total.toStringAsFixed(2)}',
-                                style: GoogleFonts.nunito(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
-                                  color: isPositive ? Colors.green : Colors.red,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: isPositive
-                                ? Colors.green.withOpacity(0.1)
-                                : Colors.red.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Text(
-                            isPositive ? 'Credit' : 'Debit',
-                            style: GoogleFonts.nunito(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: isPositive ? Colors.green : Colors.red,
                             ),
                           ),
                         ),
                       ],
-                    ),
+                    ],
                   ),
                 ),
               ),
@@ -356,8 +324,8 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                           horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: useAdaptive
-                            ? theme.colorScheme.primary.withOpacity(0.1)
-                            : theme.colorScheme.primary.withOpacity(0.1),
+                            ? theme.colorScheme.primary.withValues(alpha: 0.1)
+                            : theme.colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
@@ -389,9 +357,10 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                               height: 100,
                               decoration: BoxDecoration(
                                 color: useAdaptive
-                                    ? theme.colorScheme.primary.withOpacity(0.1)
+                                    ? theme.colorScheme.primary
+                                        .withValues(alpha: 0.1)
                                     : theme.colorScheme.primary
-                                        .withOpacity(0.1),
+                                        .withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(50),
                               ),
                               child: Icon(
@@ -413,11 +382,11 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Add your first transaction with ${widget.person.name}',
+                              'Add your first transaction with ${person.name}',
                               style: GoogleFonts.nunito(
                                 fontSize: 14,
                                 color: theme.colorScheme.onSurface
-                                    .withOpacity(0.7),
+                                    .withValues(alpha: 0.7),
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -461,12 +430,14 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                                                   ? [
                                                       theme.colorScheme.surface,
                                                       theme.colorScheme.surface
-                                                          .withOpacity(0.8),
+                                                          .withValues(
+                                                              alpha: 0.8),
                                                     ]
                                                   : [
                                                       theme.colorScheme.surface,
                                                       theme.colorScheme.surface
-                                                          .withOpacity(0.8),
+                                                          .withValues(
+                                                              alpha: 0.8),
                                                     ],
                                               begin: Alignment.topLeft,
                                               end: Alignment.bottomRight,
@@ -476,21 +447,22 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                                             border: Border.all(
                                               color: useAdaptive
                                                   ? theme.colorScheme.primary
-                                                      .withOpacity(0.3)
+                                                      .withValues(alpha: 0.3)
                                                   : isDark
                                                       ? Colors.teal.shade900
-                                                          .withOpacity(0.3)
-                                                      : Colors.teal
-                                                          .withOpacity(0.3),
+                                                          .withValues(
+                                                              alpha: 0.3)
+                                                      : Colors.teal.withValues(
+                                                          alpha: 0.3),
                                               width: 1,
                                             ),
                                             boxShadow: [
                                               BoxShadow(
                                                 color: useAdaptive
                                                     ? theme.colorScheme.shadow
-                                                        .withOpacity(0.1)
+                                                        .withValues(alpha: 0.1)
                                                     : theme.colorScheme.shadow
-                                                        .withOpacity(0.1),
+                                                        .withValues(alpha: 0.1),
                                                 blurRadius: 8,
                                                 offset: const Offset(0, 2),
                                               ),
@@ -512,11 +484,13 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                                                                   : Colors.red,
                                                               isPositiveTx
                                                                   ? Colors.green
-                                                                      .withOpacity(
-                                                                          0.8)
+                                                                      .withValues(
+                                                                          alpha:
+                                                                              0.8)
                                                                   : Colors.red
-                                                                      .withOpacity(
-                                                                          0.8),
+                                                                      .withValues(
+                                                                          alpha:
+                                                                              0.8),
                                                             ]
                                                           : [
                                                               isPositiveTx
@@ -524,11 +498,13 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                                                                   : Colors.red,
                                                               isPositiveTx
                                                                   ? Colors.green
-                                                                      .withOpacity(
-                                                                          0.8)
+                                                                      .withValues(
+                                                                          alpha:
+                                                                              0.8)
                                                                   : Colors.red
-                                                                      .withOpacity(
-                                                                          0.8),
+                                                                      .withValues(
+                                                                          alpha:
+                                                                              0.8),
                                                             ],
                                                     ),
                                                     borderRadius:
@@ -575,7 +551,8 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                                                           color: theme
                                                               .colorScheme
                                                               .onSurface
-                                                              .withOpacity(0.7),
+                                                              .withValues(
+                                                                  alpha: 0.7),
                                                         ),
                                                       ),
                                                     ],
@@ -605,11 +582,11 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                                                       decoration: BoxDecoration(
                                                         color: isPositiveTx
                                                             ? Colors.green
-                                                                .withOpacity(
-                                                                    0.1)
+                                                                .withValues(
+                                                                    alpha: 0.1)
                                                             : Colors.red
-                                                                .withOpacity(
-                                                                    0.1),
+                                                                .withValues(
+                                                                    alpha: 0.1),
                                                         borderRadius:
                                                             BorderRadius
                                                                 .circular(8),
@@ -652,7 +629,49 @@ class _PersonDetailPageState extends State<PersonDetailPage>
     );
   }
 
-  void _showDeleteConfirmation(BuildContext context) {
+  void _settleBalance(
+      BuildContext context, double currentTotal, Person currentPerson) {
+    if (currentTotal == 0) return;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Settle Balance',
+            style: GoogleFonts.nunito(fontWeight: FontWeight.bold)),
+        content: Text(
+          'This will add a transaction of ₹${currentTotal.abs().toStringAsFixed(2)} to bring the balance to zero. Continue?',
+          style: GoogleFonts.nunito(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancel', style: GoogleFonts.nunito()),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final tx = PersonTransaction(
+                personName: currentPerson.name,
+                amount: currentTotal.abs(),
+                isIncome: currentTotal <
+                    0, // If negative (gave/owe), we add income to settle
+                date: DateTime.now(),
+                note: 'Settled balance',
+              );
+              context
+                  .read<PersonViewModel>()
+                  .addPersonTransaction(tx, currentPerson.name);
+              Navigator.pop(ctx);
+              ErrorHandler.showSuccessSnackBar(context, 'Balance settled!');
+              HapticFeedback.mediumImpact();
+            },
+            child: Text('Settle', style: GoogleFonts.nunito()),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteConfirmation(BuildContext context, Person currentPerson) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -666,7 +685,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
           ),
         ),
         content: Text(
-          'Are you sure you want to delete ${widget.person.name}? This action cannot be undone.',
+          'Are you sure you want to delete ${currentPerson.name}? This action cannot be undone.',
           style: GoogleFonts.nunito(fontSize: 16),
         ),
         actions: [
@@ -680,7 +699,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
           ),
           ElevatedButton(
             onPressed: () {
-              context.read<PersonViewModel>().deletePerson(widget.person);
+              context.read<PersonViewModel>().deletePerson(currentPerson);
               HapticFeedback.lightImpact();
               Navigator.pop(context);
               Navigator.pop(context);
@@ -752,7 +771,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
     );
   }
 
-  void _showAddTxDialog(BuildContext context) {
+  void _showAddTxDialog(BuildContext context, Person currentPerson) {
     final amtCtrl = TextEditingController();
     final noteCtrl = TextEditingController();
     bool isIncome = true;
@@ -776,10 +795,10 @@ class _PersonDetailPageState extends State<PersonDetailPage>
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Add a transaction with ${widget.person.name}',
+                'Add a transaction with ${currentPerson.name}',
                 style: GoogleFonts.nunito(
                   fontSize: 14,
-                  color: theme.colorScheme.onSurface.withOpacity(0.7),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
               ),
               const SizedBox(height: 20),
@@ -822,7 +841,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                   color: theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                      color: theme.colorScheme.outline.withOpacity(0.5)),
+                      color: theme.colorScheme.outline.withValues(alpha: 0.5)),
                 ),
                 child: SwitchListTile(
                   title: Text(
@@ -834,7 +853,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                     isIncome ? 'You received money' : 'You gave money',
                     style: GoogleFonts.nunito(
                       fontSize: 14,
-                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
                   ),
                   value: isIncome,
@@ -863,8 +882,13 @@ class _PersonDetailPageState extends State<PersonDetailPage>
               onPressed: () {
                 HapticFeedback.lightImpact();
                 if (amtCtrl.text.isNotEmpty) {
+                  final personViewModel = context.read<PersonViewModel>();
+                  final currentPerson = personViewModel.people.firstWhere(
+                    (p) => p.key == widget.person.key,
+                    orElse: () => widget.person,
+                  );
                   final transaction = PersonTransaction(
-                    personName: widget.person.name,
+                    personName: currentPerson.name,
                     amount: double.parse(amtCtrl.text),
                     note: noteCtrl.text,
                     date: DateTime.now(),
@@ -873,7 +897,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
 
                   context
                       .read<PersonViewModel>()
-                      .addPersonTransaction(transaction, widget.person.name);
+                      .addPersonTransaction(transaction, currentPerson.name);
                   Navigator.pop(context);
                 }
               },
@@ -887,6 +911,162 @@ class _PersonDetailPageState extends State<PersonDetailPage>
               ),
               child: Text(
                 'Add Transaction',
+                style: GoogleFonts.nunito(
+                    fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showEditPersonDialog(BuildContext context, Person person) {
+    final controller = TextEditingController(text: person.name);
+    final theme = Theme.of(context);
+    String? selectedPhotoPath = person.photoPath;
+
+    showDialog(
+      context: context,
+      builder: (_) => StatefulBuilder(
+        builder: (context, setStateDialog) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(
+            'Edit Person',
+            style: GoogleFonts.nunito(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: theme.colorScheme.primary,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Photo Selection
+              GestureDetector(
+                onTap: () async {
+                  final ImagePicker picker = ImagePicker();
+                  final XFile? image = await picker.pickImage(
+                    source: ImageSource.gallery,
+                  );
+
+                  if (image != null) {
+                    setStateDialog(() {
+                      selectedPhotoPath = image.path;
+                    });
+                  }
+                },
+                child: Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: selectedPhotoPath != null
+                        ? theme.colorScheme.primary.withValues(alpha: 0.1)
+                        : theme.colorScheme.surface,
+                    borderRadius: BorderRadius.circular(50),
+                    border: Border.all(
+                      color: selectedPhotoPath != null
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.outline.withValues(alpha: 0.3),
+                      width: 2,
+                    ),
+                  ),
+                  child: selectedPhotoPath != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(48),
+                          child: (selectedPhotoPath!.startsWith('assets/') ||
+                                  selectedPhotoPath!.startsWith('http'))
+                              ? Image.asset(selectedPhotoPath!,
+                                  width: 96, height: 96, fit: BoxFit.cover)
+                              : Image.file(
+                                  File(selectedPhotoPath!),
+                                  width: 96,
+                                  height: 96,
+                                  fit: BoxFit.cover,
+                                ),
+                        )
+                      : Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.add_a_photo,
+                              size: 30,
+                              color: theme.colorScheme.primary,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Add Photo',
+                              style: GoogleFonts.nunito(
+                                fontSize: 12,
+                                color: theme.colorScheme.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Update the details for this person',
+                style: GoogleFonts.nunito(
+                  fontSize: 14,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: controller,
+                decoration: InputDecoration(
+                  labelText: 'Person Name',
+                  labelStyle: GoogleFonts.nunito(fontSize: 16),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  filled: true,
+                  fillColor: theme.colorScheme.surface,
+                  prefixIcon: Icon(Icons.person_outline,
+                      color: theme.colorScheme.primary),
+                ),
+                style: GoogleFonts.nunito(fontSize: 16),
+                autofocus: true,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.nunito(
+                    fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final name = controller.text.trim();
+                if (name.isNotEmpty) {
+                  HapticFeedback.lightImpact();
+                  final updatedPerson = Person(
+                    name: name,
+                    photoPath: selectedPhotoPath,
+                  );
+                  context
+                      .read<PersonViewModel>()
+                      .updatePerson(person, updatedPerson);
+                  Navigator.pop(context);
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: theme.colorScheme.primary,
+                foregroundColor: theme.colorScheme.onPrimary,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+              child: Text(
+                'Update',
                 style: GoogleFonts.nunito(
                     fontSize: 16, fontWeight: FontWeight.w600),
               ),

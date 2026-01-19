@@ -25,6 +25,21 @@ class Transaction extends HiveObject {
   @HiveField(6)
   List<String>? imagePaths;
 
+  @HiveField(7)
+  String? bankName;
+
+  @HiveField(8)
+  String? reference;
+
+  @HiveField(9)
+  double? balanceAfter;
+
+  @HiveField(10)
+  String? originalText;
+
+  @HiveField(11)
+  String? source;
+
   Transaction({
     required this.amount,
     required this.note,
@@ -33,5 +48,10 @@ class Transaction extends HiveObject {
     required this.date,
     required this.isIncome,
     this.imagePaths,
+    this.bankName,
+    this.reference,
+    this.balanceAfter,
+    this.originalText,
+    this.source,
   });
 }

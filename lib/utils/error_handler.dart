@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 class ErrorHandler {
   static void showErrorSnackBar(BuildContext context, String message,
       {Duration? duration}) {
+    ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -16,21 +17,24 @@ class ErrorHandler {
                 message,
                 style: GoogleFonts.nunito(
                   fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
                 ),
               ),
             ),
           ],
         ),
-        backgroundColor: Colors.red.shade600,
+        backgroundColor: Colors.redAccent,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        duration: duration ?? const Duration(seconds: 4),
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        duration: duration ?? const Duration(seconds: 3),
         action: SnackBarAction(
-          label: 'Dismiss',
+          label: 'Okay',
           textColor: Colors.white,
           onPressed: () {
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            ScaffoldMessenger.of(context).removeCurrentSnackBar();
           },
         ),
       ),
@@ -39,32 +43,37 @@ class ErrorHandler {
 
   static void showSuccessSnackBar(BuildContext context, String message,
       {Duration? duration}) {
+    ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
+            const Icon(Icons.check_circle_outline,
+                color: Colors.white, size: 20),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 message,
                 style: GoogleFonts.nunito(
                   fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
                 ),
               ),
             ),
           ],
         ),
-        backgroundColor: Colors.green.shade600,
+        backgroundColor: Colors.greenAccent.shade700,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         duration: duration ?? const Duration(seconds: 3),
         action: SnackBarAction(
-          label: 'Dismiss',
+          label: 'Okay',
           textColor: Colors.white,
           onPressed: () {
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            ScaffoldMessenger.of(context).removeCurrentSnackBar();
           },
         ),
       ),
@@ -73,32 +82,37 @@ class ErrorHandler {
 
   static void showWarningSnackBar(BuildContext context, String message,
       {Duration? duration}) {
+    ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.warning_amber_outlined, color: Colors.white, size: 20),
+            const Icon(Icons.warning_amber_outlined,
+                color: Colors.white, size: 20),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 message,
                 style: GoogleFonts.nunito(
                   fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
                 ),
               ),
             ),
           ],
         ),
-        backgroundColor: Colors.orange.shade600,
+        backgroundColor: Colors.orange.shade800,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        duration: duration ?? const Duration(seconds: 4),
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        duration: duration ?? const Duration(seconds: 3),
         action: SnackBarAction(
-          label: 'Dismiss',
+          label: 'Okay',
           textColor: Colors.white,
           onPressed: () {
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            ScaffoldMessenger.of(context).removeCurrentSnackBar();
           },
         ),
       ),
@@ -107,6 +121,7 @@ class ErrorHandler {
 
   static void showInfoSnackBar(BuildContext context, String message,
       {Duration? duration}) {
+    ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -118,21 +133,24 @@ class ErrorHandler {
                 message,
                 style: GoogleFonts.nunito(
                   fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
                 ),
               ),
             ),
           ],
         ),
-        backgroundColor: Colors.blue.shade600,
+        backgroundColor: Colors.blue.shade800,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         duration: duration ?? const Duration(seconds: 3),
         action: SnackBarAction(
-          label: 'Dismiss',
+          label: 'Okay',
           textColor: Colors.white,
           onPressed: () {
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            ScaffoldMessenger.of(context).removeCurrentSnackBar();
           },
         ),
       ),

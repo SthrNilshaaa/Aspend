@@ -109,8 +109,8 @@ class _RootNavigationState extends State<RootNavigation>
                 border: Border.all(
                     width: 1,
                     color: isDark
-                        ? Colors.white.withOpacity(0.1)
-                        : Colors.black.withOpacity(0.1)),
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : Colors.black.withValues(alpha: 0.1)),
                 borderRadius: BorderRadius.circular(30),
               ),
               child: ClipRRect(
@@ -119,7 +119,7 @@ class _RootNavigationState extends State<RootNavigation>
                   filter: ImageFilter.blur(sigmaY: 8, sigmaX: 8),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: theme.scaffoldBackgroundColor.withOpacity(0.1),
+                      color: theme.scaffoldBackgroundColor.withValues(alpha: 0.1),
                     ),
                   ),
                 ),
@@ -164,7 +164,7 @@ class _RootNavigationState extends State<RootNavigation>
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             color: isSelected
-                ? theme.colorScheme.primary.withOpacity(0.2)
+                ? theme.colorScheme.primary.withValues(alpha: 0.2)
                 : Colors.transparent,
             border: isSelected
                 ? Border.all(
@@ -175,7 +175,7 @@ class _RootNavigationState extends State<RootNavigation>
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: theme.colorScheme.primary.withOpacity(0.2),
+                      color: theme.colorScheme.primary.withValues(alpha: 0.2),
                       blurRadius: 8,
                       offset: const Offset(0, 5),
                     ),

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui';
-import '../main.dart';
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import '../view_models/theme_view_model.dart';
@@ -22,7 +21,6 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   int _currentPage = 0;
-  final String _selectedTheme = 'Default';
 
   final List<IntroSlide> _slides = [
     IntroSlide(
@@ -216,7 +214,7 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        backgroundColor: theme.dialogBackgroundColor,
+        backgroundColor: theme.colorScheme.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
@@ -253,9 +251,9 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.amber.withOpacity(0.1),
+                color: Colors.amber.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
               ),
               child: Text(
                 '💡 You can enable this later in Settings if you skip now.',
@@ -353,7 +351,6 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final useAdaptive = context.watch<ThemeViewModel>().useAdaptiveColor;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -414,7 +411,8 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
                         decoration: BoxDecoration(
                           color: _currentPage == index
                               ? _slides[index].color
-                              : theme.colorScheme.outline.withOpacity(0.3),
+                              : theme.colorScheme.outline
+                                  .withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
@@ -496,7 +494,6 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
   Widget _buildSlide(IntroSlide slide, ThemeData theme, bool isDark) {
     final useAdaptive = context.watch<ThemeViewModel>().useAdaptiveColor;
     final primary = theme.colorScheme.primary;
-    final primaryContainer = theme.colorScheme.primaryContainer;
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -508,13 +505,13 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
             height: 120,
             decoration: BoxDecoration(
               color: useAdaptive
-                  ? primary.withOpacity(0.1)
-                  : slide.color.withOpacity(0.1),
+                  ? primary.withValues(alpha: 0.1)
+                  : slide.color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(60),
               border: Border.all(
                 color: useAdaptive
-                    ? primary.withOpacity(0.3)
-                    : slide.color.withOpacity(0.3),
+                    ? primary.withValues(alpha: 0.3)
+                    : slide.color.withValues(alpha: 0.3),
                 width: 2,
               ),
             ),
@@ -525,8 +522,8 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
                 child: Container(
                   decoration: BoxDecoration(
                     color: useAdaptive
-                        ? primary.withOpacity(0.1)
-                        : slide.color.withOpacity(0.1),
+                        ? primary.withValues(alpha: 0.1)
+                        : slide.color.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(58),
                   ),
                   child: Icon(
@@ -572,7 +569,7 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
             slide.description,
             style: GoogleFonts.nunito(
               fontSize: 16,
-              color: theme.colorScheme.onSurface.withOpacity(0.8),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
               height: 1.5,
             ),
             textAlign: TextAlign.center,

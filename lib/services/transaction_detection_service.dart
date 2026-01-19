@@ -1,71 +1,16 @@
+import 'dart:async';
 import 'package:hive/hive.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../models/transaction.dart';
 import 'native_bridge.dart';
+import '../utils/transaction_parser.dart';
+import '../models/detection_history.dart';
 
 class TransactionDetectionService {
   static const String _settingsBoxName = 'settings';
   static const String _autoDetectionKey = 'autoDetectionEnabled';
-
-  // Transaction patterns for different banks and services
-  static final List<RegExp> _transactionPatterns = [
-    // Pattern for "Rs. 100 credited/debited"
-    RegExp(
-        r'(?:Rs\.?|INR|₹)\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)\s*(?:credited|debited|paid|sent|received|spent|withdrawal|withdrawn)',
-        caseSensitive: false),
-    // Pattern for "credited/debited ... Rs. 100"
-    RegExp(
-        r'(?:credited|debited|paid|sent|received|spent|withdrawal|withdrawn).*?(?:Rs\.?|INR|₹)\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)',
-        caseSensitive: false),
-    // Pattern for UPI transactions
-    RegExp(
-        r'spent\s*(?:Rs\.?|INR|₹)\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)\s*on\s*UPI',
-        caseSensitive: false),
-    // Simple amount pattern as fallback
-    RegExp(r'(?:Rs\.?|INR|₹)\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)',
-        caseSensitive: false),
-  ];
-
-  // Bank keywords for categorization
-  static final Map<String, String> _bankKeywords = {
-    'hdfc': 'HDFC Bank',
-    'sbi': 'State Bank of India',
-    'icici': 'ICICI Bank',
-    'axis': 'Axis Bank',
-    'kotak': 'Kotak Bank',
-    'yes': 'Yes Bank',
-    'paytm': 'Paytm',
-    'phonepe': 'PhonePe',
-    'googlepay': 'Google Pay',
-    'gpay': 'Google Pay',
-    'amazonpay': 'Amazon Pay',
-    'bhim': 'BHIM UPI',
-    'pnb': 'Punjab National Bank',
-    'bob': 'Bank of Baroda',
-    'canara': 'Canara Bank',
-    'idbi': 'IDBI Bank',
-    'indusind': 'IndusInd Bank',
-    'federal': 'Federal Bank',
-    'rbl': 'RBL Bank',
-    'hsbc': 'HSBC Bank',
-    'citi': 'Citi Bank',
-    'standard chartered': 'Standard Chartered',
-    'cred': 'CRED',
-    'zomato': 'Zomato',
-    'swiggy': 'Swiggy',
-    'uber': 'Uber',
-    'ola': 'Ola',
-    'amazon': 'Amazon',
-    'flipkart': 'Flipkart',
-    'slice': 'Slice',
-    'uni': 'Uni Card',
-    'onecard': 'OneCard',
-    'mobikwik': 'MobiKwik',
-    'freecharge': 'Freecharge',
-    'jio': 'JioPay',
-    'airtel': 'Airtel Payments Bank',
-  };
+  static Timer? _recheckTimer;
 
   static Future<void> initialize() async {
     // Check if auto-detection is enabled
@@ -74,6 +19,32 @@ class TransactionDetectionService {
 
     if (isEnabled) {
       await startMonitoring();
+
+      // Process any notifications that were queued while app was closed
+      await _processPendingNotifications();
+    }
+  }
+
+  static Future<void> _processPendingNotifications() async {
+    final pending = await NativeBridge.getPendingNotifications();
+    if (pending.isEmpty) return;
+
+    print(
+        'Processing ${pending.length} pending notifications from offline queue');
+    for (final entry in pending) {
+      final parts = entry.split('|');
+      if (parts.length < 3) continue;
+
+      if (parts[0] == 'SMS') {
+        final body = parts[1];
+        final sender = parts[2];
+        await processSmsMessage(body, sender: sender);
+      } else {
+        final title = parts[0];
+        final text = parts[1];
+        final packageName = parts[2];
+        await processNotification(title, text, packageName: packageName);
+      }
     }
   }
 
@@ -88,6 +59,12 @@ class TransactionDetectionService {
       // Start keep alive service
       await NativeBridge.startKeepAliveService();
 
+      // Start periodic recheck
+      _startRecheckTimer();
+
+      // Run first recheck immediately
+      recheckSkippedTransactions();
+
       print('Transaction detection monitoring started successfully');
     } catch (e) {
       print('Error starting transaction detection: $e');
@@ -96,6 +73,7 @@ class TransactionDetectionService {
 
   static Future<void> stopMonitoring() async {
     try {
+      _recheckTimer?.cancel();
       await NativeBridge.stopKeepAliveService();
       print('Transaction detection monitoring stopped');
     } catch (e) {
@@ -124,21 +102,43 @@ class TransactionDetectionService {
 
   static Future<void> processNotification(String title, String body,
       {String? packageName}) async {
+    if (!(await isEnabled())) {
+      print('Auto-detection disabled, skipping notification processing.');
+      return;
+    }
     try {
       // Skip notifications from our own app
       if (packageName == 'org.x.aspend.ns') return;
 
       final fullText = '$title $body';
-      final detectedTransaction = _extractTransactionFromText(fullText);
+      final detectedTransaction =
+          _extractTransactionFromText(fullText, packageName: packageName);
+
       if (detectedTransaction != null) {
         await _addDetectedTransaction(detectedTransaction, 'Notification');
+        await _recordDetection(
+          text: fullText,
+          status: 'detected',
+          packageName: packageName,
+        );
+      } else {
+        await _recordDetection(
+          text: fullText,
+          status: 'skipped',
+          reason: 'Pattern not matched or filtered out',
+          packageName: packageName,
+        );
       }
     } catch (e) {
       print('Error processing notification: $e');
     }
   }
 
-  static Future<void> processSmsMessage(String body) async {
+  static Future<void> processSmsMessage(String body, {String? sender}) async {
+    if (!(await isEnabled())) {
+      print('Auto-detection disabled, skipping SMS processing.');
+      return;
+    }
     try {
       // Ignore OTP messages
       final lowerBody = body.toLowerCase();
@@ -147,79 +147,30 @@ class TransactionDetectionService {
         return;
       }
 
-      final detectedTransaction = _extractTransactionFromText(body);
+      final detectedTransaction =
+          _extractTransactionFromText(body, packageName: sender);
       if (detectedTransaction != null) {
         await _addDetectedTransaction(detectedTransaction, 'SMS');
+        await _recordDetection(
+          text: body,
+          status: 'detected',
+        );
+      } else {
+        await _recordDetection(
+          text: body,
+          status: 'skipped',
+          reason: 'Pattern not matched or filtered out',
+        );
       }
     } catch (e) {
       print('Error processing SMS message: $e');
     }
   }
 
-  static Transaction? _extractTransactionFromText(String text) {
-    try {
-      final lowerText = text.toLowerCase();
-
-      // Look for amount
-      for (final pattern in _transactionPatterns) {
-        final match = pattern.firstMatch(text);
-        if (match != null) {
-          final amountStr = match.group(1)?.replaceAll(',', '');
-          if (amountStr != null) {
-            final amount = double.tryParse(amountStr);
-            if (amount != null && amount > 0) {
-              // Determine if it's income or expense based on keywords
-              bool isIncome = lowerText.contains('credited') ||
-                  lowerText.contains('received') ||
-                  lowerText.contains('depository') ||
-                  lowerText.contains('refund');
-
-              // If it contains both 'debited' and 'credited', we need to be careful
-              // Usually the last one is the actual action or we look for "to" or "from"
-              if (lowerText.contains('debited') ||
-                  lowerText.contains('paid') ||
-                  lowerText.contains('sent') ||
-                  lowerText.contains('spent')) {
-                isIncome = false;
-              }
-
-              // Extract category
-              String category = 'Bank Transaction';
-              for (final entry in _bankKeywords.entries) {
-                if (lowerText.contains(entry.key)) {
-                  category = entry.value;
-                  break;
-                }
-              }
-
-              // Extract account info
-              String account = 'Auto Detected';
-              if (lowerText.contains('upi')) {
-                account = 'UPI';
-              } else if (lowerText.contains('atm')) {
-                account = 'ATM';
-              } else if (lowerText.contains('card')) {
-                account = 'Card';
-              } else if (lowerText.contains('bank')) {
-                account = 'Bank';
-              }
-
-              return Transaction(
-                amount: amount,
-                note: 'Auto-detected: ${isIncome ? "In" : "Out"}',
-                category: category,
-                account: account,
-                date: DateTime.now(),
-                isIncome: isIncome,
-              );
-            }
-          }
-        }
-      }
-    } catch (e) {
-      print('Error extracting transaction from text: $e');
-    }
-    return null;
+  static Transaction? _extractTransactionFromText(String text,
+      {String? packageName}) {
+    final parsed = TransactionParser.parse(text, packageName: packageName);
+    return parsed?.toTransaction();
   }
 
   static Future<void> _addDetectedTransaction(
@@ -242,6 +193,7 @@ class TransactionDetectionService {
       }
 
       // Add the transaction
+      transaction.source = source;
       await transactionBox.add(transaction);
 
       // Update balance - fixed key to currentBalance for consistency
@@ -254,6 +206,9 @@ class TransactionDetectionService {
 
       print(
           'Auto-detected transaction added: ${transaction.amount} from $source');
+
+      // Notify UI
+      NativeBridge.notifyTransactionDetected();
 
       // Show notification to user
       await _showTransactionNotification(transaction, source);
@@ -284,6 +239,75 @@ class TransactionDetectionService {
       await stopMonitoring();
     }
   }
+
+  static Future<void> _recordDetection({
+    required String text,
+    required String status,
+    String? reason,
+    String? packageName,
+  }) async {
+    try {
+      final historyBox =
+          await Hive.openBox<DetectionHistory>('detection_history');
+      final entry = DetectionHistory(
+        text: text,
+        timestamp: DateTime.now(),
+        status: status,
+        reason: reason,
+        packageName: packageName,
+      );
+      await historyBox.add(entry);
+    } catch (e) {
+      print('Error recording detection history: $e');
+    }
+  }
+
+  static void _startRecheckTimer() {
+    _recheckTimer?.cancel();
+    // Recheck every hour
+    _recheckTimer = Timer.periodic(const Duration(hours: 1), (timer) {
+      recheckSkippedTransactions();
+    });
+  }
+
+  static Future<void> recheckSkippedTransactions() async {
+    try {
+      final historyBox =
+          await Hive.openBox<DetectionHistory>('detection_history');
+      final skipped =
+          historyBox.values.where((e) => e.status == 'skipped').toList();
+
+      intCount = 0;
+      for (final entry in skipped) {
+        final tx = _extractTransactionFromText(entry.text,
+            packageName: entry.packageName);
+        if (tx != null) {
+          await _addDetectedTransaction(tx, 'Recheck History');
+
+          // Update status to detected
+          final index = historyBox.values.toList().indexOf(entry);
+          if (index != -1) {
+            final updatedEntry = DetectionHistory(
+              text: entry.text,
+              timestamp: entry.timestamp,
+              status: 'detected',
+              reason: 'Successful recheck',
+              packageName: entry.packageName,
+            );
+            await historyBox.putAt(index, updatedEntry);
+            intCount++;
+          }
+        }
+      }
+      if (intCount > 0) {
+        print('Successfully re-detected $intCount transactions from history');
+      }
+    } catch (e) {
+      print('Error rechecking skipped transactions: $e');
+    }
+  }
+
+  static int intCount = 0;
 
   // Method to manually process recent notifications
   static Future<void> processRecentSms() async {

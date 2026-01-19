@@ -40,13 +40,26 @@ class SmsReceiver : BroadcastReceiver() {
                                 )
                             )
                         } else {
-                            Log.w(TAG, "MethodChannel not initialized. SMS skipped.")
+                            Log.w(TAG, "MethodChannel not initialized. Queueing SMS.")
+                            queueSms(context, sender, body)
                         }
                     }
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error processing SMS: ${e.message}")
             }
+        }
+    }
+
+    private fun queueSms(context: Context, sender: String, body: String) {
+        try {
+            val prefs = context.getSharedPreferences("pending_notifications", Context.MODE_PRIVATE)
+            val queue = prefs.getStringSet("queue", mutableSetOf()) ?: mutableSetOf()
+            val entry = "SMS|$body|$sender|${System.currentTimeMillis()}"
+            queue.add(entry)
+            prefs.edit().putStringSet("queue", queue).apply()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error queuing SMS: ${e.message}")
         }
     }
 } 

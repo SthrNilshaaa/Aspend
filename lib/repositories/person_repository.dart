@@ -21,6 +21,10 @@ class PersonRepository {
     await _peopleBox.delete(key);
   }
 
+  Future<void> updatePerson(dynamic key, Person person) async {
+    await _peopleBox.put(key, person);
+  }
+
   List<PersonTransaction> getAllPersonTransactions() {
     return _txBox.values.toList();
   }
@@ -35,6 +39,11 @@ class PersonRepository {
 
   Future<void> deletePersonTransaction(dynamic key) async {
     await _txBox.delete(key);
+  }
+
+  Future<void> updatePersonTransaction(
+      dynamic key, PersonTransaction tx) async {
+    await _txBox.put(key, tx);
   }
 
   Future<void> clearAllPeopleData() async {

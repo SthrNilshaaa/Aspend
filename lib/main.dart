@@ -10,6 +10,7 @@ import 'models/person.dart';
 import 'models/person_transaction.dart';
 import 'models/theme.dart';
 import 'models/transaction.dart';
+import 'models/detection_history.dart';
 import 'repositories/transaction_repository.dart';
 import 'repositories/person_repository.dart';
 import 'repositories/settings_repository.dart';
@@ -28,7 +29,9 @@ void main() async {
   Hive.registerAdapter(AppThemeAdapter());
   Hive.registerAdapter(PersonAdapter());
   Hive.registerAdapter(PersonTransactionAdapter());
+  Hive.registerAdapter(DetectionHistoryAdapter());
 
+  print('Main: Box opening started');
   try {
     await Future.wait([
       if (!Hive.isBoxOpen('transactions'))
@@ -38,9 +41,11 @@ void main() async {
       if (!Hive.isBoxOpen('people')) Hive.openBox<Person>('people'),
       if (!Hive.isBoxOpen('personTransactions'))
         Hive.openBox<PersonTransaction>('personTransactions'),
+      if (!Hive.isBoxOpen('detection_history'))
+        Hive.openBox<DetectionHistory>('detection_history'),
     ]);
   } catch (e) {
-    debugPrint('Error initializing Hive boxes: $e');
+    print('Main: Box opening error: $e');
     runApp(MaterialApp(
       home: Scaffold(
         body: Center(
@@ -54,12 +59,18 @@ void main() async {
     ));
     return;
   }
+  print('Main: Box opening finished');
 
   await FlutterDisplayMode.setHighRefreshRate();
+  print('Main: Refresh rate set');
 
   try {
+    print('Main: NativeBridge init starting');
     await NativeBridge.initialize();
+    print('Main: NativeBridge init finished');
+    print('Main: TransactionDetectionService init starting');
     await TransactionDetectionService.initialize();
+    print('Main: TransactionDetectionService init finished');
   } catch (e) {
     debugPrint('Error initializing transaction detection services: $e');
   }
@@ -69,6 +80,7 @@ void main() async {
   final transactionRepo = TransactionRepository();
   final personRepo = PersonRepository();
   final settingsRepo = SettingsRepository();
+  print('Main: Repositories initialized');
 
   runApp(
     MultiProvider(
@@ -137,7 +149,7 @@ class MyApp extends StatelessWidget {
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: scheme.outline.withOpacity(0.5)),
+                borderSide: BorderSide(color: scheme.outline.withValues(alpha: 0.5)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),

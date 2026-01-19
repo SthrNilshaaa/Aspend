@@ -24,6 +24,7 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:local_auth/local_auth.dart';
 import '../utils/responsive_utils.dart';
 import '../utils/error_handler.dart';
+import 'detection_history_page.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -151,18 +152,20 @@ class _SettingsPageState extends State<SettingsPage> {
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                   colors: [
-                                    theme.colorScheme.primary.withOpacity(0.8),
+                                    theme.colorScheme.primary
+                                        .withValues(alpha: 0.8),
                                     theme.colorScheme.primaryContainer
-                                        .withOpacity(0.8)
+                                        .withValues(alpha: 0.8)
                                   ],
                                 )
                               : LinearGradient(
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                   colors: [
-                                    theme.colorScheme.primary.withOpacity(0.8),
+                                    theme.colorScheme.primary
+                                        .withValues(alpha: 0.8),
                                     theme.colorScheme.primaryContainer
-                                        .withOpacity(0.8)
+                                        .withValues(alpha: 0.8)
                                   ],
                                 ),
                     ),
@@ -208,6 +211,10 @@ class _SettingsPageState extends State<SettingsPage> {
                   _buildSectionHeader('Data Management', Icons.storage),
                   const SizedBox(height: 10),
                   _buildDataManagementSection(context, isDark),
+                  const SizedBox(height: 18),
+                  _buildSectionHeader('Budgeting', Icons.wallet_membership),
+                  const SizedBox(height: 10),
+                  _buildBudgetSection(context),
                   const SizedBox(height: 18),
                   // App Info Section
                   _buildSectionHeader('App Information', Icons.info),
@@ -469,50 +476,68 @@ class _SettingsPageState extends State<SettingsPage> {
             future: TransactionDetectionService.isEnabled(),
             builder: (context, snapshot) {
               final isEnabled = snapshot.data ?? false;
-              return Switch(
-                value: isEnabled,
-                onChanged: (value) async {
-                  HapticFeedback.lightImpact();
-                  try {
-                    if (value) {
-                      // Show info dialog first
-                      await _showAutoDetectionInfoDialog(context);
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (isEnabled)
+                    Container(
+                      margin: const EdgeInsets.only(right: 8),
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: Colors.green,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  Switch(
+                    value: isEnabled,
+                    onChanged: (value) async {
+                      HapticFeedback.lightImpact();
+                      try {
+                        if (value) {
+                          final hasPermission =
+                              await NativeBridge.checkNotificationPermission();
 
-                      // Request notification permission
-                      final notificationPermission =
-                          await NativeBridge.requestNotificationPermission();
-                      if (!notificationPermission) {
-                        _showSnackBar(context,
-                            'Notification permission is required for auto-detection');
-                        return;
+                          if (!hasPermission) {
+                            final confirmed =
+                                await _showAutoDetectionInfoDialog(context);
+                            if (confirmed != true) {
+                              setState(() {});
+                              return;
+                            }
+                            await NativeBridge.requestNotificationPermission();
+                          }
+
+                          final notificationAccess =
+                              await NativeBridge.checkNotificationPermission();
+                          if (!notificationAccess && mounted) {
+                            ErrorHandler.showWarningSnackBar(context,
+                                'Enabled: Please make sure to allow Aspend in the notification access settings.');
+                          }
+
+                          await NativeBridge.requestBatteryOptimization();
+                        }
+
+                        await TransactionDetectionService.setEnabled(value);
+
+                        if (mounted) {
+                          ErrorHandler.showSuccessSnackBar(
+                              context,
+                              value
+                                  ? 'Auto-detection enabled!'
+                                  : 'Auto-detection disabled!');
+                        }
+
+                        setState(() {});
+                      } catch (e) {
+                        if (mounted) {
+                          ErrorHandler.handleError(context, e,
+                              customMessage: 'Failed to update auto-detection');
+                        }
                       }
-
-                      // Check if notification access is enabled
-                      final notificationAccess =
-                          await NativeBridge.checkNotificationPermission();
-                      if (!notificationAccess) {
-                        _showSnackBar(context,
-                            'Please enable notification access in system settings');
-                        return;
-                      }
-
-                      // Request battery optimization exemption
-                      await NativeBridge.requestBatteryOptimization();
-                    }
-
-                    await TransactionDetectionService.setEnabled(value);
-                    _showSnackBar(
-                        context,
-                        value
-                            ? 'Auto-detection enabled!'
-                            : 'Auto-detection disabled!');
-
-                    // Refresh the UI
-                    setState(() {});
-                  } catch (e) {
-                    _showSnackBar(context, 'Error: $e');
-                  }
-                },
+                    },
+                  ),
+                ],
               );
             },
           ),
@@ -525,34 +550,117 @@ class _SettingsPageState extends State<SettingsPage> {
             HapticFeedback.lightImpact();
             try {
               await TransactionDetectionService.processRecentSms();
-              _showSnackBar(context, 'Recent data processed successfully!');
+              if (mounted) {
+                ErrorHandler.showSuccessSnackBar(
+                    context, 'Recent data processed successfully!');
+              }
             } catch (e) {
-              _showSnackBar(context, 'Error processing data: $e');
+              if (mounted) {
+                ErrorHandler.handleError(context, e,
+                    customMessage: 'Error processing data');
+              }
             }
+          },
+        ),
+        _buildSettingsTile(
+          icon: Icons.bug_report_outlined,
+          title: 'Test Detection Logic',
+          subtitle: 'Simulate a notification to verify parsing',
+          onTap: () => _showTestDetectionDialog(context),
+        ),
+        _buildSettingsTile(
+          icon: Icons.manage_history,
+          title: 'Show Detection History',
+          subtitle: 'View detailed logs of detected transactions',
+          onTap: () {
+            HapticFeedback.lightImpact();
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const DetectionHistoryPage()),
+            );
           },
         ),
       ],
     );
   }
 
-  Future<void> _showAutoDetectionInfoDialog(BuildContext context) async {
-    final theme = Theme.of(context);
-    final isDark = context.watch<ThemeViewModel>().isDarkMode;
+  void _showTestDetectionDialog(BuildContext context) {
+    final TextEditingController controller = TextEditingController(
+      text:
+          'Alert: Your account XX1234 has been debited by Rs. 500.00 for a purchase at AMAZON. Ref: 12345678.',
+    );
 
-    return showDialog(
+    showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: theme.dialogBackgroundColor,
+        title: const Text('Simulate Notification'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Enter a sample notification message to see how our AI parser handles it.',
+              style: TextStyle(fontSize: 13),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: controller,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                hintText: 'Paste notification text here...',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final text = controller.text;
+              Navigator.pop(context);
+
+              // Directly call the service logic
+              await TransactionDetectionService.processNotification(
+                  'Test', text,
+                  packageName: 'com.test.bank');
+
+              if (mounted) {
+                ErrorHandler.showInfoSnackBar(
+                    context, 'Test processed. Check History for results.');
+              }
+            },
+            child: const Text('Run Test'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<bool?> _showAutoDetectionInfoDialog(BuildContext context) async {
+    final theme = Theme.of(context);
+    final isDark = context.read<ThemeViewModel>().isDarkMode;
+
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: theme.colorScheme.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
             const Icon(Icons.auto_awesome, color: Colors.blue, size: 24),
             const SizedBox(width: 8),
-            Text(
-              'Auto Transaction Detection',
-              style: GoogleFonts.nunito(
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.black,
+            Flexible(
+              child: Text(
+                'Auto Transaction \n Detection',
+                style: GoogleFonts.nunito(
+                  fontWeight: FontWeight.bold,
+                 // fontSize: 20,
+                  color: isDark ? Colors.white : Colors.black,
+                ),
               ),
             ),
           ],
@@ -590,9 +698,9 @@ class _SettingsPageState extends State<SettingsPage> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
+                color: Colors.blue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
               ),
               child: Text(
                 "💡 Tip: The app will only process messages that contain transaction amounts and keywords like 'credited', 'debited', 'paid', etc.",
@@ -612,7 +720,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             onPressed: () {
               HapticFeedback.lightImpact();
-              Navigator.pop(context);
+              Navigator.pop(context, false);
             },
           ),
           ElevatedButton(
@@ -622,7 +730,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             onPressed: () {
               HapticFeedback.lightImpact();
-              Navigator.pop(context);
+              Navigator.pop(context, true);
             },
             child: const Text("Enable"),
           ),
@@ -818,6 +926,54 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  Widget _buildBudgetSection(BuildContext context) {
+    final themeViewModel = context.watch<ThemeViewModel>();
+    final budget = themeViewModel.monthlyBudget;
+    return _buildSettingsTile(
+      icon: Icons.track_changes,
+      title: 'Monthly Budget',
+      subtitle: budget > 0
+          ? 'Monthly limit: ₹$budget'
+          : 'Set a monthly spending limit',
+      onTap: () => _showBudgetDialog(context),
+    );
+  }
+
+  void _showBudgetDialog(BuildContext context) {
+    final viewModel = context.read<ThemeViewModel>();
+    final controller =
+        TextEditingController(text: viewModel.monthlyBudget.toString());
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Set Monthly Budget'),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(
+            labelText: 'Budget Amount',
+            prefixText: '₹ ',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final val = double.tryParse(controller.text) ?? 0.0;
+              viewModel.setMonthlyBudget(val);
+              Navigator.pop(context);
+              ErrorHandler.showSuccessSnackBar(context, 'Budget updated!');
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSettingsTile({
     required IconData icon,
     required String title,
@@ -842,13 +998,13 @@ class _SettingsPageState extends State<SettingsPage> {
                 mobile: 40, tablet: 48, desktop: 56),
             decoration: BoxDecoration(
               color: isDestructive
-                  ? Colors.red.withOpacity(0.1)
-                  : Colors.teal.withOpacity(0.1),
+                  ? Colors.red.withValues(alpha: 0.1)
+                  : Colors.teal.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: isDestructive
-                    ? Colors.red.withOpacity(0.3)
-                    : Colors.teal.withOpacity(0.3),
+                    ? Colors.red.withValues(alpha: 0.3)
+                    : Colors.teal.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
@@ -905,7 +1061,7 @@ class _SettingsPageState extends State<SettingsPage> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: theme.dialogBackgroundColor,
+        backgroundColor: theme.colorScheme.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [
@@ -975,7 +1131,7 @@ class _SettingsPageState extends State<SettingsPage> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: theme.dialogBackgroundColor,
+        backgroundColor: theme.colorScheme.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
           children: [

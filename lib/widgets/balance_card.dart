@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 
 import '../view_models/theme_view_model.dart';
 import '../view_models/transaction_view_model.dart';
-import '../utils/responsive_utils.dart';
 
 class BalanceCard extends StatefulWidget {
   final double balance;
@@ -54,13 +54,9 @@ class _BalanceCardState extends State<BalanceCard>
 
   @override
   Widget build(BuildContext context) {
-    final isPositive = widget.balance >= 0;
     final theme = Theme.of(context);
-    final themeViewModel = context.watch<ThemeViewModel>();
-    final isDark = themeViewModel.isDarkMode;
-    final useAdaptive = themeViewModel.useAdaptiveColor;
+    final isDark = context.watch<ThemeViewModel>().isDarkMode;
 
-    // Get transaction statistics
     final transactionViewModel = context.watch<TransactionViewModel>();
     final totalIncome = transactionViewModel.totalIncome;
     final totalExpenses = transactionViewModel.totalSpend;
@@ -79,145 +75,136 @@ class _BalanceCardState extends State<BalanceCard>
         child: FadeTransition(
           opacity: _fadeAnimation,
           child: Container(
-            margin: ResponsiveUtils.getResponsiveEdgeInsets(context,
-                horizontal: 8, vertical: 8),
+            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(32),
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  theme.colorScheme.primaryContainer,
-                  theme.colorScheme.primaryContainer
-                ],
+                colors: isDark
+                    ? [
+                        theme.colorScheme.primary.withValues(alpha: 0.8),
+                        theme.colorScheme.secondary.withValues(alpha: 0.6)
+                      ]
+                    : [
+                        theme.colorScheme.primary,
+                        theme.colorScheme.primary.withValues(alpha: 0.8)
+                      ],
               ),
-              borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
                 ),
               ],
             ),
-            child: Padding(
-              padding: ResponsiveUtils.getResponsiveEdgeInsets(context,
-                  horizontal: 16, vertical: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(32),
+              child: Stack(
                 children: [
-                  // Header
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Current Balance',
-                        style: GoogleFonts.nunito(
-                          fontSize: ResponsiveUtils.getResponsiveFontSize(
-                              context,
-                              mobile: 16,
-                              tablet: 18,
-                              desktop: 20),
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? Colors.white : Colors.black87,
-                        ),
+                  Positioned(
+                    right: -50,
+                    top: -50,
+                    child: Container(
+                      width: 150,
+                      height: 150,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
                       ),
-                      Icon(
-                        Icons.account_balance_wallet,
-                        color: isDark ? Colors.white70 : Colors.black54,
-                        size: ResponsiveUtils.getResponsiveIconSize(context,
-                            mobile: 20, tablet: 24, desktop: 28),
-                      ),
-                    ],
+                    ),
                   ),
-                  SizedBox(
-                      height: ResponsiveUtils.getResponsiveSpacing(context,
-                          mobile: 10, tablet: 12, desktop: 16)),
-
-                  // Balance Amount
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          '₹${widget.balance.toStringAsFixed(2)}',
-                          style: GoogleFonts.nunito(
-                            fontSize: ResponsiveUtils.getResponsiveFontSize(
-                                context,
-                                mobile: 28,
-                                tablet: 32,
-                                desktop: 36),
-                            fontWeight: FontWeight.bold,
-                            color: isPositive
-                                ? Colors.green.shade700
-                                : Colors.red.shade700,
-                          ),
-                        ),
+                  Positioned(
+                    left: -20,
+                    bottom: -20,
+                    child: Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.05),
+                        shape: BoxShape.circle,
                       ),
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: ResponsiveUtils.getResponsiveSpacing(
-                              context,
-                              mobile: 10,
-                              tablet: 12,
-                              desktop: 14),
-                          vertical: ResponsiveUtils.getResponsiveSpacing(
-                              context,
-                              mobile: 4,
-                              tablet: 6,
-                              desktop: 8),
-                        ),
-                        decoration: BoxDecoration(
-                          color: isPositive
-                              ? Colors.green.withOpacity(0.2)
-                              : Colors.red.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(
-                          isPositive ? 'Positive' : 'Negative',
-                          style: TextStyle(
-                            fontSize: ResponsiveUtils.getResponsiveFontSize(
-                                context,
-                                mobile: 10,
-                                tablet: 12,
-                                desktop: 14),
-                            fontWeight: FontWeight.w600,
-                            color: isPositive
-                                ? Colors.green.shade700
-                                : Colors.red.shade700,
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                  const SizedBox(height: 10),
-
-                  // Quick Stats
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildStatItem(
-                          'Income',
-                          totalIncome,
-                          Colors.green,
-                          Icons.trending_up,
-                          isDark,
+                  Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Total Balance',
+                                  style: GoogleFonts.nunito(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white.withValues(alpha: 0.8),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '₹${NumberFormat.currency(symbol: '', decimalDigits: 2).format(widget.balance)}',
+                                  style: GoogleFonts.nunito(
+                                    fontSize: 36,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                    letterSpacing: -1,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                HapticFeedback.lightImpact();
+                                _showEditBalanceDialog(context, isDark);
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: const Icon(Icons.edit_rounded,
+                                    color: Colors.white, size: 20),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      SizedBox(
-                          width: ResponsiveUtils.getResponsiveSpacing(context,
-                              mobile: 8, tablet: 12, desktop: 16)),
-                      Expanded(
-                        child: _buildStatItem(
-                          'Expenses',
-                          totalExpenses,
-                          Colors.red,
-                          Icons.trending_down,
-                          isDark,
+                        const SizedBox(height: 32),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildModernStatItem(
+                                'Income',
+                                totalIncome,
+                                Icons.arrow_downward_rounded,
+                                Colors.white,
+                              ),
+                            ),
+                            Container(
+                              height: 40,
+                              width: 1,
+                              color: Colors.white.withValues(alpha: 0.2),
+                              margin:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                            ),
+                            Expanded(
+                              child: _buildModernStatItem(
+                                'Expense',
+                                totalExpenses,
+                                Icons.arrow_upward_rounded,
+                                Colors.white,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -228,70 +215,35 @@ class _BalanceCardState extends State<BalanceCard>
     );
   }
 
-  Widget _buildStatItem(
-      String label, double amount, Color color, IconData icon, bool isDark) {
-    return Container(
-      padding: EdgeInsets.all(ResponsiveUtils.getResponsiveSpacing(context,
-          mobile: 8, tablet: 10, desktop: 12)),
-      decoration: BoxDecoration(
-        color: isDark
-            ? Colors.black.withOpacity(0.2)
-            : Colors.white.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: color.withOpacity(0.3),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: ResponsiveUtils.getResponsiveIconSize(context,
-                    mobile: 20, tablet: 24, desktop: 28),
-                height: ResponsiveUtils.getResponsiveIconSize(context,
-                    mobile: 20, tablet: 24, desktop: 28),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Icon(
-                  icon,
-                  size: ResponsiveUtils.getResponsiveIconSize(context,
-                      mobile: 12, tablet: 14, desktop: 16),
-                  color: color,
-                ),
+  Widget _buildModernStatItem(
+      String label, double amount, IconData icon, Color color) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, color: color.withValues(alpha: 0.7), size: 14),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: GoogleFonts.nunito(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: color.withValues(alpha: 0.7),
               ),
-              SizedBox(
-                  width: ResponsiveUtils.getResponsiveSpacing(context,
-                      mobile: 6, tablet: 8, desktop: 10)),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: ResponsiveUtils.getResponsiveFontSize(context,
-                      mobile: 10, tablet: 12, desktop: 14),
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white70 : Colors.black87,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(
-              height: ResponsiveUtils.getResponsiveSpacing(context,
-                  mobile: 4, tablet: 6, desktop: 8)),
-          Text(
-            '₹${amount.toStringAsFixed(2)}',
-            style: TextStyle(
-              fontSize: ResponsiveUtils.getResponsiveFontSize(context,
-                  mobile: 12, tablet: 14, desktop: 16),
-              fontWeight: FontWeight.bold,
-              color: color,
             ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '₹${NumberFormat.currency(symbol: '', decimalDigits: 0).format(amount)}',
+          style: GoogleFonts.nunito(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: color,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -303,10 +255,10 @@ class _BalanceCardState extends State<BalanceCard>
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         decoration: BoxDecoration(
-          color: theme.dialogBackgroundColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          color: theme.colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
         ),
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -314,27 +266,34 @@ class _BalanceCardState extends State<BalanceCard>
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.3),
+                color: Colors.grey.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
             Text(
               'Balance Details',
               style: GoogleFonts.nunito(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.black,
               ),
             ),
-            const SizedBox(height: 20),
-            // Add more detailed balance information here
+            const SizedBox(height: 24),
             ListTile(
-              leading: const Icon(Icons.info_outline),
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child:
+                    Icon(Icons.info_outline, color: theme.colorScheme.primary),
+              ),
               title: const Text('Tap and hold to edit balance'),
-              subtitle: const Text('Long press the balance card'),
-              onTap: () => Navigator.pop(context),
+              subtitle:
+                  const Text('Long press the balance card on the home screen'),
             ),
+            const SizedBox(height: 12),
           ],
         ),
       ),
@@ -342,7 +301,6 @@ class _BalanceCardState extends State<BalanceCard>
   }
 
   void _showEditBalanceDialog(BuildContext context, bool isDark) {
-    HapticFeedback.lightImpact();
     final controller =
         TextEditingController(text: widget.balance.toStringAsFixed(2));
     final theme = Theme.of(context);
@@ -350,78 +308,43 @@ class _BalanceCardState extends State<BalanceCard>
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        backgroundColor: theme.dialogBackgroundColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Icon(Icons.edit, color: theme.colorScheme.primary),
-            const SizedBox(width: 8),
-            Text(
-              'Edit Balance',
-              style: TextStyle(
-                color: isDark ? Colors.white : Colors.black,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
+        backgroundColor: theme.colorScheme.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Text(
+          'Edit Balance',
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
+          autofocus: true,
           decoration: InputDecoration(
             labelText: 'New Balance',
             prefixText: '₹ ',
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
             ),
-            filled: true,
-            fillColor: theme.colorScheme.surface,
           ),
-          style: TextStyle(color: isDark ? Colors.white : Colors.black),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: theme.colorScheme.primary),
-            ),
+            child: const Text('Cancel'),
           ),
-          ElevatedButton.icon(
-            icon: const Icon(Icons.save),
-            label: const Text('Save'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: theme.colorScheme.primary,
-              foregroundColor: Colors.white,
-            ),
+          ElevatedButton(
             onPressed: () {
               final newBalance = double.tryParse(controller.text);
               if (newBalance != null) {
                 widget.onBalanceUpdate(newBalance);
                 Navigator.pop(context);
-
-                // Show success message
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text('Balance updated successfully!'),
-                    backgroundColor: Colors.green,
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Please enter a valid number'),
-                    backgroundColor: Colors.red,
-                    duration: Duration(seconds: 2),
-                  ),
-                );
               }
             },
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('Save'),
           ),
         ],
       ),

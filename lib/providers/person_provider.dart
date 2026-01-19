@@ -40,7 +40,7 @@ class PersonProvider with ChangeNotifier {
       // Add to Hive first
       final box = Hive.box<Person>('people');
       await box.add(person);
-      
+
       // Add to local list
       _people.add(person);
       notifyListeners();
@@ -63,7 +63,7 @@ class PersonProvider with ChangeNotifier {
       // Delete from Hive first
       final box = Hive.box<Person>('people');
       await box.delete(person.key);
-      
+
       // Remove from local list
       _people.removeWhere((p) => p.key == person.key);
       notifyListeners();
@@ -82,7 +82,8 @@ class PersonProvider with ChangeNotifier {
   }
 
   List<PersonTransaction> transactionsFor(String personName) {
-    final personTransactionBox = Hive.box<PersonTransaction>('personTransactions');
+    final personTransactionBox =
+        Hive.box<PersonTransaction>('personTransactions');
     final transactions = personTransactionBox.values
         .where((tx) => tx.personName == personName)
         .toList();
@@ -112,8 +113,10 @@ class PersonProvider with ChangeNotifier {
   }
 
   double totalFor(String name) {
-    return transactionsFor(name).fold(0.0, (sum, tx) => sum + (tx.isIncome ? tx.amount : -tx.amount));
+    return transactionsFor(name)
+        .fold(0.0, (sum, tx) => sum + (tx.isIncome ? tx.amount : -tx.amount));
   }
+
   // (sum of all positive balances)
   double get overallTotalRent {
     double totalRent = 0;
@@ -133,7 +136,8 @@ class PersonProvider with ChangeNotifier {
     for (var person in _people) {
       double personTotal = totalFor(person.name);
       if (personTotal < 0) {
-        totalGiven += personTotal.abs(); // .abs() to make it a positive value for "Total You Give"
+        totalGiven += personTotal
+            .abs(); // .abs() to make it a positive value for "Total You Give"
       }
     }
     return totalGiven;
@@ -150,7 +154,7 @@ class PersonProvider with ChangeNotifier {
       // Fallback to direct Hive access
       try {
         Hive.box<PersonTransaction>('personTransactions').add(tx);
-    notifyListeners();
+        notifyListeners();
       } catch (fallbackError) {
         print('Fallback error adding person transaction: $fallbackError');
       }
@@ -158,7 +162,6 @@ class PersonProvider with ChangeNotifier {
   }
 
   Future<void> deleteTransaction(PersonTransaction tx) async {
-    final txBox = Hive.box<PersonTransaction>('personTransactions');
     await tx.delete();
     notifyListeners();
   }

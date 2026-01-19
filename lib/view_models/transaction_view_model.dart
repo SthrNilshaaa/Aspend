@@ -62,7 +62,7 @@ class TransactionViewModel with ChangeNotifier {
       _loadData();
       if (!event.deleted && event.value is Transaction) {
         final tx = event.value as Transaction;
-        if (tx.note.contains('Auto-detected')) {
+        if (tx.source != null) {
           _showDetectionToast(tx);
         }
       }
@@ -105,6 +105,12 @@ class TransactionViewModel with ChangeNotifier {
   }
 
   void updateTransaction(Transaction oldTx, Transaction newTx) async {
+    // Revert old effect and apply new effect
+    final double oldEffect = oldTx.isIncome ? oldTx.amount : -oldTx.amount;
+    final double newEffect = newTx.isIncome ? newTx.amount : -newTx.amount;
+    final double delta = newEffect - oldEffect;
+
+    await updateBalance(_currentBalance + delta);
     await _repository.updateTransaction(oldTx.key, newTx);
   }
 
@@ -136,6 +142,7 @@ class TransactionViewModel with ChangeNotifier {
       _cachedSpends = _transactions.where((t) => !t.isIncome).toList()
         ..sort((a, b) => b.date.compareTo(a.date));
     }
+    _isDirty = false;
     return _cachedSpends!;
   }
 
@@ -144,7 +151,15 @@ class TransactionViewModel with ChangeNotifier {
       _cachedIncomes = _transactions.where((t) => t.isIncome).toList()
         ..sort((a, b) => b.date.compareTo(a.date));
     }
+    _isDirty = false;
     return _cachedIncomes!;
+  }
+
+  List<Transaction> getTransactionsInRange(DateTime start, DateTime end) {
+    return _transactions.where((t) {
+      return t.date.isAfter(start.subtract(const Duration(seconds: 1))) &&
+          t.date.isBefore(end.add(const Duration(days: 1)));
+    }).toList();
   }
 
   List<Transaction> get sortedTransactions {
@@ -166,6 +181,7 @@ class TransactionViewModel with ChangeNotifier {
           _transactions.sort((a, b) => a.category.compareTo(b.category));
           break;
       }
+      _isDirty = false;
     }
     return _transactions;
   }
@@ -224,9 +240,10 @@ class TransactionViewModel with ChangeNotifier {
 
     await HomeWidget.saveWidgetData('total_income', totalIncome.toString());
     await HomeWidget.saveWidgetData('total_expenses', totalExpenses.toString());
+    await HomeWidget.saveWidgetData('has_data', _transactions.isNotEmpty);
 
     await HomeWidget.updateWidget(
-      androidName: 'org.x.aspend.ns.HomeWidgetProvider',
+      androidName: 'HomeWidgetProvider',
       iOSName: 'HomeWidget',
     );
   }

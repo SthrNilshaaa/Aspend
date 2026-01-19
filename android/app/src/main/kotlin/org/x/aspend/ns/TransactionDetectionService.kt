@@ -1,6 +1,7 @@
 package org.x.aspend.ns
 
 import android.app.Notification
+import android.content.Context
 import android.content.Intent
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
@@ -52,7 +53,8 @@ class TransactionDetectionService : NotificationListenerService() {
                     )
                 )
             } else {
-                Log.w(TAG, "MethodChannel not initialized. Notification skipped.")
+                Log.w(TAG, "MethodChannel not initialized. Queueing notification.")
+                queueNotification(title, text, sbn.packageName)
             }
 
         } catch (e: Exception) {
@@ -60,8 +62,20 @@ class TransactionDetectionService : NotificationListenerService() {
         }
     }
 
+    private fun queueNotification(title: String, text: String, packageName: String) {
+        try {
+            val prefs = getSharedPreferences("pending_notifications", Context.MODE_PRIVATE)
+            val queue = prefs.getStringSet("queue", mutableSetOf()) ?: mutableSetOf()
+            val entry = "$title|$text|$packageName|${System.currentTimeMillis()}"
+            queue.add(entry)
+            prefs.edit().putStringSet("queue", queue).apply()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error queuing notification: ${e.message}")
+        }
+    }
+
     override fun onNotificationRemoved(sbn: StatusBarNotification) {
         super.onNotificationRemoved(sbn)
         // We don't need to handle removed notifications for transaction detection
     }
-} 
+}

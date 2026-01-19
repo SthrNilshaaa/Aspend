@@ -51,6 +51,28 @@ class PersonViewModel with ChangeNotifier {
     await _repository.deletePerson(person.key);
   }
 
+  void updatePerson(Person oldPerson, Person newPerson) async {
+    await _repository.updatePerson(oldPerson.key, newPerson);
+
+    // If name changed, update all transactions associated with this person
+    if (oldPerson.name != newPerson.name) {
+      final transactions = _repository.getAllPersonTransactions();
+      for (final tx in transactions) {
+        if (tx.personName == oldPerson.name) {
+          final updatedTx = PersonTransaction(
+            personName: newPerson.name,
+            amount: tx.amount,
+            note: tx.note,
+            date: tx.date,
+            isIncome: tx.isIncome,
+          );
+          await _repository.updatePersonTransaction(tx.key, updatedTx);
+        }
+      }
+    }
+    _loadData();
+  }
+
   void addPersonTransaction(PersonTransaction tx, String personName) async {
     await _repository.addPersonTransaction(tx);
   }

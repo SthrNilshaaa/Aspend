@@ -31,6 +31,7 @@ class DataExporter {
 
   static Future<void> shareBackupFile() async {
     final filePath = await exportToJson();
-    await Share.shareXFiles([XFile(filePath)], text: 'Aspends Backup File');
+    await SharePlus.instance.share(
+        ShareParams(files: [XFile(filePath)], text: 'Aspends Backup File'));
   }
 }

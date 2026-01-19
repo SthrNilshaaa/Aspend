@@ -50,7 +50,7 @@ enable-impeller: true
 flutter:
   uses-material-design: true
 
-  assets:
+  # assets:
 
   fonts:
     - family: NFont

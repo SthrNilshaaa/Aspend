@@ -8,6 +8,7 @@ class SettingsRepository {
   static const String _adaptiveColorKey = 'adaptiveColor';
   static const String _customColorKey = 'customSeedColor';
   static const String _introCompletedKey = 'introCompleted';
+  static const String _monthlyBudgetKey = 'monthlyBudget';
 
   Box get _settingsBox => Hive.box(_settingsBoxName);
 
@@ -48,6 +49,14 @@ class SettingsRepository {
 
   Future<void> setIntroCompleted(bool completed) async {
     await _settingsBox.put(_introCompletedKey, completed);
+  }
+
+  double getMonthlyBudget() {
+    return _settingsBox.get(_monthlyBudgetKey, defaultValue: 0.0);
+  }
+
+  Future<void> setMonthlyBudget(double amount) async {
+    await _settingsBox.put(_monthlyBudgetKey, amount);
   }
 
   Stream<BoxEvent> watchSettings() {

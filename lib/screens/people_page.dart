@@ -12,6 +12,7 @@ import '../view_models/person_view_model.dart';
 import '../view_models/theme_view_model.dart';
 import '../person/person_details_page.dart';
 import '../utils/responsive_utils.dart';
+import '../widgets/modern_card.dart';
 
 class PeopleTab extends StatefulWidget {
   const PeopleTab({super.key});
@@ -23,6 +24,7 @@ class PeopleTab extends StatefulWidget {
 class _PeopleTabState extends State<PeopleTab> {
   late ScrollController _scrollController;
   bool _showFab = true;
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -50,20 +52,19 @@ class _PeopleTabState extends State<PeopleTab> {
     super.dispose();
   }
 
-  void _showAddPersonDialog(BuildContext context) {
-    final controller = TextEditingController();
+  void _showPersonDialog(BuildContext context, {Person? existingPerson}) {
+    final controller = TextEditingController(text: existingPerson?.name);
     final theme = Theme.of(context);
-    String? selectedPhotoPath;
+    String? selectedPhotoPath = existingPerson?.photoPath;
 
     showDialog(
       context: context,
       builder: (_) => StatefulBuilder(
         builder: (context, setStateDialog) => AlertDialog(
-          // Changed setState to setStateDialog
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Text(
-            'Add New Person',
+            existingPerson == null ? 'Add New Person' : 'Edit Person',
             style: GoogleFonts.nunito(
               fontSize: 22,
               fontWeight: FontWeight.bold,
@@ -83,7 +84,6 @@ class _PeopleTabState extends State<PeopleTab> {
 
                   if (image != null) {
                     setStateDialog(() {
-                      // Changed setState to setStateDialog
                       selectedPhotoPath = image.path;
                     });
                   }
@@ -93,25 +93,28 @@ class _PeopleTabState extends State<PeopleTab> {
                   height: 100,
                   decoration: BoxDecoration(
                     color: selectedPhotoPath != null
-                        ? theme.colorScheme.primary.withOpacity(0.1)
+                        ? theme.colorScheme.primary.withValues(alpha: 0.1)
                         : theme.colorScheme.surface,
                     borderRadius: BorderRadius.circular(50),
                     border: Border.all(
                       color: selectedPhotoPath != null
                           ? theme.colorScheme.primary
-                          : theme.colorScheme.outline.withOpacity(0.3),
+                          : theme.colorScheme.outline.withValues(alpha: 0.3),
                       width: 2,
                     ),
                   ),
                   child: selectedPhotoPath != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(48),
-                          child: Image.file(
-                            File(selectedPhotoPath!),
-                            width: 96,
-                            height: 96,
-                            fit: BoxFit.cover,
-                          ),
+                          child: selectedPhotoPath!.startsWith('assets/')
+                              ? Image.asset(selectedPhotoPath!,
+                                  width: 96, height: 96, fit: BoxFit.cover)
+                              : Image.file(
+                                  File(selectedPhotoPath!),
+                                  width: 96,
+                                  height: 96,
+                                  fit: BoxFit.cover,
+                                ),
                         )
                       : Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -136,12 +139,14 @@ class _PeopleTabState extends State<PeopleTab> {
               ),
               const SizedBox(height: 20),
               Text(
-                'Enter the name of the person you want to track transactions with',
+                existingPerson == null
+                    ? 'Enter the name of the person you want to track transactions with'
+                    : 'Update the details for this person',
                 style: GoogleFonts.nunito(
                   fontSize: 14,
-                  color: theme.colorScheme.onSurface.withOpacity(0.7),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
-                textAlign: TextAlign.center, // Added for better text centering
+                textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20),
               TextField(
@@ -163,46 +168,45 @@ class _PeopleTabState extends State<PeopleTab> {
             ],
           ),
           actions: [
-            ZoomTapAnimation(
-              onTap: () {
-                HapticFeedback.lightImpact();
-                Navigator.pop(context);
-              },
-              child: TextButton(
-                onPressed: null,
-                child: Text(
-                  'Cancel',
-                  style: GoogleFonts.nunito(
-                      fontSize: 16, fontWeight: FontWeight.w600),
-                ),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.nunito(
+                    fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
-            ZoomTapAnimation(
-              onTap: () {
+            ElevatedButton(
+              onPressed: () {
                 final name = controller.text.trim();
                 if (name.isNotEmpty) {
                   HapticFeedback.lightImpact();
-                  final person =
-                      Person(name: name, photoPath: selectedPhotoPath);
-                  context.read<PersonViewModel>().addPerson(person);
+                  if (existingPerson == null) {
+                    final person =
+                        Person(name: name, photoPath: selectedPhotoPath);
+                    context.read<PersonViewModel>().addPerson(person);
+                  } else {
+                    final updatedPerson = Person(
+                      name: name,
+                      photoPath: selectedPhotoPath,
+                    );
+                    context
+                        .read<PersonViewModel>()
+                        .updatePerson(existingPerson, updatedPerson);
+                  }
                   Navigator.pop(context);
                 }
               },
-              child: ElevatedButton(
-                onPressed: null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: theme.colorScheme.primary,
-                  foregroundColor: theme.colorScheme.onPrimary,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                ),
-                child: Text(
-                  'Add Person',
-                  style: GoogleFonts.nunito(
-                      fontSize: 16, fontWeight: FontWeight.w600),
-                ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: theme.colorScheme.primary,
+                foregroundColor: theme.colorScheme.onPrimary,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+              child: Text(
+                existingPerson == null ? 'Add' : 'Update',
+                style: GoogleFonts.nunito(
+                    fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -229,7 +233,7 @@ class _PeopleTabState extends State<PeopleTab> {
               fontSize: ResponsiveUtils.getResponsiveFontSize(context,
                   mobile: 13, tablet: 15, desktop: 17),
               fontWeight: FontWeight.w600,
-              color: theme.colorScheme.onSurfaceVariant.withOpacity(0.9),
+              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.9),
             ),
             overflow: TextOverflow.ellipsis,
           ),
@@ -265,7 +269,10 @@ class _PeopleTabState extends State<PeopleTab> {
   @override
   Widget build(BuildContext context) {
     final personViewModel = context.watch<PersonViewModel>();
-    final people = personViewModel.people;
+    final allPeople = personViewModel.people;
+    final people = allPeople
+        .where((p) => p.name.toLowerCase().contains(_searchQuery))
+        .toList();
     final theme = Theme.of(context);
     final themeViewModel = context.watch<ThemeViewModel>();
     final isDark = themeViewModel.isDarkMode;
@@ -315,18 +322,20 @@ class _PeopleTabState extends State<PeopleTab> {
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                   colors: [
-                                    theme.colorScheme.primary.withOpacity(0.8),
+                                    theme.colorScheme.primary
+                                        .withValues(alpha: 0.8),
                                     theme.colorScheme.primaryContainer
-                                        .withOpacity(0.8)
+                                        .withValues(alpha: 0.8)
                                   ],
                                 )
                               : LinearGradient(
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                   colors: [
-                                    theme.colorScheme.primary.withOpacity(0.8),
+                                    theme.colorScheme.primary
+                                        .withValues(alpha: 0.8),
                                     theme.colorScheme.primaryContainer
-                                        .withOpacity(0.8)
+                                        .withValues(alpha: 0.8)
                                   ],
                                 ),
                     ),
@@ -338,56 +347,64 @@ class _PeopleTabState extends State<PeopleTab> {
           ),
 
           // NEW: Conditional Sliver for Total Debit and Credit Summary
-          if (people.isNotEmpty)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: ResponsiveUtils.getResponsiveEdgeInsets(context,
-                    horizontal: 16, vertical: 12),
-                child: Container(
-                  padding: ResponsiveUtils.getResponsiveEdgeInsets(context,
-                      horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                      color: theme.cardColor.withOpacity(0.85),
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                          color: theme.shadowColor.withOpacity(0.05),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: ModernCard(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        _buildSummaryInfo(
+                          context,
+                          label: 'You Get',
+                          amount: totalYouGet,
+                          color: Colors.greenAccent.shade700,
+                          icon: Icons.arrow_downward_rounded,
+                        ),
+                        Container(
+                          height: 40,
+                          width: 1,
+                          color: theme.dividerColor.withValues(alpha: 0.1),
+                          margin: const EdgeInsets.symmetric(horizontal: 16),
+                        ),
+                        _buildSummaryInfo(
+                          context,
+                          label: 'You Give',
+                          amount: totalYouGive,
+                          color: Colors.redAccent,
+                          icon: Icons.arrow_upward_rounded,
                         ),
                       ],
-                      border: Border.all(
-                        color: theme.colorScheme.outline.withOpacity(0.2),
-                        width: 1,
-                      )),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildSummaryInfo(
-                        context,
-                        label: 'Total You Get',
-                        amount: totalYouGet,
-                        color: Colors.green.shade600,
-                        icon: Icons.arrow_circle_down_rounded,
-                      ),
-                      Container(
-                        height: 35,
-                        width: 1,
-                        color: theme.colorScheme.outline.withOpacity(0.3),
-                        margin: const EdgeInsets.symmetric(horizontal: 8),
-                      ),
-                      _buildSummaryInfo(
-                        context,
-                        label: 'Total You Give',
-                        amount: totalYouGive,
-                        color: Colors.red.shade600,
-                        icon: Icons.arrow_circle_up_rounded,
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
+          ),
+
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: TextField(
+                onChanged: (val) =>
+                    setState(() => _searchQuery = val.toLowerCase()),
+                decoration: InputDecoration(
+                  hintText: 'Search people...',
+                  prefixIcon: const Icon(Icons.search),
+                  filled: true,
+                  fillColor: theme.colorScheme.surface,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                ),
+                style: GoogleFonts.nunito(),
+              ),
+            ),
+          ),
 
           if (people.isEmpty)
             SliverFillRemaining(
@@ -400,8 +417,8 @@ class _PeopleTabState extends State<PeopleTab> {
                       height: 120,
                       decoration: BoxDecoration(
                         color: useAdaptive
-                            ? theme.colorScheme.primary.withOpacity(0.1)
-                            : theme.colorScheme.primary.withOpacity(0.1),
+                            ? theme.colorScheme.primary.withValues(alpha: 0.1)
+                            : theme.colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(60),
                       ),
                       child: Icon(
@@ -426,7 +443,8 @@ class _PeopleTabState extends State<PeopleTab> {
                       'Add people to track transactions with them',
                       style: GoogleFonts.nunito(
                         fontSize: 16,
-                        color: theme.colorScheme.onSurface.withOpacity(0.7),
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -441,170 +459,132 @@ class _PeopleTabState extends State<PeopleTab> {
                   final person = people[index];
                   final total = personViewModel.getTotalForPerson(person.name);
                   final isPositive = total >= 0;
-
-                  return Container(
-                      margin: const EdgeInsets.fromLTRB(12, 6, 12, 6),
-                      child: ZoomTapAnimation(
-                        onTap: () {
-                          HapticFeedback.selectionClick();
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => PersonDetailPage(person: person),
-                            ),
-                          );
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: useAdaptive
-                                ? theme.colorScheme.primary.withOpacity(0.08)
-                                : isDark
-                                    ? Colors.teal.shade900.withOpacity(0.08)
-                                    : Colors.teal.withOpacity(0.08),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: useAdaptive
-                                  ? theme.colorScheme.primary.withOpacity(0.22)
-                                  : isDark
-                                      ? Colors.teal.shade900.withOpacity(0.22)
-                                      : Colors.teal.withOpacity(0.22),
-                              width: 1,
-                            ),
+                  return Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    child: ZoomTapAnimation(
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PersonDetailPage(person: person),
                           ),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 12),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Container(
-                                width: ResponsiveUtils.getResponsiveIconSize(
-                                    context,
-                                    mobile: 60,
-                                    tablet: 72,
-                                    desktop: 84),
-                                height: ResponsiveUtils.getResponsiveIconSize(
-                                    context,
-                                    mobile: 60,
-                                    tablet: 72,
-                                    desktop: 84),
-                                decoration: BoxDecoration(
-                                  color: person.photoPath != null
-                                      ? Colors.transparent
-                                      : useAdaptive
-                                          ? theme.colorScheme.primary
-                                              .withOpacity(0.1)
-                                          : Colors.teal.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(
-                                      ResponsiveUtils.getResponsiveSpacing(
-                                          context,
-                                          mobile: 30,
-                                          tablet: 36,
-                                          desktop: 42)),
-                                  border: person.photoPath != null
-                                      ? Border.all(
-                                          color: useAdaptive
-                                              ? theme.colorScheme.primary
-                                                  .withOpacity(0.3)
-                                              : Colors.teal.withOpacity(0.3),
-                                          width: 1,
-                                        )
-                                      : null,
-                                ),
-                                child: person.photoPath != null
-                                    ? ClipRRect(
-                                        borderRadius: BorderRadius.circular(28),
-                                        child: Image.file(
-                                          File(person.photoPath!),
-                                          width: ResponsiveUtils
-                                              .getResponsiveIconSize(context,
-                                                  mobile: 56,
-                                                  tablet: 68,
-                                                  desktop: 80),
-                                          height: ResponsiveUtils
-                                              .getResponsiveIconSize(context,
-                                                  mobile: 56,
-                                                  tablet: 68,
-                                                  desktop: 80),
-                                          fit: BoxFit.cover,
-                                        ),
-                                      )
-                                    : Icon(
-                                        Icons.person,
-                                        color: useAdaptive
-                                            ? theme.colorScheme.primary
-                                            : Colors.teal,
-                                        size: ResponsiveUtils
-                                            .getResponsiveIconSize(context,
-                                                mobile: 30,
-                                                tablet: 36,
-                                                desktop: 42),
-                                      ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      person.name,
-                                      style: GoogleFonts.nunito(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: theme.colorScheme.onSurface,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Tap to view transactions',
-                                      style: GoogleFonts.nunito(
-                                        fontSize: 14,
-                                        color: theme.colorScheme.onSurface
-                                            .withOpacity(0.7),
-                                      ),
-                                    ),
-                                  ],
+                        );
+                      },
+                      child: ModernCard(
+                        padding: const EdgeInsets.all(12),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 56,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: person.photoPath == null
+                                    ? theme.colorScheme.primary
+                                        .withValues(alpha: 0.1)
+                                    : Colors.transparent,
+                                border: Border.all(
+                                  color: theme.colorScheme.primary
+                                      .withValues(alpha: 0.2),
+                                  width: 1,
                                 ),
                               ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
+                              child: person.photoPath != null
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(28),
+                                      child: Image.file(
+                                        File(person.photoPath!),
+                                        fit: BoxFit.cover,
+                                      ),
+                                    )
+                                  : Icon(Icons.person,
+                                      color: theme.colorScheme.primary,
+                                      size: 28),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    '₹${total.toStringAsFixed(2)}',
-                                    style: GoogleFonts.nunito(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: isPositive
-                                          ? Colors.green
-                                          : Colors.red,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: isPositive
-                                          ? Colors.green.withOpacity(0.1)
-                                          : Colors.red.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Text(
-                                      isPositive ? 'Credit' : 'Debit',
-                                      style: GoogleFonts.nunito(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: isPositive
-                                            ? Colors.green
-                                            : Colors.red,
+                                  Row(
+                                    children: [
+                                      Text(
+                                        person.name,
+                                        style: GoogleFonts.nunito(
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 17,
+                                        ),
                                       ),
+                                      // const SizedBox(width: 8),
+                                      // GestureDetector(
+                                      //   onTap: () => _showPersonDialog(context,
+                                      //       existingPerson: person),
+                                      //   child: Icon(
+                                      //     Icons.edit_outlined,
+                                      //     size: 16,
+                                      //     color: theme.colorScheme.primary
+                                      //         .withValues(alpha: 0.5),
+                                      //   ),
+                                      // ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    isPositive
+                                        ? 'You will get'
+                                        : 'You will give',
+                                    style: GoogleFonts.nunito(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  '₹${total.abs().toStringAsFixed(0)}',
+                                  style: GoogleFonts.nunito(
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 18,
+                                    color: isPositive
+                                        ? Colors.greenAccent.shade700
+                                        : Colors.redAccent,
+                                  ),
+                                ),
+                                Container(
+                                  margin: const EdgeInsets.only(top: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: (isPositive
+                                            ? Colors.greenAccent.shade700
+                                            : Colors.redAccent)
+                                        .withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Icon(
+                                    isPositive
+                                        ? Icons.keyboard_arrow_down
+                                        : Icons.keyboard_arrow_up,
+                                    size: 14,
+                                    color: isPositive
+                                        ? Colors.greenAccent.shade700
+                                        : Colors.redAccent,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                      ));
+                      ),
+                    ),
+                  );
                 },
                 childCount: people.length,
               ),
@@ -626,7 +606,7 @@ class _PeopleTabState extends State<PeopleTab> {
     final theme = Theme.of(context);
     return ZoomTapAnimation(
       onTap: () {
-        _showAddPersonDialog(context);
+        _showPersonDialog(context);
         HapticFeedback.lightImpact();
       },
       child: Container(
@@ -637,10 +617,10 @@ class _PeopleTabState extends State<PeopleTab> {
             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
             child: Container(
               decoration: BoxDecoration(
-                color: theme.colorScheme.surface.withOpacity(0.2),
+                color: theme.colorScheme.surface.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(28),
                 border: Border.all(
-                  color: theme.colorScheme.outline.withOpacity(0.2),
+                  color: theme.colorScheme.outline.withValues(alpha: 0.2),
                   width: 1,
                 ),
               ),

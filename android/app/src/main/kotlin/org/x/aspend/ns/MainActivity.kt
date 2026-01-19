@@ -3,6 +3,7 @@ package org.x.aspend.ns
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import android.content.Context
 import android.content.Intent
 import android.provider.Settings
 import android.util.Log
@@ -117,6 +118,22 @@ class MainActivity : FlutterFragmentActivity() {
                     } catch (e: Exception) {
                         Log.e(TAG, "Error processing SMS: ${e.message}")
                         result.error("SMS_PROCESSING_ERROR", e.message, null)
+                    }
+                }
+
+                "getPendingNotifications" -> {
+                    try {
+                        val prefs = getSharedPreferences("pending_notifications", Context.MODE_PRIVATE)
+                        val queue = prefs.getStringSet("queue", mutableSetOf()) ?: mutableSetOf()
+                        val list = queue.toList()
+                        
+                        // Clear the queue
+                        prefs.edit().remove("queue").apply()
+                        
+                        result.success(list)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error getting pending notifications: ${e.message}")
+                        result.error("QUEUE_ERROR", e.message, null)
                     }
                 }
 

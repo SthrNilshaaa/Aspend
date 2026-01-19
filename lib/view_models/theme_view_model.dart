@@ -8,6 +8,7 @@ class ThemeViewModel extends ChangeNotifier {
   AppTheme _appTheme = AppTheme.system;
   bool _useAdaptiveColor = false;
   Color? _customSeedColor;
+  double _monthlyBudget = 0;
 
   ThemeViewModel(this._repository) {
     _loadSettings();
@@ -16,6 +17,7 @@ class ThemeViewModel extends ChangeNotifier {
   AppTheme get appTheme => _appTheme;
   bool get useAdaptiveColor => _useAdaptiveColor;
   Color? get customSeedColor => _customSeedColor;
+  double get monthlyBudget => _monthlyBudget;
 
   bool get isDarkMode {
     final brightness =
@@ -41,6 +43,7 @@ class ThemeViewModel extends ChangeNotifier {
     _appTheme = _repository.getAppTheme();
     _useAdaptiveColor = _repository.getUseAdaptiveColor();
     _customSeedColor = _repository.getCustomSeedColor();
+    _monthlyBudget = _repository.getMonthlyBudget();
     notifyListeners();
   }
 
@@ -59,6 +62,12 @@ class ThemeViewModel extends ChangeNotifier {
   void setCustomSeedColor(Color? color) async {
     _customSeedColor = color;
     await _repository.setCustomSeedColor(color);
+    notifyListeners();
+  }
+
+  void setMonthlyBudget(double amount) async {
+    _monthlyBudget = amount;
+    await _repository.setMonthlyBudget(amount);
     notifyListeners();
   }
 }

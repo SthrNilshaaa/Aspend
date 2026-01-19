@@ -33,7 +33,8 @@ class PersonBackupHelper {
     await file.writeAsString(jsonStr);
 
     // Share the file using the system share sheet
-    await Share.shareXFiles([XFile(file.path)], text: 'Aspends Tracker Backup');
+    await SharePlus.instance.share(
+        ShareParams(files: [XFile(file.path)], text: 'Aspends Tracker Backup'));
   }
 
   static Future<void> importFromJson(BuildContext context) async {

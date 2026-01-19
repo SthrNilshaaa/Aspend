@@ -13,7 +13,9 @@ import '../widgets/balance_card.dart';
 import '../widgets/add_transaction_dialog.dart';
 import '../utils/responsive_utils.dart';
 import '../utils/transaction_utils.dart';
+import 'settings_page.dart';
 import '../services/native_bridge.dart';
+import '../services/transaction_detection_service.dart';
 import 'dart:async';
 
 class HomePage extends StatefulWidget {
@@ -28,6 +30,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   bool _showFab = true;
   String? _searchQuery;
   List<Transaction>? _filteredTransactions;
+  String _selectedRange = 'All'; // Day, Week, Month, Year, All
+  DateTime _startDate = DateTime(2000);
+  DateTime _endDate = DateTime.now();
   StreamSubscription<String>? _uiEventSubscription;
 
   @override
@@ -93,8 +98,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     final themeViewModel = context.watch<ThemeViewModel>();
     final transactionViewModel = context.watch<TransactionViewModel>();
 
-    final txns =
+    final rawTxns =
         _filteredTransactions ?? transactionViewModel.sortedTransactions;
+
+    final txns = _selectedRange == 'All'
+        ? rawTxns
+        : transactionViewModel.getTransactionsInRange(_startDate, _endDate);
+
     final grouped = TransactionUtils.groupTransactionsByDate(txns);
 
     return Scaffold(
@@ -146,8 +156,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    theme.colorScheme.primary.withOpacity(0.8),
-                    theme.colorScheme.primaryContainer.withOpacity(0.8)
+                    theme.colorScheme.primary.withValues(alpha: 0.8),
+                    theme.colorScheme.primaryContainer.withValues(alpha: 0.8)
                   ],
                 ),
               ),
@@ -157,15 +167,28 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.analytics_outlined),
-          onPressed: () => _showAnalyticsDialog(),
-        ),
-        IconButton(
           icon: const Icon(Icons.search),
           onPressed: () => _showSearchDialog(),
         ),
       ],
     );
+  }
+
+  void _updateDateRange() {
+    final now = DateTime.now();
+    _endDate = now;
+    if (_selectedRange == 'Day') {
+      _startDate = DateTime(now.year, now.month, now.day);
+    } else if (_selectedRange == 'Week') {
+      _startDate = now.subtract(Duration(days: now.weekday - 1));
+      _startDate = DateTime(_startDate.year, _startDate.month, _startDate.day);
+    } else if (_selectedRange == 'Month') {
+      _startDate = DateTime(now.year, now.month, 1);
+    } else if (_selectedRange == 'Year') {
+      _startDate = DateTime(now.year, 1, 1);
+    } else {
+      _startDate = DateTime(2000);
+    }
   }
 
   Widget _buildBalanceSection(
@@ -175,13 +198,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         children: [
           Padding(
             padding: ResponsiveUtils.getResponsiveEdgeInsets(context,
-                horizontal: 16, vertical: 8),
+                horizontal: 8, vertical: 8),
             child: BalanceCard(
               balance: viewModel.totalBalance,
               onBalanceUpdate: (newBalance) =>
                   viewModel.updateBalance(newBalance),
             ),
           ),
+          _buildBudgetProgress(context, viewModel),
           Padding(
             padding: ResponsiveUtils.getResponsiveEdgeInsets(context,
                 horizontal: 16, vertical: 8),
@@ -206,7 +230,72 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ],
             ),
           ),
+          _buildRangeSelector(context),
         ],
+      ),
+    );
+  }
+
+  Widget _buildRangeSelector(BuildContext context) {
+    final theme = Theme.of(context);
+    final ranges = ['All', 'Day', 'Week', 'Month', 'Year'];
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: ranges.map((range) {
+          final isSelected = _selectedRange == range;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: ZoomTapAnimation(
+              onTap: () {
+                setState(() {
+                  _selectedRange = range;
+                  _updateDateRange();
+                });
+                HapticFeedback.lightImpact();
+              },
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isSelected
+                        ? theme.colorScheme.primary
+                        : theme.dividerColor.withValues(alpha: 0.1),
+                  ),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: theme.colorScheme.primary
+                                .withValues(alpha: 0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          )
+                        ]
+                      : null,
+                ),
+                child: Text(
+                  range,
+                  style: GoogleFonts.nunito(
+                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                    color: isSelected
+                        ? Colors.white
+                        : theme.textTheme.bodyMedium?.color
+                            ?.withValues(alpha: 0.6),
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }
@@ -224,7 +313,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             children: [
               Padding(
                 padding: ResponsiveUtils.getResponsiveEdgeInsets(context,
-                    horizontal: 16, vertical: 8),
+                    horizontal: 10, vertical: 6),
                 child: Text(
                   dateKey,
                   style: GoogleFonts.nunito(
@@ -248,21 +337,103 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildEmptyState() {
+    final theme = Theme.of(context);
     return SliverFillRemaining(
       hasScrollBody: false,
       child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.account_balance_wallet,
-                size: 64, color: Colors.grey.shade400),
-            const SizedBox(height: 16),
-            Text('No Transactions Yet',
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.05),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.account_balance_wallet_outlined,
+                  size: 80,
+                  color: theme.colorScheme.primary.withValues(alpha: 0.4),
+                ),
+              ),
+              const SizedBox(height: 32),
+              Text(
+                'Your wallet is quiet',
                 style: GoogleFonts.nunito(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey.shade600)),
-          ],
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Start by adding a transaction manually or enable auto-detection to track your spending effortlessly.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.nunito(
+                  fontSize: 16,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 48),
+              FutureBuilder<bool>(
+                future: TransactionDetectionService.isEnabled(),
+                builder: (context, snapshot) {
+                  final isEnabled = snapshot.data ?? false;
+                  if (isEnabled) return const SizedBox.shrink();
+
+                  return ZoomTapAnimation(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const SettingsPage()),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 16),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            theme.colorScheme.primary,
+                            theme.colorScheme.secondary,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: theme.colorScheme.primary
+                                .withValues(alpha: 0.3),
+                            blurRadius: 15,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.auto_awesome,
+                              color: Colors.white, size: 20),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Enable Auto-Detection',
+                            style: GoogleFonts.nunito(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -278,15 +449,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             decoration: BoxDecoration(
-              color: theme.colorScheme.surface.withOpacity(0.3),
+              color: theme.colorScheme.surface.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(32),
               border: Border.all(
-                color: theme.colorScheme.outline.withOpacity(0.2),
+                color: theme.colorScheme.outline.withValues(alpha: 0.2),
                 width: 1,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -333,10 +504,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.15),
+          color: color.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: color.withOpacity(0.3),
+            color: color.withValues(alpha: 0.3),
             width: 1,
           ),
         ),
@@ -441,34 +612,93 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  void _showAnalyticsDialog() {
-    final viewModel = context.read<TransactionViewModel>();
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Analytics'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-                title: const Text('Total Income'),
-                trailing: Text('₹${viewModel.totalIncome.toStringAsFixed(2)}',
-                    style: const TextStyle(color: Colors.green))),
-            ListTile(
-                title: const Text('Total Expenses'),
-                trailing: Text('₹${viewModel.totalSpend.toStringAsFixed(2)}',
-                    style: const TextStyle(color: Colors.red))),
-            ListTile(
-                title: const Text('Net Balance'),
-                trailing:
-                    Text('₹${viewModel.totalBalance.toStringAsFixed(2)}')),
+  Widget _buildBudgetProgress(
+      BuildContext context, TransactionViewModel viewModel) {
+    final themeViewModel = context.watch<ThemeViewModel>();
+    final budget = themeViewModel.monthlyBudget;
+    if (budget <= 0) return const SizedBox.shrink();
+
+    final now = DateTime.now();
+    final startOfMonth = DateTime(now.year, now.month, 1);
+    final endOfMonth = DateTime(now.year, now.month + 1, 0);
+
+    final monthlyTxs =
+        viewModel.getTransactionsInRange(startOfMonth, endOfMonth);
+    final spent = monthlyTxs
+        .where((t) => !t.isIncome)
+        .fold(0.0, (sum, t) => sum + t.amount);
+
+    final percentage = (spent / budget).clamp(0.0, 1.0);
+    final isOverBudget = spent > budget;
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: isOverBudget
+                ? Colors.redAccent.withValues(alpha: 0.3)
+                : theme.dividerColor.withValues(alpha: 0.1),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
           ],
         ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Close')),
-        ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Monthly Budget',
+                  style: GoogleFonts.nunito(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                  ),
+                ),
+                Text(
+                  '₹${spent.toStringAsFixed(0)} / ₹${budget.toStringAsFixed(0)}',
+                  style: GoogleFonts.nunito(
+                    fontWeight: FontWeight.w700,
+                    color: isOverBudget ? Colors.redAccent : Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: LinearProgressIndicator(
+                value: percentage,
+                minHeight: 10,
+                backgroundColor: theme.dividerColor.withValues(alpha: 0.1),
+                valueColor: AlwaysStoppedAnimation(
+                  isOverBudget ? Colors.redAccent : theme.colorScheme.primary,
+                ),
+              ),
+            ),
+            if (isOverBudget) ...[
+              const SizedBox(height: 8),
+              Text(
+                '⚠️ You have exceeded your budget by ₹${(spent - budget).toStringAsFixed(0)}',
+                style: GoogleFonts.nunito(
+                  fontSize: 12,
+                  color: Colors.redAccent,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

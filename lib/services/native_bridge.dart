@@ -34,7 +34,9 @@ class NativeBridge {
 
       case 'onSmsReceived':
         final body = call.arguments['body'] as String? ?? '';
-        await TransactionDetectionService.processSmsMessage(body);
+        final sender = call.arguments['sender'] as String? ?? '';
+        await TransactionDetectionService.processSmsMessage(body,
+            sender: sender);
         break;
 
       case 'showAddIncomeDialog':
@@ -55,6 +57,10 @@ class NativeBridge {
       _pendingEvent = event;
     }
     _uiEventController.add(event);
+  }
+
+  static void notifyTransactionDetected() {
+    _emitEvent('RELOAD_TRANSACTIONS');
   }
 
   static Future<bool> requestNotificationPermission() async {
@@ -95,6 +101,17 @@ class NativeBridge {
     } catch (e) {
       print('Error starting keep alive service: $e');
       return false;
+    }
+  }
+
+  static Future<List<String>> getPendingNotifications() async {
+    try {
+      final List<dynamic>? result =
+          await _channel.invokeMethod('getPendingNotifications');
+      return result?.map((e) => e as String).toList() ?? [];
+    } catch (e) {
+      print('Error getting pending notifications: $e');
+      return [];
     }
   }
 

@@ -98,9 +98,6 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
           account: _account,
           imagePaths: _imagePaths,
         );
-        // Copy the key from existing transaction for updating in Hive
-        // HiveObject has a key property
-        updatedTx.initHiveObject(widget.existingTransaction!.key);
 
         context
             .read<TransactionViewModel>()
@@ -311,13 +308,5 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
         ),
       ),
     );
-  }
-}
-
-extension on Transaction {
-  void initHiveObject(dynamic oldKey) {
-    // This is a bit of a hack since HiveObject key is internal,
-    // but useful if we are creating a new instance to replace.
-    // In our repository we should just use the key.
   }
 }

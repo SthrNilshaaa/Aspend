@@ -48,7 +48,13 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _checkInitialLaunch() async {
-    final Uri? uri = await HomeWidget.initiallyLaunchedFromHomeWidget();
+    Uri? uri;
+    try {
+      uri = await HomeWidget.initiallyLaunchedFromHomeWidget()
+          .timeout(const Duration(seconds: 2));
+    } catch (e) {
+      debugPrint('SplashScreen: HomeWidget init error: $e');
+    }
     bool isWidgetLaunch = uri != null && uri.host == 'addTransaction';
 
     final box = await Hive.openBox('settings');
@@ -143,10 +149,10 @@ class _SplashScreenState extends State<SplashScreen>
                       height: ResponsiveUtils.getResponsiveIconSize(context,
                           mobile: 120, tablet: 140, desktop: 160),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(30),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.3),
+                          color: Colors.white.withValues(alpha: 0.3),
                           width: 2,
                         ),
                       ),
@@ -176,7 +182,7 @@ class _SplashScreenState extends State<SplashScreen>
                       style: GoogleFonts.nunito(
                         fontSize: ResponsiveUtils.getResponsiveFontSize(context,
                             mobile: 16, tablet: 18, desktop: 20),
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -185,7 +191,7 @@ class _SplashScreenState extends State<SplashScreen>
                       width: 40,
                       height: 40,
                       child: LoadingAnimationWidget.halfTriangleDot(
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                         size: 40,
                       ),
                     ),
