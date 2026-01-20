@@ -78,35 +78,50 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
             pinned: true,
             elevation: 1,
             backgroundColor: Colors.transparent,
-            flexibleSpace: FlexibleSpaceBar(
-              centerTitle: true,
-              title: Text(
-                'Analytics',
-                style: GoogleFonts.nunito(
-                  fontWeight: FontWeight.w900,
-                  fontSize: ResponsiveUtils.getResponsiveFontSize(context,
-                      mobile: 20, tablet: 24, desktop: 28),
-                  color: theme.colorScheme.onSurface,
-                ),
-              ),
-              background: ClipRRect(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          theme.colorScheme.primary.withValues(alpha: 0.8),
-                          theme.colorScheme.primaryContainer
-                              .withValues(alpha: 0.8)
-                        ],
+            flexibleSpace: Stack(
+              fit: StackFit.expand,
+              children: [
+                // Persistent Glass Effect Layer
+                ClipRRect(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            theme.colorScheme.primary.withValues(alpha: 0.15),
+                            theme.colorScheme.surface.withValues(alpha: 0.15),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
+                // Subtle Bottom Border
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    height: 1,
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : Colors.black.withValues(alpha: 0.05),
+                  ),
+                ),
+                FlexibleSpaceBar(
+                  centerTitle: true,
+                  title: Text(
+                    'Analytics',
+                    style: GoogleFonts.nunito(
+                      fontWeight: FontWeight.bold,
+                      fontSize: ResponsiveUtils.getResponsiveFontSize(context,
+                          mobile: 20, tablet: 24, desktop: 28),
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 24)),

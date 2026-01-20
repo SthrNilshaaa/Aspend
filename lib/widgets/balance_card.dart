@@ -84,11 +84,11 @@ class _BalanceCardState extends State<BalanceCard>
                 colors: isDark
                     ? [
                         theme.colorScheme.primary.withValues(alpha: 0.8),
-                        theme.colorScheme.secondary.withValues(alpha: 0.6)
+                        theme.colorScheme.primary.withValues(alpha: 0.5)
                       ]
                     : [
                         theme.colorScheme.primary,
-                        theme.colorScheme.primary.withValues(alpha: 0.8)
+                        theme.colorScheme.primary.withValues(alpha: 0.5)
                       ],
               ),
               boxShadow: [

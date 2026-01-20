@@ -77,6 +77,11 @@ class PersonViewModel with ChangeNotifier {
     await _repository.addPersonTransaction(tx);
   }
 
+  void updatePersonTransaction(
+      PersonTransaction oldTx, PersonTransaction newTx) async {
+    await _repository.updatePersonTransaction(oldTx.key, newTx);
+  }
+
   void deleteTransaction(PersonTransaction tx) async {
     await _repository.deletePersonTransaction(tx.key);
   }

@@ -1,0 +1,128 @@
+Analyzing Aspend...                                             
+
+   info • Don't invoke 'print' in production code • lib/main.dart:34:3 • avoid_print
+   info • Don't invoke 'print' in production code • lib/main.dart:48:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/main.dart:62:3 • avoid_print
+   info • Don't invoke 'print' in production code • lib/main.dart:65:3 • avoid_print
+   info • Don't invoke 'print' in production code • lib/main.dart:68:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/main.dart:70:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/main.dart:71:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/main.dart:73:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/main.dart:83:3 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/person_provider.dart:23:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/person_provider.dart:30:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/person_provider.dart:48:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/person_provider.dart:56:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/person_provider.dart:71:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/person_provider.dart:79:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/person_provider.dart:102:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/person_provider.dart:110:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/person_provider.dart:153:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/person_provider.dart:159:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/person_transaction_provider.dart:36:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/person_transaction_provider.dart:54:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/person_transaction_provider.dart:62:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/person_transaction_provider.dart:77:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/person_transaction_provider.dart:85:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/person_transaction_provider.dart:131:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/person_transaction_provider.dart:143:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/transaction_provider.dart:117:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/transaction_provider.dart:128:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/transaction_provider.dart:156:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/transaction_provider.dart:167:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/transaction_provider.dart:191:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/transaction_provider.dart:202:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/transaction_provider.dart:216:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/transaction_provider.dart:224:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/transaction_provider.dart:238:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/transaction_provider.dart:246:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/transaction_provider.dart:267:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/transaction_provider.dart:282:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/transaction_provider.dart:313:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/providers/transaction_provider.dart:374:7 • avoid_print
+   info • Unnecessary use of 'toList' in a spread • lib/screens/chart_page.dart:197:28 • unnecessary_to_list_in_spreads
+   info • Use 'const' literals as arguments to constructors of '@immutable' classes • lib/screens/home_page.dart:168:16 • prefer_const_literals_to_create_immutables
+   info • Don't use 'BuildContext's across async gaps • lib/screens/intro_page.dart:295:31 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/intro_page.dart:299:31 • use_build_context_synchronously
+   info • Use 'const' with the constructor to improve performance • lib/screens/root_navigation.dart:33:5 • prefer_const_constructors
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:60:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:67:15 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:79:15 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:91:11 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:96:32 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:441:31 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:452:21 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:458:17 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:460:27 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:503:68 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/settings_page.dart:514:62 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/settings_page.dart:525:31 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/settings_page.dart:534:52 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/settings_page.dart:555:21 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/settings_page.dart:559:42 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check • lib/screens/settings_page.dart:633:21 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:786:29 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:788:29 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:800:29 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:802:29 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:817:29 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:819:29 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:834:29 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:836:29 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:855:29 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:857:29 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:869:29 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:871:29 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:1108:57 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:1110:52 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:1112:31 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:1113:31 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:1115:31 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:1117:21 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:1181:31 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:1182:31 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:1184:31 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/settings_page.dart:1186:21 • use_build_context_synchronously
+   info • Don't invoke 'print' in production code • lib/services/hive_service.dart:44:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/hive_service.dart:55:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/hive_service.dart:66:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/hive_service.dart:77:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/hive_service.dart:87:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/hive_service.dart:97:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/hive_service.dart:107:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/hive_service.dart:117:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/hive_service.dart:127:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/hive_service.dart:137:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/hive_service.dart:149:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/hive_service.dart:159:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/hive_service.dart:169:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/hive_service.dart:182:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/hive_service.dart:194:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/hive_service.dart:208:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/native_bridge.dart:51:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/native_bridge.dart:72:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/native_bridge.dart:82:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/native_bridge.dart:92:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/native_bridge.dart:102:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/native_bridge.dart:113:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/native_bridge.dart:123:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/transaction_detection_service.dart:32:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/transaction_detection_service.dart:68:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/transaction_detection_service.dart:70:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/transaction_detection_service.dart:78:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/transaction_detection_service.dart:80:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/transaction_detection_service.dart:106:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/transaction_detection_service.dart:133:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/transaction_detection_service.dart:139:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/transaction_detection_service.dart:166:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/transaction_detection_service.dart:191:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/transaction_detection_service.dart:207:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/transaction_detection_service.dart:216:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/transaction_detection_service.dart:224:5 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/transaction_detection_service.dart:261:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/transaction_detection_service.dart:303:9 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/transaction_detection_service.dart:306:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/transaction_detection_service.dart:316:7 • avoid_print
+   info • Don't invoke 'print' in production code • lib/services/transaction_detection_service.dart:318:7 • avoid_print
+
+124 issues found. (ran in 18.9s)

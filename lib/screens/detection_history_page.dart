@@ -1,20 +1,67 @@
+import 'dart:ui';
+import 'package:aspends_tracker/view_models/theme_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../models/detection_history.dart';
 import '../services/transaction_detection_service.dart';
+import '../widgets/add_transaction_dialog.dart';
 
 class DetectionHistoryPage extends StatelessWidget {
   const DetectionHistoryPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = context.watch<ThemeViewModel>().isDarkMode;
+
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        flexibleSpace: ClipRRect(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // Bottom layer: Blur
+              BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                child: Container(color: Colors.transparent),
+              ),
+              // Middle layer: Gradient tint
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      theme.colorScheme.primary.withValues(alpha: 0.15),
+                      theme.colorScheme.surface.withValues(alpha: 0.15),
+                    ],
+                  ),
+                ),
+              ),
+              // Top layer: Subtle border
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  height: 1,
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : Colors.black.withValues(alpha: 0.05),
+                ),
+              ),
+            ],
+          ),
+        ),
         title: Text(
           'Detection History',
-          style: GoogleFonts.nunito(fontWeight: FontWeight.bold),
+          style: GoogleFonts.nunito(
+            fontWeight: FontWeight.bold,
+            color: theme.colorScheme.onSurface,
+          ),
         ),
         actions: [
           IconButton(
@@ -132,7 +179,8 @@ class _HistoryCard extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: (isDetected ? Colors.green : Colors.orange).withValues(alpha: 0.1),
+            color: (isDetected ? Colors.green : Colors.orange)
+                .withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(
@@ -204,6 +252,36 @@ class _HistoryCard extends StatelessWidget {
                     ),
                   ),
                 ],
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    if (!isDetected)
+                      TextButton.icon(
+                        onPressed: () {
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (context) => AddTransactionDialog(
+                              isIncome: entry.text
+                                      .toLowerCase()
+                                      .contains('credit') ||
+                                  entry.text.toLowerCase().contains('received'),
+                              initialNote: entry.text,
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.add_task, size: 18),
+                        label: Text('Add Manually',
+                            style: GoogleFonts.nunito(
+                                fontSize: 12, fontWeight: FontWeight.bold)),
+                        style: TextButton.styleFrom(
+                          foregroundColor: theme.colorScheme.primary,
+                        ),
+                      ),
+                  ],
+                ),
               ],
             ),
           ),

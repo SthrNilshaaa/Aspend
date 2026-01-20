@@ -137,39 +137,52 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       pinned: true,
       elevation: 1,
       backgroundColor: Colors.transparent,
-      flexibleSpace: FlexibleSpaceBar(
-        title: Text(
-          'Aspends Tracker',
-          style: GoogleFonts.nunito(
-            fontSize: ResponsiveUtils.getResponsiveFontSize(context,
-                mobile: 20, tablet: 24, desktop: 28),
-            fontWeight: FontWeight.bold,
-            color: theme.colorScheme.onSurface,
-          ),
-        ),
-        background: ClipRRect(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    theme.colorScheme.primary.withValues(alpha: 0.8),
-                    theme.colorScheme.primaryContainer.withValues(alpha: 0.8)
-                  ],
+      flexibleSpace: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Persistent Glass Effect Layer
+          ClipRRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      theme.colorScheme.primary.withValues(alpha: 0.15),
+                      theme.colorScheme.surface.withValues(alpha: 0.15),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
+          // Subtle Bottom Border
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              height: 1,
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.1)
+                  : Colors.black.withValues(alpha: 0.05),
+            ),
+          ),
+          FlexibleSpaceBar(
+            title: Text(
+              'Aspends Tracker',
+              style: GoogleFonts.nunito(
+                fontSize: ResponsiveUtils.getResponsiveFontSize(context,
+                    mobile: 20, tablet: 24, desktop: 28),
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.onSurface,
+              ),
+            ),
+          ),
+        ],
       ),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.search),
-          onPressed: () => _showSearchDialog(),
-        ),
+        // Real-time search is now integrated in the body
       ],
     );
   }
@@ -206,6 +219,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ),
           ),
           _buildBudgetProgress(context, viewModel),
+          _buildSearchSection(context),
           Padding(
             padding: ResponsiveUtils.getResponsiveEdgeInsets(context,
                 horizontal: 16, vertical: 8),
@@ -232,6 +246,53 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
           _buildRangeSelector(context),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSearchSection(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: TextField(
+        onChanged: (val) {
+          final query = val.toLowerCase();
+          setState(() {
+            _searchQuery = query.isEmpty ? null : query;
+            _filteredTransactions = query.isEmpty
+                ? null
+                : context
+                    .read<TransactionViewModel>()
+                    .transactions
+                    .where((t) =>
+                        t.note.toLowerCase().contains(query) ||
+                        t.category.toLowerCase().contains(query))
+                    .toList();
+          });
+        },
+        decoration: InputDecoration(
+          hintText: 'Search note, category...',
+          prefixIcon: const Icon(Icons.search),
+          suffixIcon: _searchQuery != null
+              ? IconButton(
+                  icon: const Icon(Icons.clear, size: 20),
+                  onPressed: () {
+                    setState(() {
+                      _searchQuery = null;
+                      _filteredTransactions = null;
+                    });
+                  },
+                )
+              : null,
+          filled: true,
+          fillColor: theme.colorScheme.surface,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none,
+          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+        ),
+        style: GoogleFonts.nunito(),
       ),
     );
   }
@@ -519,52 +580,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             Text(
               label!,
               style: GoogleFonts.nunito(
-                fontSize: 15,
+                fontSize: 14,
                 fontWeight: FontWeight.bold,
                 color: theme.colorScheme.onSurface,
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _showSearchDialog() {
-    final controller = TextEditingController(text: _searchQuery);
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Search'),
-        content: TextField(
-          controller: controller,
-          decoration:
-              const InputDecoration(hintText: 'Search note, category...'),
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel')),
-          ElevatedButton(
-            onPressed: () {
-              final query = controller.text.toLowerCase();
-              setState(() {
-                _searchQuery = query.isEmpty ? null : query;
-                _filteredTransactions = query.isEmpty
-                    ? null
-                    : context
-                        .read<TransactionViewModel>()
-                        .transactions
-                        .where((t) =>
-                            t.note.toLowerCase().contains(query) ||
-                            t.category.toLowerCase().contains(query))
-                        .toList();
-              });
-              Navigator.pop(context);
-            },
-            child: const Text('Search'),
-          ),
-        ],
       ),
     );
   }

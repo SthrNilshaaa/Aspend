@@ -293,57 +293,51 @@ class _PeopleTabState extends State<PeopleTab> {
             pinned: true,
             elevation: 1,
             backgroundColor: Colors.transparent,
-            flexibleSpace: FlexibleSpaceBar(
-              title: Text(
-                'People',
-                style: GoogleFonts.nunito(
-                  fontWeight: FontWeight.bold,
-                  fontSize: ResponsiveUtils.getResponsiveFontSize(context,
-                      mobile: 24, tablet: 28, desktop: 32),
-                  color: theme.colorScheme.onSurface,
-                ),
-              ),
-              background: ClipRRect(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: useAdaptive
-                          ? LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                theme.colorScheme.primary,
-                                theme.colorScheme.primaryContainer
-                              ],
-                            )
-                          : isDark
-                              ? LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    theme.colorScheme.primary
-                                        .withValues(alpha: 0.8),
-                                    theme.colorScheme.primaryContainer
-                                        .withValues(alpha: 0.8)
-                                  ],
-                                )
-                              : LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    theme.colorScheme.primary
-                                        .withValues(alpha: 0.8),
-                                    theme.colorScheme.primaryContainer
-                                        .withValues(alpha: 0.8)
-                                  ],
-                                ),
+            flexibleSpace: Stack(
+              fit: StackFit.expand,
+              children: [
+                // Persistent Glass Effect Layer
+                ClipRRect(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            theme.colorScheme.primary.withValues(alpha: 0.15),
+                            theme.colorScheme.surface.withValues(alpha: 0.15),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
+                // Subtle Bottom Border
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    height: 1,
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : Colors.black.withValues(alpha: 0.05),
+                  ),
+                ),
+                FlexibleSpaceBar(
+                  centerTitle: true,
+                  title: Text(
+                    'People',
+                    style: GoogleFonts.nunito(
+                      fontWeight: FontWeight.bold,
+                      fontSize: ResponsiveUtils.getResponsiveFontSize(context,
+                          mobile: 20, tablet: 24, desktop: 28),
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            centerTitle: true,
           ),
 
           // NEW: Conditional Sliver for Total Debit and Credit Summary
@@ -519,8 +513,11 @@ class _PeopleTabState extends State<PeopleTab> {
                                       ),
                                       // const SizedBox(width: 8),
                                       // GestureDetector(
-                                      //   onTap: () => _showPersonDialog(context,
-                                      //       existingPerson: person),
+                                      //   onTap: () {
+                                      //     HapticFeedback.lightImpact();
+                                      //     _showPersonDialog(context,
+                                      //         existingPerson: person);
+                                      //   },
                                       //   child: Icon(
                                       //     Icons.edit_outlined,
                                       //     size: 16,

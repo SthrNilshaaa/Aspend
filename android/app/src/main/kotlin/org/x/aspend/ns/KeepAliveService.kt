@@ -11,6 +11,7 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 
 class KeepAliveService : Service() {
     companion object {
@@ -92,9 +93,10 @@ class KeepAliveService : Service() {
 
     private fun createNotification(): Notification {
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Aspend")
-            .setContentText("Running in background for transaction detection")
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setContentTitle("Aspend Active")
+            .setContentText("Securing your transactions in real-time")
+            .setSmallIcon(R.drawable.ic_notification)
+            .setColor(ContextCompat.getColor(this, R.color.teal_500))
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOngoing(true)
             .setAutoCancel(false)

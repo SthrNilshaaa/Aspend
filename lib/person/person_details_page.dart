@@ -13,6 +13,7 @@ import '../models/person_transaction.dart';
 import '../view_models/person_view_model.dart';
 import '../view_models/theme_view_model.dart';
 import '../widgets/modern_card.dart';
+import '../widgets/add_transaction_dialog.dart';
 import '../utils/error_handler.dart';
 //import 'dart:async';
 
@@ -108,43 +109,38 @@ class _PersonDetailPageState extends State<PersonDetailPage>
           elevation: 0,
           centerTitle: true,
           flexibleSpace: ClipRRect(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: useAdaptive
-                      ? LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            theme.colorScheme.primary,
-                            theme.colorScheme.primaryContainer
-                          ],
-                        )
-                      : isDark
-                          ? LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                theme.colorScheme.primary
-                                    .withValues(alpha: 0.8),
-                                theme.colorScheme.primaryContainer
-                                    .withValues(alpha: 0.8)
-                              ],
-                            )
-                          : LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              //colors: [Colors.teal.shade100.withValues(alpha: 0.8), Colors.teal.shade200.withValues(alpha: 0.8)],
-                              colors: [
-                                theme.colorScheme.primary
-                                    .withValues(alpha: 0.8),
-                                theme.colorScheme.primaryContainer
-                                    .withValues(alpha: 0.8)
-                              ],
-                            ),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // Bottom layer: Blur
+                BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                  child: Container(color: Colors.transparent),
                 ),
-              ),
+                // Middle layer: Gradient tint
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        theme.colorScheme.primary.withValues(alpha: 0.15),
+                        theme.colorScheme.surface.withValues(alpha: 0.15),
+                      ],
+                    ),
+                  ),
+                ),
+                // Top layer: Subtle border for "one more effect"
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    height: 1,
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : Colors.black.withValues(alpha: 0.05),
+                  ),
+                ),
+              ],
             ),
           ),
           title: Text(
@@ -194,7 +190,15 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                   GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             onPressed: () {
-              _showAddTxDialog(context, person);
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => AddTransactionDialog(
+                  isIncome: true,
+                  initialNote: person.name,
+                ),
+              );
               HapticFeedback.lightImpact();
             },
           ),
@@ -423,6 +427,19 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                                             context, tx);
                                       },
                                       child: ZoomTapAnimation(
+                                        onTap: () {
+                                          HapticFeedback.lightImpact();
+                                          showModalBottomSheet(
+                                            context: context,
+                                            isScrollControlled: true,
+                                            backgroundColor: Colors.transparent,
+                                            builder: (context) =>
+                                                AddTransactionDialog(
+                                              isIncome: tx.isIncome,
+                                              existingPersonTransaction: tx,
+                                            ),
+                                          );
+                                        },
                                         child: Container(
                                           decoration: BoxDecoration(
                                             gradient: LinearGradient(
@@ -649,19 +666,17 @@ class _PersonDetailPageState extends State<PersonDetailPage>
           ),
           ElevatedButton(
             onPressed: () {
-              final tx = PersonTransaction(
-                personName: currentPerson.name,
-                amount: currentTotal.abs(),
-                isIncome: currentTotal <
-                    0, // If negative (gave/owe), we add income to settle
-                date: DateTime.now(),
-                note: 'Settled balance',
-              );
-              context
-                  .read<PersonViewModel>()
-                  .addPersonTransaction(tx, currentPerson.name);
               Navigator.pop(ctx);
-              ErrorHandler.showSuccessSnackBar(context, 'Balance settled!');
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => AddTransactionDialog(
+                  isIncome: currentTotal < 0,
+                  initialAmount: currentTotal.abs(),
+                  initialNote: '${currentPerson.name} - Settled balance',
+                ),
+              );
               HapticFeedback.mediumImpact();
             },
             child: Text('Settle', style: GoogleFonts.nunito()),
@@ -767,156 +782,6 @@ class _PersonDetailPageState extends State<PersonDetailPage>
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  void _showAddTxDialog(BuildContext context, Person currentPerson) {
-    final amtCtrl = TextEditingController();
-    final noteCtrl = TextEditingController();
-    bool isIncome = true;
-    final theme = Theme.of(context);
-
-    showDialog(
-      context: context,
-      builder: (_) => StatefulBuilder(
-        builder: (context, setSt) => AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text(
-            'Add Transaction',
-            style: GoogleFonts.nunito(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: theme.colorScheme.primary,
-            ),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Add a transaction with ${currentPerson.name}',
-                style: GoogleFonts.nunito(
-                  fontSize: 14,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                ),
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: amtCtrl,
-                decoration: InputDecoration(
-                  labelText: 'Amount',
-                  labelStyle: GoogleFonts.nunito(fontSize: 16),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  filled: true,
-                  fillColor: theme.colorScheme.surface,
-                  prefixIcon: Icon(Icons.currency_rupee,
-                      color: theme.colorScheme.primary),
-                ),
-                style: GoogleFonts.nunito(fontSize: 16),
-                keyboardType: TextInputType.number,
-                autofocus: true,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: noteCtrl,
-                decoration: InputDecoration(
-                  labelText: 'Note (Optional)',
-                  labelStyle: GoogleFonts.nunito(fontSize: 16),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  filled: true,
-                  fillColor: theme.colorScheme.surface,
-                  prefixIcon: Icon(Icons.note_outlined,
-                      color: theme.colorScheme.primary),
-                ),
-                style: GoogleFonts.nunito(fontSize: 16),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                      color: theme.colorScheme.outline.withValues(alpha: 0.5)),
-                ),
-                child: SwitchListTile(
-                  title: Text(
-                    'Is Income',
-                    style: GoogleFonts.nunito(
-                        fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
-                  subtitle: Text(
-                    isIncome ? 'You received money' : 'You gave money',
-                    style: GoogleFonts.nunito(
-                      fontSize: 14,
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                    ),
-                  ),
-                  value: isIncome,
-                  onChanged: (v) {
-                    HapticFeedback.lightImpact();
-                    setSt(() => isIncome = v);
-                  },
-                  activeThumbColor: theme.colorScheme.primary,
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                HapticFeedback.lightImpact();
-                Navigator.pop(context);
-              },
-              child: Text(
-                'Cancel',
-                style: GoogleFonts.nunito(
-                    fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                HapticFeedback.lightImpact();
-                if (amtCtrl.text.isNotEmpty) {
-                  final personViewModel = context.read<PersonViewModel>();
-                  final currentPerson = personViewModel.people.firstWhere(
-                    (p) => p.key == widget.person.key,
-                    orElse: () => widget.person,
-                  );
-                  final transaction = PersonTransaction(
-                    personName: currentPerson.name,
-                    amount: double.parse(amtCtrl.text),
-                    note: noteCtrl.text,
-                    date: DateTime.now(),
-                    isIncome: isIncome,
-                  );
-
-                  context
-                      .read<PersonViewModel>()
-                      .addPersonTransaction(transaction, currentPerson.name);
-                  Navigator.pop(context);
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: theme.colorScheme.primary,
-                foregroundColor: theme.colorScheme.onPrimary,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              ),
-              child: Text(
-                'Add Transaction',
-                style: GoogleFonts.nunito(
-                    fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
