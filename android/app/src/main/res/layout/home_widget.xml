@@ -40,7 +40,8 @@
         android:id="@+id/stats_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginVertical="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
         android:gravity="center"
         android:orientation="horizontal">
 
@@ -71,11 +72,10 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <View
+        <FrameLayout
             android:layout_width="1dp"
             android:layout_height="20dp"
-            android:background="@color/gray_border"
-            android:alpha="0.3" />
+            android:background="@color/gray_divider_alpha" />
 
         <!-- Total Expense -->
         <LinearLayout
@@ -121,17 +121,13 @@
             android:layout_marginEnd="6dp"
             android:layout_weight="1"
             android:background="@drawable/widget_button_background"
-            android:clickable="true"
-            android:focusable="true"
-            android:foreground="?android:attr/selectableItemBackground"
             android:gravity="center"
             android:orientation="horizontal">
 
             <ImageView
                 android:layout_width="18dp"
                 android:layout_height="18dp"
-                android:src="@drawable/ic_add"
-                android:tint="@color/green_600" />
+                android:src="@drawable/ic_add_green" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -152,17 +148,13 @@
             android:layout_marginStart="6dp"
             android:layout_weight="1"
             android:background="@drawable/widget_button_background"
-            android:clickable="true"
-            android:focusable="true"
-            android:foreground="?android:attr/selectableItemBackground"
             android:gravity="center"
             android:orientation="horizontal">
 
             <ImageView
                 android:layout_width="18dp"
                 android:layout_height="18dp"
-                android:src="@drawable/ic_remove"
-                android:tint="@color/red_600" />
+                android:src="@drawable/ic_remove_red" />
 
             <TextView
                 android:layout_width="wrap_content"

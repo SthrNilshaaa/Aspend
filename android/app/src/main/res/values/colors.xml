@@ -9,4 +9,5 @@
     <color name="gray_border">#E0E0E0</color>
     <color name="green_600">#43A047</color>
     <color name="red_600">#E53935</color>
+    <color name="gray_divider_alpha">#4DE0E0E0</color>
 </resources> 
