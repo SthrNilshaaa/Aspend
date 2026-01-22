@@ -10,6 +10,7 @@ import 'home_page.dart';
 import 'people_page.dart';
 import 'chart_page.dart';
 import 'settings_page.dart';
+import '../utils/responsive_utils.dart';
 
 class RootNavigation extends StatefulWidget {
   const RootNavigation({super.key});
@@ -87,64 +88,117 @@ class _RootNavigationState extends State<RootNavigation>
     ThemeData theme = Theme.of(context);
     final isDark = context.watch<ThemeViewModel>().isDarkMode;
 
+    final isLargeScreen = !ResponsiveUtils.isMobile(context);
+
     return Scaffold(
-        body: FadeTransition(
-      opacity: _fadeAnimation,
-      child: Stack(
+      body: Row(
         children: [
-          PageView(
-            controller: _pageController,
-            onPageChanged: _onPageChanged,
-            physics: const BouncingScrollPhysics(),
-            scrollBehavior: const MaterialScrollBehavior(),
-            children: _screens,
-          ),
-          Positioned(
-            bottom: 18,
-            left: 18,
-            right: 18,
-            height: 60,
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                    width: 1,
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.1)
-                        : Colors.black.withValues(alpha: 0.1)),
-                borderRadius: BorderRadius.circular(30),
+          if (isLargeScreen)
+            NavigationRail(
+              selectedIndex: _selectedIndex,
+              onDestinationSelected: _onItemTapped,
+              labelType: NavigationRailLabelType.selected,
+              backgroundColor: theme.scaffoldBackgroundColor,
+              indicatorColor: theme.colorScheme.primary.withValues(alpha: 0.2),
+              selectedIconTheme:
+                  IconThemeData(color: theme.colorScheme.primary),
+              unselectedIconTheme: IconThemeData(color: Colors.grey.shade600),
+              selectedLabelTextStyle: TextStyle(
+                color: theme.colorScheme.primary,
+                fontWeight: FontWeight.bold,
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(40),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaY: 8, sigmaX: 8),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: theme.scaffoldBackgroundColor.withValues(alpha: 0.1),
-                    ),
-                  ),
+              unselectedLabelTextStyle: TextStyle(
+                color: Colors.grey.shade600,
+              ),
+              destinations: const [
+                NavigationRailDestination(
+                  icon: Icon(Icons.home_outlined),
+                  selectedIcon: Icon(Icons.home),
+                  label: Text('Home'),
                 ),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 18,
-            left: 22,
-            right: 22,
-            height: 60,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildBNBItem(Icons.home_outlined, 0, 'Home'),
-                _buildBNBItem(Icons.person, 1, 'Person'),
-                _buildBNBItem(Icons.auto_graph, 2, 'Chart'),
-                _buildBNBItem(Icons.settings_outlined, 3, 'Setting'),
+                NavigationRailDestination(
+                  icon: Icon(Icons.person_outline),
+                  selectedIcon: Icon(Icons.person),
+                  label: Text('People'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.auto_graph_outlined),
+                  selectedIcon: Icon(Icons.auto_graph),
+                  label: Text('Charts'),
+                ),
+                NavigationRailDestination(
+                  icon: Icon(Icons.settings_outlined),
+                  selectedIcon: Icon(Icons.settings),
+                  label: Text('Settings'),
+                ),
               ],
+            ),
+          Expanded(
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: Stack(
+                children: [
+                  PageView(
+                    controller: _pageController,
+                    onPageChanged: _onPageChanged,
+                    physics: const BouncingScrollPhysics(),
+                    scrollBehavior: const MaterialScrollBehavior(),
+                    children: _screens,
+                  ),
+                  if (!isLargeScreen) ...[
+                    Positioned(
+                      bottom: 18,
+                      left: 18,
+                      right: 18,
+                      height: 60,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            width: 1,
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.1)
+                                : Colors.black.withValues(alpha: 0.1),
+                          ),
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(40),
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaY: 8, sigmaX: 8),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: theme.scaffoldBackgroundColor
+                                    .withValues(alpha: 0.1),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 18,
+                      left: 22,
+                      right: 22,
+                      height: 60,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _buildBNBItem(Icons.home_outlined, 0, 'Home'),
+                          _buildBNBItem(Icons.person, 1, 'People'),
+                          _buildBNBItem(Icons.auto_graph, 2, 'Charts'),
+                          _buildBNBItem(Icons.settings_outlined, 3, 'Settings'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
           ),
         ],
       ),
-    ));
+    );
   }
 
   Widget _buildBNBItem(IconData icon, int index, String label) {

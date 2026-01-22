@@ -10,6 +10,7 @@ import '../view_models/transaction_view_model.dart';
 import '../view_models/theme_view_model.dart';
 import '../utils/transaction_utils.dart';
 import 'add_transaction_dialog.dart';
+import '../utils/responsive_utils.dart';
 
 class TransactionTile extends StatefulWidget {
   final Transaction transaction;
@@ -36,11 +37,13 @@ class _TransactionTileState extends State<TransactionTile> {
     final icon = TransactionUtils.getCategoryIcon(widget.transaction.category);
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: ResponsiveUtils.getResponsiveEdgeInsets(context,
+          horizontal: 16, vertical: 8),
       child: ZoomTapAnimation(
         onTap: () => _showDetailsSheet(context, isDark),
         child: Container(
-          padding: const EdgeInsets.all(16),
+          padding: ResponsiveUtils.getResponsiveEdgeInsets(context,
+              horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             color: theme.cardColor,
             borderRadius: BorderRadius.circular(24),
@@ -61,8 +64,10 @@ class _TransactionTileState extends State<TransactionTile> {
           child: Row(
             children: [
               Container(
-                height: 52,
-                width: 52,
+                height: ResponsiveUtils.getResponsiveIconSize(context,
+                    mobile: 48, tablet: 52, desktop: 56),
+                width: ResponsiveUtils.getResponsiveIconSize(context,
+                    mobile: 48, tablet: 52, desktop: 56),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
@@ -74,7 +79,10 @@ class _TransactionTileState extends State<TransactionTile> {
                   ),
                   borderRadius: BorderRadius.circular(18),
                 ),
-                child: Icon(icon, color: color, size: 24),
+                child: Icon(icon,
+                    color: color,
+                    size: ResponsiveUtils.getResponsiveIconSize(context,
+                        mobile: 22, tablet: 24, desktop: 26)),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -87,7 +95,8 @@ class _TransactionTileState extends State<TransactionTile> {
                           : widget.transaction.note,
                       style: GoogleFonts.nunito(
                         fontWeight: FontWeight.w800,
-                        fontSize: 16,
+                        fontSize: ResponsiveUtils.getResponsiveFontSize(context,
+                            mobile: 15, tablet: 16, desktop: 17),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -100,7 +109,11 @@ class _TransactionTileState extends State<TransactionTile> {
                           style: GoogleFonts.nunito(
                             color: theme.textTheme.bodySmall?.color
                                 ?.withValues(alpha: 0.6),
-                            fontSize: 12,
+                            fontSize: ResponsiveUtils.getResponsiveFontSize(
+                                context,
+                                mobile: 11,
+                                tablet: 12,
+                                desktop: 13),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -124,7 +137,8 @@ class _TransactionTileState extends State<TransactionTile> {
                     "${widget.transaction.isIncome ? '+' : '-'}${NumberFormat.currency(symbol: '₹', decimalDigits: 2).format(widget.transaction.amount)}",
                     style: GoogleFonts.nunito(
                       fontWeight: FontWeight.w900,
-                      fontSize: 18,
+                      fontSize: ResponsiveUtils.getResponsiveFontSize(context,
+                          mobile: 16, tablet: 18, desktop: 20),
                       color: widget.transaction.isIncome
                           ? Colors.greenAccent.shade700
                           : Colors.redAccent,
@@ -135,7 +149,8 @@ class _TransactionTileState extends State<TransactionTile> {
                     style: GoogleFonts.nunito(
                       color: theme.textTheme.bodySmall?.color
                           ?.withValues(alpha: 0.4),
-                      fontSize: 10,
+                      fontSize: ResponsiveUtils.getResponsiveFontSize(context,
+                          mobile: 9, tablet: 10, desktop: 11),
                       fontWeight: FontWeight.bold,
                     ),
                   ),

@@ -100,15 +100,15 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
                   ),
                 ),
                 // Subtle Bottom Border
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Container(
-                    height: 1,
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.1)
-                        : Colors.black.withValues(alpha: 0.05),
-                  ),
-                ),
+                // Align(
+                //   alignment: Alignment.bottomCenter,
+                //   child: Container(
+                //     height: 1,
+                //     color: isDark
+                //         ? Colors.white.withValues(alpha: 0.1)
+                //         : Colors.black.withValues(alpha: 0.05),
+                //   ),
+                // ),
                 FlexibleSpaceBar(
                   centerTitle: true,
                   title: Text(
@@ -154,8 +154,11 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
 
                 if (filteredTxs.isEmpty) return _buildEmptyState(isDark);
 
+                final isLargeScreen = !ResponsiveUtils.isMobile(context);
+
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: ResponsiveUtils.getResponsiveEdgeInsets(context,
+                      horizontal: 16, vertical: 0),
                   child: Column(
                     children: [
                       Row(
@@ -182,34 +185,98 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
                         ],
                       ),
                       const SizedBox(height: 24),
-                      _buildChartTabs(isDark),
-                      const SizedBox(height: 16),
-                      ModernCard(
-                        padding: const EdgeInsets.all(24),
-                        child: Column(
+                      if (isLargeScreen)
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            SizedBox(
-                              height: 250,
-                              child: TabBarView(
-                                controller: _tabController,
+                            Expanded(
+                              flex: 3,
+                              child: Column(
                                 children: [
-                                  _buildPieChart(
-                                      totalIncome, totalSpend, isDark),
-                                  _buildBarChart(filteredTxs, isDark),
-                                  _buildCategoryChart(filteredTxs, isDark),
+                                  _buildChartTabs(isDark),
+                                  const SizedBox(height: 16),
+                                  ModernCard(
+                                    padding: const EdgeInsets.all(24),
+                                    child: SizedBox(
+                                      height: ResponsiveUtils
+                                          .getResponsiveChartHeight(context),
+                                      child: TabBarView(
+                                        controller: _tabController,
+                                        children: [
+                                          _buildPieChart(
+                                              totalIncome, totalSpend, isDark),
+                                          _buildBarChart(filteredTxs, isDark),
+                                          _buildCategoryChart(
+                                              filteredTxs, isDark),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 24),
+                            Expanded(
+                              flex: 2,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildSectionHeader('History'),
+                                  const SizedBox(height: 16),
+                                  ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      maxHeight: ResponsiveUtils
+                                              .getResponsiveChartHeight(
+                                                  context) +
+                                          100,
+                                    ),
+                                    child: ListView.builder(
+                                      shrinkWrap: true,
+                                      physics: const BouncingScrollPhysics(),
+                                      itemCount: filteredTxs.length,
+                                      itemBuilder: (context, index) =>
+                                          TransactionTile(
+                                        transaction: filteredTxs[index],
+                                        index: index,
+                                      ),
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
                           ],
+                        )
+                      else
+                        Column(
+                          children: [
+                            _buildChartTabs(isDark),
+                            const SizedBox(height: 16),
+                            ModernCard(
+                              padding: const EdgeInsets.all(24),
+                              child: SizedBox(
+                                height:
+                                    ResponsiveUtils.getResponsiveChartHeight(
+                                        context),
+                                child: TabBarView(
+                                  controller: _tabController,
+                                  children: [
+                                    _buildPieChart(
+                                        totalIncome, totalSpend, isDark),
+                                    _buildBarChart(filteredTxs, isDark),
+                                    _buildCategoryChart(filteredTxs, isDark),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 32),
+                            _buildSectionHeader('History'),
+                            const SizedBox(height: 16),
+                            ...filteredTxs
+                                .map((tx) =>
+                                    TransactionTile(transaction: tx, index: 0))
+                                .toList(),
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: 32),
-                      _buildSectionHeader('History'),
-                      const SizedBox(height: 16),
-                      ...filteredTxs
-                          .map((tx) =>
-                              TransactionTile(transaction: tx, index: 0))
-                          .toList(),
                       const SizedBox(height: 100),
                     ],
                   ),

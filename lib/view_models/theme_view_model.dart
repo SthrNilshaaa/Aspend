@@ -9,6 +9,7 @@ class ThemeViewModel extends ChangeNotifier {
   bool _useAdaptiveColor = false;
   Color? _customSeedColor;
   double _monthlyBudget = 0;
+  bool _joinPreviousMonthBalance = true;
 
   ThemeViewModel(this._repository) {
     _loadSettings();
@@ -18,6 +19,7 @@ class ThemeViewModel extends ChangeNotifier {
   bool get useAdaptiveColor => _useAdaptiveColor;
   Color? get customSeedColor => _customSeedColor;
   double get monthlyBudget => _monthlyBudget;
+  bool get joinPreviousMonthBalance => _joinPreviousMonthBalance;
 
   bool get isDarkMode {
     final brightness =
@@ -44,6 +46,7 @@ class ThemeViewModel extends ChangeNotifier {
     _useAdaptiveColor = _repository.getUseAdaptiveColor();
     _customSeedColor = _repository.getCustomSeedColor();
     _monthlyBudget = _repository.getMonthlyBudget();
+    _joinPreviousMonthBalance = _repository.getJoinPreviousMonthBalance();
     notifyListeners();
   }
 
@@ -68,6 +71,12 @@ class ThemeViewModel extends ChangeNotifier {
   void setMonthlyBudget(double amount) async {
     _monthlyBudget = amount;
     await _repository.setMonthlyBudget(amount);
+    notifyListeners();
+  }
+
+  void setJoinPreviousMonthBalance(bool value) async {
+    _joinPreviousMonthBalance = value;
+    await _repository.setJoinPreviousMonthBalance(value);
     notifyListeners();
   }
 }

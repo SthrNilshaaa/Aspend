@@ -159,15 +159,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ),
           ),
           // Subtle Bottom Border
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              height: 1,
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.1)
-                  : Colors.black.withValues(alpha: 0.05),
-            ),
-          ),
+          // Align(
+          //   alignment: Alignment.bottomCenter,
+          //   child: Container(
+          //     height: 1,
+          //     color: isDark
+          //         ? Colors.white.withValues(alpha: 0.1)
+          //         : Colors.black.withValues(alpha: 0.05),
+          //   ),
+          // ),
           FlexibleSpaceBar(
             title: Text(
               'Aspends Tracker',
@@ -206,19 +206,44 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Widget _buildBalanceSection(
       BuildContext context, TransactionViewModel viewModel) {
+    final isLargeScreen = !ResponsiveUtils.isMobile(context);
+
     return SliverToBoxAdapter(
       child: Column(
         children: [
           Padding(
             padding: ResponsiveUtils.getResponsiveEdgeInsets(context,
                 horizontal: 8, vertical: 8),
-            child: BalanceCard(
-              balance: viewModel.totalBalance,
-              onBalanceUpdate: (newBalance) =>
-                  viewModel.updateBalance(newBalance),
-            ),
+            child: isLargeScreen
+                ? Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: BalanceCard(
+                          balance: viewModel.totalBalance,
+                          onBalanceUpdate: (newBalance) =>
+                              viewModel.updateBalance(newBalance),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: _buildBudgetProgress(context, viewModel,
+                            isCompact: true),
+                      ),
+                    ],
+                  )
+                : Column(
+                    children: [
+                      BalanceCard(
+                        balance: viewModel.totalBalance,
+                        onBalanceUpdate: (newBalance) =>
+                            viewModel.updateBalance(newBalance),
+                      ),
+                      _buildBudgetProgress(context, viewModel),
+                    ],
+                  ),
           ),
-          _buildBudgetProgress(context, viewModel),
           _buildSearchSection(context),
           Padding(
             padding: ResponsiveUtils.getResponsiveEdgeInsets(context,
@@ -635,7 +660,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildBudgetProgress(
-      BuildContext context, TransactionViewModel viewModel) {
+      BuildContext context, TransactionViewModel viewModel,
+      {bool isCompact = false}) {
     final themeViewModel = context.watch<ThemeViewModel>();
     final budget = themeViewModel.monthlyBudget;
     if (budget <= 0) return const SizedBox.shrink();
@@ -655,9 +681,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     final theme = Theme.of(context);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: EdgeInsets.symmetric(
+          horizontal: isCompact ? 8 : 16, vertical: isCompact ? 8 : 8),
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(isCompact ? 16 : 20),
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(24),
@@ -680,17 +707,21 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Monthly Budget',
-                  style: GoogleFonts.nunito(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 16,
+                Expanded(
+                  child: Text(
+                    'Budget',
+                    style: GoogleFonts.nunito(
+                      fontWeight: FontWeight.w800,
+                      fontSize: isCompact ? 14 : 16,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 Text(
-                  '₹${spent.toStringAsFixed(0)} / ₹${budget.toStringAsFixed(0)}',
+                  '₹${spent.toStringAsFixed(0)}',
                   style: GoogleFonts.nunito(
                     fontWeight: FontWeight.w700,
+                    fontSize: isCompact ? 13 : 14,
                     color: isOverBudget ? Colors.redAccent : Colors.grey,
                   ),
                 ),
@@ -701,17 +732,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               borderRadius: BorderRadius.circular(8),
               child: LinearProgressIndicator(
                 value: percentage,
-                minHeight: 10,
+                minHeight: isCompact ? 8 : 10,
                 backgroundColor: theme.dividerColor.withValues(alpha: 0.1),
                 valueColor: AlwaysStoppedAnimation(
                   isOverBudget ? Colors.redAccent : theme.colorScheme.primary,
                 ),
               ),
             ),
-            if (isOverBudget) ...[
+            if (!isCompact && isOverBudget) ...[
               const SizedBox(height: 8),
               Text(
-                '⚠️ You have exceeded your budget by ₹${(spent - budget).toStringAsFixed(0)}',
+                '⚠️ Over by ₹${(spent - budget).toStringAsFixed(0)}',
                 style: GoogleFonts.nunito(
                   fontSize: 12,
                   color: Colors.redAccent,

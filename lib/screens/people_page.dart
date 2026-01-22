@@ -315,15 +315,15 @@ class _PeopleTabState extends State<PeopleTab> {
                   ),
                 ),
                 // Subtle Bottom Border
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Container(
-                    height: 1,
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.1)
-                        : Colors.black.withValues(alpha: 0.05),
-                  ),
-                ),
+                // Align(
+                //   alignment: Alignment.bottomCenter,
+                //   child: Container(
+                //     height: 1,
+                //     color: isDark
+                //         ? Colors.white.withValues(alpha: 0.1)
+                //         : Colors.black.withValues(alpha: 0.05),
+                //   ),
+                // ),
                 FlexibleSpaceBar(
                   centerTitle: true,
                   title: Text(
@@ -447,16 +447,25 @@ class _PeopleTabState extends State<PeopleTab> {
               ),
             )
           else
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final person = people[index];
-                  final total = personViewModel.getTotalForPerson(person.name);
-                  final isPositive = total >= 0;
-                  return Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                    child: ZoomTapAnimation(
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              sliver: SliverGrid(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount:
+                      ResponsiveUtils.getResponsiveGridCrossAxisCount(context),
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: ResponsiveUtils.isMobile(context)
+                      ? 4.5
+                      : (ResponsiveUtils.isTablet(context) ? 2.5 : 3.0),
+                ),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final person = people[index];
+                    final total =
+                        personViewModel.getTotalForPerson(person.name);
+                    final isPositive = total >= 0;
+                    return ZoomTapAnimation(
                       onTap: () {
                         HapticFeedback.selectionClick();
                         Navigator.push(
@@ -471,8 +480,16 @@ class _PeopleTabState extends State<PeopleTab> {
                         child: Row(
                           children: [
                             Container(
-                              width: 56,
-                              height: 56,
+                              width: ResponsiveUtils.getResponsiveIconSize(
+                                  context,
+                                  mobile: 48,
+                                  tablet: 56,
+                                  desktop: 64),
+                              height: ResponsiveUtils.getResponsiveIconSize(
+                                  context,
+                                  mobile: 48,
+                                  tablet: 56,
+                                  desktop: 64),
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: person.photoPath == null
@@ -487,45 +504,39 @@ class _PeopleTabState extends State<PeopleTab> {
                               ),
                               child: person.photoPath != null
                                   ? ClipRRect(
-                                      borderRadius: BorderRadius.circular(28),
-                                      child: Image.file(
-                                        File(person.photoPath!),
-                                        fit: BoxFit.cover,
-                                      ),
+                                      borderRadius: BorderRadius.circular(32),
+                                      child: person.photoPath!
+                                              .startsWith('assets/')
+                                          ? Image.asset(person.photoPath!,
+                                              fit: BoxFit.cover)
+                                          : Image.file(
+                                              File(person.photoPath!),
+                                              fit: BoxFit.cover,
+                                            ),
                                     )
                                   : Icon(Icons.person,
                                       color: theme.colorScheme.primary,
-                                      size: 28),
+                                      size: 24),
                             ),
-                            const SizedBox(width: 16),
+                            const SizedBox(width: 12),
                             Expanded(
                               child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(
-                                    children: [
-                                      Text(
-                                        person.name,
-                                        style: GoogleFonts.nunito(
-                                          fontWeight: FontWeight.w800,
-                                          fontSize: 17,
-                                        ),
-                                      ),
-                                      // const SizedBox(width: 8),
-                                      // GestureDetector(
-                                      //   onTap: () {
-                                      //     HapticFeedback.lightImpact();
-                                      //     _showPersonDialog(context,
-                                      //         existingPerson: person);
-                                      //   },
-                                      //   child: Icon(
-                                      //     Icons.edit_outlined,
-                                      //     size: 16,
-                                      //     color: theme.colorScheme.primary
-                                      //         .withValues(alpha: 0.5),
-                                      //   ),
-                                      // ),
-                                    ],
+                                  Text(
+                                    person.name,
+                                    style: GoogleFonts.nunito(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize:
+                                          ResponsiveUtils.getResponsiveFontSize(
+                                              context,
+                                              mobile: 15,
+                                              tablet: 17,
+                                              desktop: 19),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
@@ -533,7 +544,7 @@ class _PeopleTabState extends State<PeopleTab> {
                                         ? 'You will get'
                                         : 'You will give',
                                     style: GoogleFonts.nunito(
-                                      fontSize: 12,
+                                      fontSize: 11,
                                       color: Colors.grey,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -541,35 +552,21 @@ class _PeopleTabState extends State<PeopleTab> {
                                 ],
                               ),
                             ),
+                            const SizedBox(width: 8),
                             Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
                                 Text(
                                   '₹${total.abs().toStringAsFixed(0)}',
                                   style: GoogleFonts.nunito(
                                     fontWeight: FontWeight.w900,
-                                    fontSize: 18,
-                                    color: isPositive
-                                        ? Colors.greenAccent.shade700
-                                        : Colors.redAccent,
-                                  ),
-                                ),
-                                Container(
-                                  margin: const EdgeInsets.only(top: 4),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: (isPositive
-                                            ? Colors.greenAccent.shade700
-                                            : Colors.redAccent)
-                                        .withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Icon(
-                                    isPositive
-                                        ? Icons.keyboard_arrow_down
-                                        : Icons.keyboard_arrow_up,
-                                    size: 14,
+                                    fontSize:
+                                        ResponsiveUtils.getResponsiveFontSize(
+                                            context,
+                                            mobile: 16,
+                                            tablet: 18,
+                                            desktop: 20),
                                     color: isPositive
                                         ? Colors.greenAccent.shade700
                                         : Colors.redAccent,
@@ -580,10 +577,10 @@ class _PeopleTabState extends State<PeopleTab> {
                           ],
                         ),
                       ),
-                    ),
-                  );
-                },
-                childCount: people.length,
+                    );
+                  },
+                  childCount: people.length,
+                ),
               ),
             ),
           const SliverToBoxAdapter(

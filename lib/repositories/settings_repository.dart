@@ -9,6 +9,7 @@ class SettingsRepository {
   static const String _customColorKey = 'customSeedColor';
   static const String _introCompletedKey = 'introCompleted';
   static const String _monthlyBudgetKey = 'monthlyBudget';
+  static const String _joinPreviousMonthBalanceKey = 'joinPreviousMonthBalance';
 
   Box get _settingsBox => Hive.box(_settingsBoxName);
 
@@ -57,6 +58,14 @@ class SettingsRepository {
 
   Future<void> setMonthlyBudget(double amount) async {
     await _settingsBox.put(_monthlyBudgetKey, amount);
+  }
+
+  bool getJoinPreviousMonthBalance() {
+    return _settingsBox.get(_joinPreviousMonthBalanceKey, defaultValue: true);
+  }
+
+  Future<void> setJoinPreviousMonthBalance(bool value) async {
+    await _settingsBox.put(_joinPreviousMonthBalanceKey, value);
   }
 
   Stream<BoxEvent> watchSettings() {

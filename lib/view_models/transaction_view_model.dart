@@ -4,6 +4,7 @@ import 'package:home_widget/home_widget.dart';
 import 'dart:async';
 import '../models/transaction.dart';
 import '../repositories/transaction_repository.dart';
+import '../repositories/settings_repository.dart';
 
 enum SortOption {
   dateNewest,
@@ -15,10 +16,12 @@ enum SortOption {
 
 class TransactionViewModel with ChangeNotifier {
   final TransactionRepository _repository;
+  final SettingsRepository _settingsRepository;
 
   List<Transaction> _transactions = [];
   double _currentBalance = 0;
   SortOption _currentSortOption = SortOption.dateNewest;
+  bool _joinPreviousMonthBalance = true;
 
   // Memoization
   List<Transaction>? _cachedSpends;
@@ -31,15 +34,27 @@ class TransactionViewModel with ChangeNotifier {
   StreamSubscription? _txSubscription;
   StreamSubscription? _balanceSubscription;
 
-  TransactionViewModel(this._repository) {
+  TransactionViewModel(this._repository, this._settingsRepository) {
     _loadData();
     _subscribeToChanges();
+    _loadSettings();
   }
 
   SortOption get currentSortOption => _currentSortOption;
   bool get sortByNewestFirst => _currentSortOption == SortOption.dateNewest;
   List<Transaction> get transactions => _transactions;
-  double get totalBalance => _currentBalance;
+  double get totalBalance {
+    if (_joinPreviousMonthBalance) {
+      return _currentBalance;
+    } else {
+      final now = DateTime.now();
+      final startOfMonth = DateTime(now.year, now.month, 1);
+      final monthlyTxs = _transactions.where((t) =>
+          t.date.isAfter(startOfMonth.subtract(const Duration(seconds: 1))));
+      return monthlyTxs.fold(
+          0.0, (sum, t) => sum + (t.isIncome ? t.amount : -t.amount));
+    }
+  }
 
   void setSortOption(SortOption option) {
     _currentSortOption = option;
@@ -73,6 +88,18 @@ class TransactionViewModel with ChangeNotifier {
       notifyListeners();
       _updateHomeWidget();
     });
+
+    _settingsRepository.watchSettings().listen((event) {
+      _loadSettings();
+    });
+  }
+
+  void _loadSettings() {
+    _joinPreviousMonthBalance =
+        _settingsRepository.getJoinPreviousMonthBalance();
+    _markDirty();
+    _updateHomeWidget();
+    notifyListeners();
   }
 
   void _showDetectionToast(Transaction tx) {
@@ -188,8 +215,16 @@ class TransactionViewModel with ChangeNotifier {
 
   double get totalSpend {
     if (_cachedTotalSpend == null || _isDirty) {
-      final spendList =
-          _cachedSpends ?? _transactions.where((t) => !t.isIncome).toList();
+      Iterable<Transaction> spendList =
+          _cachedSpends ?? _transactions.where((t) => !t.isIncome);
+
+      if (!_joinPreviousMonthBalance) {
+        final now = DateTime.now();
+        final startOfMonth = DateTime(now.year, now.month, 1);
+        spendList = spendList.where((t) =>
+            t.date.isAfter(startOfMonth.subtract(const Duration(seconds: 1))));
+      }
+
       _cachedTotalSpend =
           spendList.fold<double>(0.0, (sum, tx) => sum + tx.amount);
     }
@@ -198,8 +233,16 @@ class TransactionViewModel with ChangeNotifier {
 
   double get totalIncome {
     if (_cachedTotalIncome == null || _isDirty) {
-      final incomeList =
-          _cachedIncomes ?? _transactions.where((t) => t.isIncome).toList();
+      Iterable<Transaction> incomeList =
+          _cachedIncomes ?? _transactions.where((t) => t.isIncome);
+
+      if (!_joinPreviousMonthBalance) {
+        final now = DateTime.now();
+        final startOfMonth = DateTime(now.year, now.month, 1);
+        incomeList = incomeList.where((t) =>
+            t.date.isAfter(startOfMonth.subtract(const Duration(seconds: 1))));
+      }
+
       _cachedTotalIncome =
           incomeList.fold<double>(0.0, (sum, tx) => sum + tx.amount);
     }
@@ -226,20 +269,13 @@ class TransactionViewModel with ChangeNotifier {
   }
 
   void _updateHomeWidget() async {
-    final formattedBalance = '₹${_currentBalance.toStringAsFixed(2)}';
+    final formattedBalance = '₹${totalBalance.toStringAsFixed(2)}';
     await HomeWidget.saveWidgetData('balance', formattedBalance);
     await HomeWidget.saveWidgetData(
         'transaction_count', _transactions.length.toString());
 
-    final totalIncome = _transactions
-        .where((t) => t.isIncome)
-        .fold(0.0, (sum, t) => sum + t.amount);
-    final totalExpenses = _transactions
-        .where((t) => !t.isIncome)
-        .fold(0.0, (sum, t) => sum + t.amount);
-
     await HomeWidget.saveWidgetData('total_income', totalIncome.toString());
-    await HomeWidget.saveWidgetData('total_expenses', totalExpenses.toString());
+    await HomeWidget.saveWidgetData('total_expenses', totalSpend.toString());
     await HomeWidget.saveWidgetData('has_data', _transactions.isNotEmpty);
 
     await HomeWidget.updateWidget(

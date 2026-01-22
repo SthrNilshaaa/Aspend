@@ -87,7 +87,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeViewModel(settingsRepo)),
         ChangeNotifierProvider(
-            create: (_) => TransactionViewModel(transactionRepo)),
+            create: (_) => TransactionViewModel(transactionRepo, settingsRepo)),
         ChangeNotifierProvider(create: (_) => PersonViewModel(personRepo)),
       ],
       child: const MyApp(),
@@ -149,7 +149,8 @@ class MyApp extends StatelessWidget {
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: scheme.outline.withValues(alpha: 0.5)),
+                borderSide:
+                    BorderSide(color: scheme.outline.withValues(alpha: 0.5)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),

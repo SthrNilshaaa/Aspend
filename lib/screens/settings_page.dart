@@ -141,15 +141,15 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                 ),
                 // Subtle Bottom Border
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Container(
-                    height: 1,
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.1)
-                        : Colors.black.withValues(alpha: 0.05),
-                  ),
-                ),
+                // Align(
+                //   alignment: Alignment.bottomCenter,
+                //   child: Container(
+                //     height: 1,
+                //     color: isDark
+                //         ? Colors.white.withValues(alpha: 0.1)
+                //         : Colors.black.withValues(alpha: 0.05),
+                //   ),
+                // ),
                 FlexibleSpaceBar(
                   centerTitle: true,
                   title: Text(
@@ -172,66 +172,75 @@ class _SettingsPageState extends State<SettingsPage> {
 
           // Settings Content
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Theme Section
-                  _buildSectionHeader('Appearance', Icons.palette),
-                  const SizedBox(height: 10),
-                  _buildThemeCard(context, isDark),
-                  if (!useAdaptive) ...[
-                    const SizedBox(height: 12),
-                    _buildColorPickerTile(context),
-                  ],
-                  const SizedBox(height: 12),
-                  _buildAdaptiveColorSwitch(context),
-                  const SizedBox(height: 18),
-                  _buildAppLockSection(context),
-                  const SizedBox(height: 18),
-                  // Auto Detection Section
-                  _buildSectionHeader(
-                      'Auto Transaction Detection', Icons.auto_awesome),
-                  const SizedBox(height: 10),
-                  _buildAutoDetectionSection(context),
-                  const SizedBox(height: 18),
-                  // Backup & Export Section
-                  _buildSectionHeader('Backup & Export', Icons.backup),
-                  const SizedBox(height: 10),
-                  _buildBackupSection(context, isDark),
-                  const SizedBox(height: 18),
-                  // Data Management Section
-                  _buildSectionHeader('Data Management', Icons.storage),
-                  const SizedBox(height: 10),
-                  _buildDataManagementSection(context, isDark),
-                  const SizedBox(height: 18),
-                  _buildSectionHeader('Budgeting', Icons.wallet_membership),
-                  const SizedBox(height: 10),
-                  _buildBudgetSection(context),
-                  const SizedBox(height: 18),
-                  // App Info Section
-                  _buildSectionHeader('App Information', Icons.info),
-                  const SizedBox(height: 10),
-                  _buildAppInfoSection(context, isDark),
-                  const SizedBox(height: 8),
-                  // Add developer credit at the very bottom
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 16, bottom: 8),
-                      child: Text(
-                        'Developed with ❤️ by Sthrnilshaa',
-                        style: GoogleFonts.nunito(
-                          fontSize: 12,
-                          color: Colors.grey,
-                          fontWeight: FontWeight.w500,
-                          letterSpacing: 0.2,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 800),
+                child: Padding(
+                  padding: ResponsiveUtils.getResponsiveEdgeInsets(context,
+                      horizontal: 16, vertical: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Theme Section
+                      _buildSectionHeader('Appearance', Icons.palette),
+                      const SizedBox(height: 10),
+                      _buildThemeCard(context, isDark),
+                      if (!useAdaptive) ...[
+                        const SizedBox(height: 12),
+                        _buildColorPickerTile(context),
+                      ],
+                      const SizedBox(height: 12),
+                      _buildAdaptiveColorSwitch(context),
+                      const SizedBox(height: 18),
+                      _buildAppLockSection(context),
+                      const SizedBox(height: 18),
+                      // Auto Detection Section
+                      _buildSectionHeader(
+                          'Auto Transaction Detection', Icons.auto_awesome),
+                      const SizedBox(height: 10),
+                      _buildAutoDetectionSection(context),
+                      const SizedBox(height: 18),
+                      // Backup & Export Section
+                      _buildSectionHeader('Backup & Export', Icons.backup),
+                      const SizedBox(height: 10),
+                      _buildBackupSection(context, isDark),
+                      const SizedBox(height: 18),
+                      // Data Management Section
+                      _buildSectionHeader('Data Management', Icons.storage),
+                      const SizedBox(height: 10),
+                      _buildDataManagementSection(context, isDark),
+                      const SizedBox(height: 18),
+                      _buildSectionHeader(
+                          'Budgeting & Balance', Icons.wallet_membership),
+                      const SizedBox(height: 10),
+                      _buildBudgetSection(context),
+                      const SizedBox(height: 12),
+                      _buildBalanceCalculationTile(context),
+                      const SizedBox(height: 18),
+                      // App Info Section
+                      _buildSectionHeader('App Information', Icons.info),
+                      const SizedBox(height: 10),
+                      _buildAppInfoSection(context, isDark),
+                      const SizedBox(height: 8),
+                      // Add developer credit at the very bottom
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 16, bottom: 8),
+                          child: Text(
+                            'Developed with ❤️ by Sthrnilshaa',
+                            style: GoogleFonts.nunito(
+                              fontSize: 12,
+                              color: Colors.grey,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 0.2,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
                         ),
-                        textAlign: TextAlign.center,
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -930,6 +939,23 @@ class _SettingsPageState extends State<SettingsPage> {
           ? 'Monthly limit: ₹$budget'
           : 'Set a monthly spending limit',
       onTap: () => _showBudgetDialog(context),
+    );
+  }
+
+  Widget _buildBalanceCalculationTile(BuildContext context) {
+    final viewModel = context.watch<ThemeViewModel>();
+    return _buildSettingsTile(
+      icon: Icons.calculate_outlined,
+      title: 'Join Previous Month Balance',
+      subtitle: 'Include previous month balance in current total',
+      onTap: null,
+      trailing: Switch(
+        value: viewModel.joinPreviousMonthBalance,
+        onChanged: (value) {
+          HapticFeedback.lightImpact();
+          viewModel.setJoinPreviousMonthBalance(value);
+        },
+      ),
     );
   }
 
