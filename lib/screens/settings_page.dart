@@ -12,19 +12,17 @@ import 'package:hive/hive.dart';
 import '../backup/export_csv.dart';
 import '../backup/import_csv.dart';
 import '../backup/person_backup_helper.dart';
-//import '../models/person.dart';
 import '../models/theme.dart';
 import '../view_models/transaction_view_model.dart';
 import '../view_models/person_view_model.dart';
 import '../services/pdf_service.dart';
 import '../services/transaction_detection_service.dart';
 import '../services/native_bridge.dart';
-import 'package:zoom_tap_animation/zoom_tap_animation.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import 'package:local_auth/local_auth.dart';
 import '../utils/responsive_utils.dart';
 import '../utils/error_handler.dart';
 import 'detection_history_page.dart';
+import '../widgets/glass_app_bar.dart';
+import '../widgets/settings_widgets.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -112,62 +110,10 @@ class _SettingsPageState extends State<SettingsPage> {
         //controller: _scrollController,
         physics: const BouncingScrollPhysics(),
         slivers: [
-          // Enhanced App Bar
-          SliverAppBar(
-            expandedHeight: ResponsiveUtils.getResponsiveAppBarHeight(context),
-            floating: true,
-            pinned: true,
-            elevation: 1,
-            backgroundColor: Colors.transparent,
-            flexibleSpace: Stack(
-              fit: StackFit.expand,
-              children: [
-                // Persistent Glass Effect Layer
-                ClipRRect(
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            theme.colorScheme.primary.withValues(alpha: 0.15),
-                            theme.colorScheme.surface.withValues(alpha: 0.15),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                // Subtle Bottom Border
-                // Align(
-                //   alignment: Alignment.bottomCenter,
-                //   child: Container(
-                //     height: 1,
-                //     color: isDark
-                //         ? Colors.white.withValues(alpha: 0.1)
-                //         : Colors.black.withValues(alpha: 0.05),
-                //   ),
-                // ),
-                FlexibleSpaceBar(
-                  centerTitle: true,
-                  title: Text(
-                    'Settings',
-                    style: GoogleFonts.nunito(
-                      fontWeight: FontWeight.bold,
-                      fontSize: ResponsiveUtils.getResponsiveFontSize(
-                        context,
-                        mobile: 20,
-                        tablet: 24,
-                        desktop: 28,
-                      ),
-                      color: theme.colorScheme.onSurface,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+        slivers: [
+          GlassAppBar(
+            title: 'Settings',
+            centerTitle: true,
           ),
 
           // Settings Content
@@ -182,45 +128,79 @@ class _SettingsPageState extends State<SettingsPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Theme Section
-                      _buildSectionHeader('Appearance', Icons.palette),
-                      const SizedBox(height: 10),
-                      _buildThemeCard(context, isDark),
-                      if (!useAdaptive) ...[
-                        const SizedBox(height: 12),
-                        _buildColorPickerTile(context),
-                      ],
-                      const SizedBox(height: 12),
-                      _buildAdaptiveColorSwitch(context),
-                      const SizedBox(height: 18),
-                      _buildAppLockSection(context),
-                      const SizedBox(height: 18),
+                      TitledSection(
+                        title: 'Appearance',
+                        icon: Icons.palette,
+                        children: [
+                          _buildThemeCard(context, isDark),
+                          if (!useAdaptive) ...[
+                            const SizedBox(height: 12),
+                            _buildColorPickerTile(context),
+                          ],
+                          const SizedBox(height: 12),
+                          _buildAdaptiveColorSwitch(context),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+
+                      TitledSection(
+                        title: 'Security',
+                        icon: Icons.security,
+                        children: [
+                          _buildAppLockSection(context),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+
                       // Auto Detection Section
-                      _buildSectionHeader(
-                          'Auto Transaction Detection', Icons.auto_awesome),
-                      const SizedBox(height: 10),
-                      _buildAutoDetectionSection(context),
-                      const SizedBox(height: 18),
+                      TitledSection(
+                        title: 'Auto Transaction Detection',
+                        icon: Icons.auto_awesome,
+                        children: [
+                          _buildAutoDetectionSection(context),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+
                       // Backup & Export Section
-                      _buildSectionHeader('Backup & Export', Icons.backup),
-                      const SizedBox(height: 10),
-                      _buildBackupSection(context, isDark),
-                      const SizedBox(height: 18),
+                      TitledSection(
+                        title: 'Backup & Export',
+                        icon: Icons.backup,
+                        children: [
+                          _buildBackupSection(context, isDark),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+
                       // Data Management Section
-                      _buildSectionHeader('Data Management', Icons.storage),
-                      const SizedBox(height: 10),
-                      _buildDataManagementSection(context, isDark),
-                      const SizedBox(height: 18),
-                      _buildSectionHeader(
-                          'Budgeting & Balance', Icons.wallet_membership),
-                      const SizedBox(height: 10),
-                      _buildBudgetSection(context),
-                      const SizedBox(height: 12),
-                      _buildBalanceCalculationTile(context),
-                      const SizedBox(height: 18),
+                      TitledSection(
+                        title: 'Data Management',
+                        icon: Icons.storage,
+                        children: [
+                          _buildDataManagementSection(context, isDark),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+
+                      TitledSection(
+                        title: 'Budgeting & Balance',
+                        icon: Icons.wallet_membership,
+                        children: [
+                          _buildBudgetSection(context),
+                          const SizedBox(height: 12),
+                          _buildBalanceCalculationTile(context),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+
                       // App Info Section
-                      _buildSectionHeader('App Information', Icons.info),
-                      const SizedBox(height: 10),
-                      _buildAppInfoSection(context, isDark),
+                      TitledSection(
+                        title: 'App Information',
+                        icon: Icons.info,
+                        children: [
+                          _buildAppInfoSection(context, isDark),
+                        ],
+                      ),
                       const SizedBox(height: 8),
                       // Add developer credit at the very bottom
                       Center(
@@ -249,31 +229,6 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildSectionHeader(String title, IconData icon) {
-    final theme = Theme.of(context);
-    final useAdaptive = context.watch<ThemeViewModel>().useAdaptiveColor;
-    return Row(
-      children: [
-        Icon(
-          icon,
-          color: useAdaptive ? theme.colorScheme.primary : Colors.teal.shade600,
-          size: ResponsiveUtils.getResponsiveIconSize(context,
-              mobile: 20, tablet: 24, desktop: 28),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          title,
-          style: GoogleFonts.nunito(
-            fontSize: ResponsiveUtils.getResponsiveFontSize(context,
-                mobile: 20, tablet: 22, desktop: 24),
-            fontWeight: FontWeight.bold,
-            color:
-                useAdaptive ? theme.colorScheme.primary : Colors.teal.shade700,
-          ),
-        ),
-      ],
-    );
-  }
 
   Widget _buildThemeCard(BuildContext context, bool isDark) {
     final theme = Theme.of(context);
@@ -375,7 +330,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildColorPickerTile(BuildContext context) {
     final viewModel = context.watch<ThemeViewModel>();
     final currentColor = viewModel.customSeedColor ?? Colors.teal;
-    return _buildSettingsTile(
+    return SettingTile(
       icon: Icons.color_lens,
       title: 'App Color',
       subtitle: 'Select a custom app color',
@@ -392,9 +347,6 @@ class _SettingsPageState extends State<SettingsPage> {
                   onColorChanged: (color) {
                     selectedColor = color;
                   },
-                  //enableAlpha: false,
-                  //showLabel: false,
-                  //pickerAreaHeightPercent: 0.7,
                 ),
               ),
               actions: [
@@ -427,11 +379,10 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildAppLockSection(BuildContext context) {
-    return _buildSettingsTile(
+    return SettingTile(
       icon: Icons.lock,
       title: 'App Lock',
       subtitle: 'Require device authentication to open app',
-      onTap: null,
       trailing: Switch(
         value: _appLockEnabled,
         onChanged: (value) async {
@@ -446,7 +397,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 return;
               }
               final didAuthenticate = await localAuth.authenticate(
-                localizedReason: 'Authenticate to disable app lock',
+                localizedReason: 'Authenticate to enable app lock',
                 biometricOnly: false,
                 persistAcrossBackgrounding: true,
               );
@@ -470,11 +421,10 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildAutoDetectionSection(BuildContext context) {
     return Column(
       children: [
-        _buildSettingsTile(
+        SettingTile(
           icon: Icons.auto_awesome,
           title: 'Auto Transaction Detection',
           subtitle: 'Automatically detect transactions from notifications',
-          onTap: null,
           trailing: FutureBuilder<bool>(
             future: TransactionDetectionService.isEnabled(),
             builder: (context, snapshot) {
@@ -545,7 +495,7 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
         ),
-        _buildSettingsTile(
+        SettingTile(
           icon: Icons.history,
           title: 'Process Recent Data',
           subtitle: 'Scan recent notifications for transactions',
@@ -565,13 +515,13 @@ class _SettingsPageState extends State<SettingsPage> {
             }
           },
         ),
-        _buildSettingsTile(
+        SettingTile(
           icon: Icons.bug_report_outlined,
           title: 'Test Detection Logic',
           subtitle: 'Simulate a notification to verify parsing',
           onTap: () => _showTestDetectionDialog(context),
         ),
-        _buildSettingsTile(
+        SettingTile(
           icon: Icons.manage_history,
           title: 'Show Detection History',
           subtitle: 'View detailed logs of detected transactions',
@@ -997,67 +947,6 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildSettingsTile({
     required IconData icon,
     required String title,
-    required String subtitle,
-    required VoidCallback? onTap,
-    bool isDestructive = false,
-    Widget? trailing,
-  }) {
-    return ZoomTapAnimation(
-      onTap: onTap,
-      child: Card(
-        elevation: 1,
-        margin: const EdgeInsets.only(bottom: 8),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: ListTile(
-          contentPadding: ResponsiveUtils.getResponsiveEdgeInsets(context,
-              horizontal: 16, vertical: 4),
-          leading: Container(
-            width: ResponsiveUtils.getResponsiveIconSize(context,
-                mobile: 40, tablet: 48, desktop: 56),
-            height: ResponsiveUtils.getResponsiveIconSize(context,
-                mobile: 40, tablet: 48, desktop: 56),
-            decoration: BoxDecoration(
-              color: isDestructive
-                  ? Colors.red.withValues(alpha: 0.1)
-                  : Colors.teal.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: isDestructive
-                    ? Colors.red.withValues(alpha: 0.3)
-                    : Colors.teal.withValues(alpha: 0.3),
-                width: 1,
-              ),
-            ),
-            child: Icon(
-              icon,
-              color: isDestructive ? Colors.red : Colors.teal,
-              size: ResponsiveUtils.getResponsiveIconSize(context,
-                  mobile: 20, tablet: 24, desktop: 28),
-            ),
-          ),
-          title: Text(
-            title,
-            style: GoogleFonts.nunito(
-              fontWeight: FontWeight.w600,
-              fontSize: ResponsiveUtils.getResponsiveFontSize(context,
-                  mobile: 16, tablet: 18, desktop: 20),
-              color: isDestructive ? Colors.red : null,
-            ),
-          ),
-          subtitle: Text(
-            subtitle,
-            style: GoogleFonts.nunito(
-              fontSize: ResponsiveUtils.getResponsiveFontSize(context,
-                  mobile: 13, tablet: 15, desktop: 17),
-              color: Colors.grey.shade600,
-            ),
-          ),
-          trailing: trailing,
-          onTap: onTap,
-        ),
-      ),
-    );
-  }
 
   void _showSnackBar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(

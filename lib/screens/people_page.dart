@@ -9,10 +9,11 @@ import 'dart:ui';
 import 'dart:io';
 import '../models/person.dart';
 import '../view_models/person_view_model.dart';
-import '../view_models/theme_view_model.dart';
 import '../person/person_details_page.dart';
 import '../utils/responsive_utils.dart';
 import '../widgets/modern_card.dart';
+import '../widgets/glass_app_bar.dart';
+import '../widgets/empty_state_view.dart';
 
 class PeopleTab extends StatefulWidget {
   const PeopleTab({super.key});
@@ -274,10 +275,6 @@ class _PeopleTabState extends State<PeopleTab> {
         .where((p) => p.name.toLowerCase().contains(_searchQuery))
         .toList();
     final theme = Theme.of(context);
-    final themeViewModel = context.watch<ThemeViewModel>();
-    final isDark = themeViewModel.isDarkMode;
-    final useAdaptive = themeViewModel.useAdaptiveColor;
-
     final double totalYouGet = personViewModel.overallTotalRent;
     final double totalYouGive = personViewModel.overallTotalGiven;
 
@@ -287,58 +284,7 @@ class _PeopleTabState extends State<PeopleTab> {
         controller: _scrollController,
         physics: const BouncingScrollPhysics(),
         slivers: [
-          SliverAppBar(
-            expandedHeight: ResponsiveUtils.getResponsiveAppBarHeight(context),
-            floating: true,
-            pinned: true,
-            elevation: 1,
-            backgroundColor: Colors.transparent,
-            flexibleSpace: Stack(
-              fit: StackFit.expand,
-              children: [
-                // Persistent Glass Effect Layer
-                ClipRRect(
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            theme.colorScheme.primary.withValues(alpha: 0.15),
-                            theme.colorScheme.surface.withValues(alpha: 0.15),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                // Subtle Bottom Border
-                // Align(
-                //   alignment: Alignment.bottomCenter,
-                //   child: Container(
-                //     height: 1,
-                //     color: isDark
-                //         ? Colors.white.withValues(alpha: 0.1)
-                //         : Colors.black.withValues(alpha: 0.05),
-                //   ),
-                // ),
-                FlexibleSpaceBar(
-                  centerTitle: true,
-                  title: Text(
-                    'People',
-                    style: GoogleFonts.nunito(
-                      fontWeight: FontWeight.bold,
-                      fontSize: ResponsiveUtils.getResponsiveFontSize(context,
-                          mobile: 20, tablet: 24, desktop: 28),
-                      color: theme.colorScheme.onSurface,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          GlassAppBar(title: 'People', centerTitle: true),
 
           // NEW: Conditional Sliver for Total Debit and Credit Summary
           SliverToBoxAdapter(
@@ -402,48 +348,10 @@ class _PeopleTabState extends State<PeopleTab> {
 
           if (people.isEmpty)
             SliverFillRemaining(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        color: useAdaptive
-                            ? theme.colorScheme.primary.withValues(alpha: 0.1)
-                            : theme.colorScheme.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(60),
-                      ),
-                      child: Icon(
-                        Icons.people_outline,
-                        size: 60,
-                        color: useAdaptive
-                            ? theme.colorScheme.primary
-                            : theme.colorScheme.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'No people added yet',
-                      style: GoogleFonts.nunito(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Add people to track transactions with them',
-                      style: GoogleFonts.nunito(
-                        fontSize: 16,
-                        color:
-                            theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
+              child: EmptyStateView(
+                icon: Icons.people_outline,
+                title: 'No people added yet',
+                description: 'Add people to track transactions with them',
               ),
             )
           else
@@ -628,8 +536,7 @@ class _PeopleTabState extends State<PeopleTab> {
                   style: GoogleFonts.nunito(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: theme.colorScheme
-                          .onSurface), // Added color for visibility if surface is transparent
+                      color: theme.colorScheme.onSurface),
                 ),
               ),
             ),

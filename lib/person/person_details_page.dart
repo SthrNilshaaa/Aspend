@@ -14,8 +14,11 @@ import '../view_models/person_view_model.dart';
 import '../view_models/theme_view_model.dart';
 import '../widgets/modern_card.dart';
 import '../widgets/add_transaction_dialog.dart';
+import '../widgets/glass_app_bar.dart';
+import '../widgets/empty_state_view.dart';
+import '../widgets/glass_action_button.dart';
 import '../utils/error_handler.dart';
-//import 'dart:async';
+import '../utils/responsive_utils.dart';
 
 class PersonDetailPage extends StatefulWidget {
   final Person person;
@@ -103,54 +106,11 @@ class _PersonDetailPageState extends State<PersonDetailPage>
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(70),
-        child: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
+        preferredSize:
+            Size.fromHeight(ResponsiveUtils.getResponsiveAppBarHeight(context)),
+        child: GlassAppBar(
+          title: person.name,
           centerTitle: true,
-          flexibleSpace: ClipRRect(
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                // Bottom layer: Blur
-                BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-                  child: Container(color: Colors.transparent),
-                ),
-                // Middle layer: Gradient tint
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        theme.colorScheme.primary.withValues(alpha: 0.15),
-                        theme.colorScheme.surface.withValues(alpha: 0.15),
-                      ],
-                    ),
-                  ),
-                ),
-                // Top layer: Subtle border for "one more effect"
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Container(
-                    height: 1,
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.1)
-                        : Colors.black.withValues(alpha: 0.05),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          title: Text(
-            person.name,
-            style: GoogleFonts.nunito(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: theme.colorScheme.onSurface,
-            ),
-          ),
           actions: [
             IconButton(
               icon: const Icon(
@@ -173,37 +133,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
           ],
         ),
       ),
-      floatingActionButton: AnimatedSlide(
-        offset: _showFab ? Offset.zero : const Offset(0, 2),
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        child: AnimatedOpacity(
-          opacity: _showFab ? 1.0 : 0.0,
-          duration: const Duration(milliseconds: 300),
-          child: FloatingActionButton.extended(
-            backgroundColor: theme.colorScheme.primary,
-            foregroundColor: theme.colorScheme.onPrimary,
-            icon: const Icon(Icons.add, size: 24),
-            label: Text(
-              'Add Transaction',
-              style:
-                  GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-            onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (context) => AddTransactionDialog(
-                  isIncome: true,
-                  initialNote: person.name,
-                ),
-              );
-              HapticFeedback.lightImpact();
-            },
-          ),
-        ),
-      ),
+      floatingActionButton: _showFab ? _buildDualFab(theme) : null,
       body: FadeTransition(
         opacity: _fadeAnimation,
         child: SlideTransition(
@@ -352,50 +282,11 @@ class _PersonDetailPageState extends State<PersonDetailPage>
               // Transactions List
               Expanded(
                 child: txs.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              width: 100,
-                              height: 100,
-                              decoration: BoxDecoration(
-                                color: useAdaptive
-                                    ? theme.colorScheme.primary
-                                        .withValues(alpha: 0.1)
-                                    : theme.colorScheme.primary
-                                        .withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(50),
-                              ),
-                              child: Icon(
-                                Icons.receipt_long_outlined,
-                                size: 50,
-                                color: useAdaptive
-                                    ? theme.colorScheme.primary
-                                    : theme.colorScheme.primary,
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            Text(
-                              'No transactions yet',
-                              style: GoogleFonts.nunito(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: theme.colorScheme.onSurface,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Add your first transaction with ${person.name}',
-                              style: GoogleFonts.nunito(
-                                fontSize: 14,
-                                color: theme.colorScheme.onSurface
-                                    .withValues(alpha: 0.7),
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
+                    ? EmptyStateView(
+                        icon: Icons.receipt_long_outlined,
+                        title: 'No transactions yet',
+                        description:
+                            'Add your first transaction with ${person.name}',
                       )
                     : ListView.builder(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -783,6 +674,44 @@ class _PersonDetailPageState extends State<PersonDetailPage>
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildDualFab(ThemeData theme) {
+    return GlassFab(
+      children: [
+        GlassActionButton(
+          icon: Icons.add,
+          color: Colors.green,
+          onTap: () {
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (context) => AddTransactionDialog(
+                isIncome: true,
+                initialNote: widget.person.name,
+              ),
+            );
+          },
+        ),
+        const SizedBox(width: 8),
+        GlassActionButton(
+          icon: Icons.remove,
+          color: Colors.red,
+          onTap: () {
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (context) => AddTransactionDialog(
+                isIncome: false,
+                initialNote: widget.person.name,
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 

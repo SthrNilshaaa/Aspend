@@ -243,120 +243,155 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                     children: [
                       Text(
                         widget.existingTransaction != null
-                            ? (widget.isIncome
-                                ? 'Edit Income'
-                                : 'Edit Expense')
-                            : (widget.isIncome
-                                ? 'Add Income'
-                                : 'Add Expense'),
+                            ? (widget.isIncome ? 'Edit Income' : 'Edit Expense')
+                            : (widget.isIncome ? 'Add Income' : 'Add Expense'),
                         style: GoogleFonts.nunito(
                           fontSize: ResponsiveUtils.getResponsiveFontSize(
                               context,
-                              mobile: 20,
-                              tablet: 24,
+                              mobile: 22,
+                              tablet: 26,
                               desktop: 28),
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w900,
+                          color: theme.colorScheme.onSurface,
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 32),
                       TextFormField(
                         controller: _amountController,
                         keyboardType: const TextInputType.numberWithOptions(
                             decimal: true),
                         style: GoogleFonts.nunito(
-                          fontSize: ResponsiveUtils.getResponsiveFontSize(
-                              context,
-                              mobile: 18,
-                              tablet: 20,
-                              desktop: 22),
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: widget.isIncome ? Colors.green : Colors.red,
                         ),
+                        textAlign: TextAlign.center,
                         decoration: InputDecoration(
-                          labelText: 'Amount',
-                          labelStyle: GoogleFonts.nunito(),
+                          hintText: '0.00',
                           prefixIcon: const Icon(Icons.currency_rupee),
+                          filled: true,
+                          fillColor:
+                              theme.colorScheme.surface.withValues(alpha: 0.4),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: BorderSide.none,
                           ),
+                          contentPadding:
+                              const EdgeInsets.symmetric(vertical: 20),
                         ),
                         validator: (val) =>
                             (val == null || val.isEmpty) ? 'Required' : null,
                       ),
-                      const SizedBox(height: 16),
-                      DropdownButtonFormField<String>(
-                        initialValue: _category,
-                        style: GoogleFonts.nunito(
-                            color: theme.colorScheme.onSurface, fontSize: 16),
-                        decoration: InputDecoration(
-                          labelText: 'Category',
-                          labelStyle: GoogleFonts.nunito(),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16),
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildDropdownField(
+                              label: 'Category',
+                              value: _category,
+                              items: categories,
+                              onChanged: (val) =>
+                                  setState(() => _category = val!),
+                              theme: theme,
+                            ),
                           ),
-                        ),
-                        items: categories
-                            .map((c) =>
-                                DropdownMenuItem(value: c, child: Text(c)))
-                            .toList(),
-                        onChanged: (val) => setState(() => _category = val!),
-                      ),
-                      const SizedBox(height: 16),
-                      DropdownButtonFormField<String>(
-                        initialValue: _account,
-                        style: GoogleFonts.nunito(
-                            color: theme.colorScheme.onSurface, fontSize: 16),
-                        decoration: InputDecoration(
-                          labelText: 'Account',
-                          labelStyle: GoogleFonts.nunito(),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildDropdownField(
+                              label: 'Account',
+                              value: _account,
+                              items: accounts,
+                              onChanged: (val) =>
+                                  setState(() => _account = val!),
+                              theme: theme,
+                            ),
                           ),
-                        ),
-                        items: accounts
-                            .map((a) =>
-                                DropdownMenuItem(value: a, child: Text(a)))
-                            .toList(),
-                        onChanged: (val) => setState(() => _account = val!),
+                        ],
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _noteController,
                         style: GoogleFonts.nunito(fontSize: 16),
+                        maxLines: 2,
                         decoration: InputDecoration(
                           labelText: 'Note (Optional)',
                           labelStyle: GoogleFonts.nunito(),
                           prefixIcon: const Icon(Icons.note_alt_outlined),
+                          filled: true,
+                          fillColor:
+                              theme.colorScheme.surface.withValues(alpha: 0.4),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(20),
+                            borderSide: BorderSide.none,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 24),
                       if (_imagePaths.isNotEmpty) ...[
                         SizedBox(
-                          height: 80,
+                          height: 90,
                           child: ListView.builder(
                             scrollDirection: Axis.horizontal,
                             itemCount: _imagePaths.length,
-                            itemBuilder: (context, index) => Container(
-                              margin: const EdgeInsets.only(right: 8),
-                              width: 80,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
-                                image: DecorationImage(
-                                  image: FileImage(File(_imagePaths[index])),
-                                  fit: BoxFit.cover,
+                            itemBuilder: (context, index) => Stack(
+                              children: [
+                                Container(
+                                  margin: const EdgeInsets.only(right: 12),
+                                  width: 90,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(16),
+                                    image: DecorationImage(
+                                      image:
+                                          FileImage(File(_imagePaths[index])),
+                                      fit: BoxFit.cover,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color:
+                                            Colors.black.withValues(alpha: 0.1),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
+                                Positioned(
+                                  top: 4,
+                                  right: 16,
+                                  child: GestureDetector(
+                                    onTap: () => setState(
+                                        () => _imagePaths.removeAt(index)),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.red,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(Icons.close,
+                                          size: 12, color: Colors.white),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 16),
                       ],
-                      OutlinedButton.icon(
+                      TextButton.icon(
                         onPressed: _pickImage,
                         icon: const Icon(Icons.add_a_photo_outlined),
-                        label: const Text('Add Attachment'),
+                        label: Text(
+                          'Add Attachment',
+                          style:
+                              GoogleFonts.nunito(fontWeight: FontWeight.w600),
+                        ),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
+                        ),
                       ),
                       const SizedBox(height: 24),
                       ElevatedButton(
@@ -367,8 +402,12 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 18),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(20),
                           ),
+                          elevation: 8,
+                          shadowColor:
+                              (widget.isIncome ? Colors.green : Colors.red)
+                                  .withValues(alpha: 0.4),
                         ),
                         child: Text(
                           (widget.existingTransaction != null ||
@@ -377,7 +416,8 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                               : 'Save Transaction',
                           style: GoogleFonts.nunito(
                             fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.5,
                           ),
                         ),
                       ),
@@ -389,6 +429,36 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildDropdownField({
+    required String label,
+    required String value,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+    required ThemeData theme,
+  }) {
+    return DropdownButtonFormField<String>(
+      value: value,
+      style: GoogleFonts.nunito(
+          color: theme.colorScheme.onSurface,
+          fontSize: 16,
+          fontWeight: FontWeight.w600),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: GoogleFonts.nunito(),
+        filled: true,
+        fillColor: theme.colorScheme.surface.withValues(alpha: 0.4),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide.none,
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      ),
+      items:
+          items.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+      onChanged: onChanged,
     );
   }
 }

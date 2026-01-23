@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 
 import '../models/transaction.dart';
 import '../view_models/theme_view_model.dart';
@@ -13,7 +12,11 @@ import '../view_models/transaction_view_model.dart';
 import '../widgets/transaction_tile.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/modern_card.dart';
+import '../widgets/glass_app_bar.dart';
+import '../widgets/range_selector.dart';
+import '../widgets/empty_state_view.dart';
 import '../utils/responsive_utils.dart';
+import '../utils/transaction_utils.dart';
 
 class ChartPage extends StatefulWidget {
   const ChartPage({super.key});
@@ -41,18 +44,9 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
   }
 
   void _updateDateRange() {
-    final now = DateTime.now();
-    _endDate = now;
-    if (_selectedRange == 'Day') {
-      _startDate = DateTime(now.year, now.month, now.day);
-    } else if (_selectedRange == 'Week') {
-      _startDate = now.subtract(Duration(days: now.weekday - 1));
-      _startDate = DateTime(_startDate.year, _startDate.month, _startDate.day);
-    } else if (_selectedRange == 'Month') {
-      _startDate = DateTime(now.year, now.month, 1);
-    } else if (_selectedRange == 'Year') {
-      _startDate = DateTime(now.year, 1, 1);
-    }
+    final range = TransactionUtils.getDateRange(_selectedRange);
+    _startDate = range.$1;
+    _endDate = range.$2;
   }
 
   @override
@@ -72,71 +66,21 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
-          SliverAppBar(
-            expandedHeight: ResponsiveUtils.getResponsiveAppBarHeight(context),
-            floating: true,
-            pinned: true,
-            elevation: 1,
-            backgroundColor: Colors.transparent,
-            flexibleSpace: Stack(
-              fit: StackFit.expand,
-              children: [
-                // Persistent Glass Effect Layer
-                ClipRRect(
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            theme.colorScheme.primary.withValues(alpha: 0.15),
-                            theme.colorScheme.surface.withValues(alpha: 0.15),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                // Subtle Bottom Border
-                // Align(
-                //   alignment: Alignment.bottomCenter,
-                //   child: Container(
-                //     height: 1,
-                //     color: isDark
-                //         ? Colors.white.withValues(alpha: 0.1)
-                //         : Colors.black.withValues(alpha: 0.05),
-                //   ),
-                // ),
-                FlexibleSpaceBar(
-                  centerTitle: true,
-                  title: Text(
-                    'Analytics',
-                    style: GoogleFonts.nunito(
-                      fontWeight: FontWeight.bold,
-                      fontSize: ResponsiveUtils.getResponsiveFontSize(context,
-                          mobile: 20, tablet: 24, desktop: 28),
-                      color: theme.colorScheme.onSurface,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+          GlassAppBar(
+            title: 'Analytics',
+            centerTitle: true,
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildRangeSelector('Day'),
-                  _buildRangeSelector('Week'),
-                  _buildRangeSelector('Month'),
-                  _buildRangeSelector('Year'),
-                ],
-              ),
+            child: RangeSelector(
+              ranges: const ['Day', 'Week', 'Month', 'Year'],
+              selectedRange: _selectedRange,
+              onRangeSelected: (range) {
+                setState(() {
+                  _selectedRange = range;
+                  _updateDateRange();
+                });
+              },
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
@@ -285,44 +229,6 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildRangeSelector(String range) {
-    final isSelected = _selectedRange == range;
-    final theme = Theme.of(context);
-    return ZoomTapAnimation(
-      onTap: () {
-        setState(() {
-          _selectedRange = range;
-          _updateDateRange();
-        });
-        HapticFeedback.lightImpact();
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? theme.colorScheme.primary
-              : theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected
-                ? theme.colorScheme.primary
-                : theme.dividerColor.withValues(alpha: 0.1),
-          ),
-        ),
-        child: Text(
-          range,
-          style: GoogleFonts.nunito(
-            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-            color: isSelected
-                ? Colors.white
-                : theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.6),
-            fontSize: 13,
-          ),
-        ),
       ),
     );
   }
@@ -619,20 +525,9 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
   }
 
   Widget _buildEmptyState(bool isDark) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.auto_graph_rounded,
-              size: 64, color: Colors.grey.withValues(alpha: 0.2)),
-          const SizedBox(height: 16),
-          Text(
-            'No data records found',
-            style: GoogleFonts.nunito(
-                fontSize: 14, color: Colors.grey, fontWeight: FontWeight.w600),
-          ),
-        ],
-      ),
+    return EmptyStateView(
+      icon: Icons.auto_graph_rounded,
+      title: 'No data records found',
     );
   }
 }

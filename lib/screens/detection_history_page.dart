@@ -1,124 +1,80 @@
-import 'dart:ui';
-import 'package:aspends_tracker/view_models/theme_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 import '../models/detection_history.dart';
 import '../services/transaction_detection_service.dart';
 import '../widgets/add_transaction_dialog.dart';
+import '../widgets/glass_app_bar.dart';
+import '../widgets/empty_state_view.dart';
 
 class DetectionHistoryPage extends StatelessWidget {
   const DetectionHistoryPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = context.watch<ThemeViewModel>().isDarkMode;
-
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        flexibleSpace: ClipRRect(
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // Bottom layer: Blur
-              BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-                child: Container(color: Colors.transparent),
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          GlassAppBar(
+            title: 'Detection History',
+            centerTitle: true,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.refresh),
+                onPressed: () async {
+                  await TransactionDetectionService
+                      .recheckSkippedTransactions();
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Recheck complete')),
+                    );
+                  }
+                },
+                tooltip: 'Recheck skipped',
               ),
-              // Middle layer: Gradient tint
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      theme.colorScheme.primary.withValues(alpha: 0.15),
-                      theme.colorScheme.surface.withValues(alpha: 0.15),
-                    ],
-                  ),
-                ),
-              ),
-              // Top layer: Subtle border
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  height: 1,
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.1)
-                      : Colors.black.withValues(alpha: 0.05),
-                ),
+              IconButton(
+                icon: const Icon(Icons.delete_sweep_outlined),
+                onPressed: () => _showClearConfirmation(context),
+                tooltip: 'Clear history',
               ),
             ],
           ),
-        ),
-        title: Text(
-          'Detection History',
-          style: GoogleFonts.nunito(
-            fontWeight: FontWeight.bold,
-            color: theme.colorScheme.onSurface,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () async {
-              await TransactionDetectionService.recheckSkippedTransactions();
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Recheck complete')),
+          ValueListenableBuilder(
+            valueListenable:
+                Hive.box<DetectionHistory>('detection_history').listenable(),
+            builder: (context, Box<DetectionHistory> box, _) {
+              if (box.isEmpty) {
+                return const SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: EmptyStateView(
+                    icon: Icons.history_toggle_off,
+                    title: 'No detection history yet',
+                  ),
                 );
               }
+
+              final entries = box.values.toList().reversed.toList();
+
+              return SliverPadding(
+                padding: const EdgeInsets.all(16),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final entry = entries[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _HistoryCard(entry: entry),
+                      );
+                    },
+                    childCount: entries.length,
+                  ),
+                ),
+              );
             },
-            tooltip: 'Recheck skipped',
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete_sweep_outlined),
-            onPressed: () => _showClearConfirmation(context),
-            tooltip: 'Clear history',
           ),
         ],
-      ),
-      body: ValueListenableBuilder(
-        valueListenable:
-            Hive.box<DetectionHistory>('detection_history').listenable(),
-        builder: (context, Box<DetectionHistory> box, _) {
-          if (box.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.history_toggle_off,
-                      size: 64, color: Colors.grey.shade400),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No detection history yet',
-                    style: GoogleFonts.nunito(
-                      fontSize: 18,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          final entries = box.values.toList().reversed.toList();
-
-          return ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemCount: entries.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              final entry = entries[index];
-              return _HistoryCard(entry: entry);
-            },
-          );
-        },
       ),
     );
   }

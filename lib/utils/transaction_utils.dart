@@ -199,4 +199,24 @@ class TransactionUtils {
         return Icons.wallet;
     }
   }
+
+  static (DateTime, DateTime) getDateRange(String range) {
+    final now = DateTime.now();
+    DateTime startDate;
+    DateTime endDate = now;
+
+    if (range == 'Day') {
+      startDate = DateTime(now.year, now.month, now.day);
+    } else if (range == 'Week') {
+      startDate = now.subtract(Duration(days: now.weekday - 1));
+      startDate = DateTime(startDate.year, startDate.month, startDate.day);
+    } else if (range == 'Month') {
+      startDate = DateTime(now.year, now.month, 1);
+    } else if (range == 'Year') {
+      startDate = DateTime(now.year, 1, 1);
+    } else {
+      startDate = DateTime(2000);
+    }
+    return (startDate, endDate);
+  }
 }

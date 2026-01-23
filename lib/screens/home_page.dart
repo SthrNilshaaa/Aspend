@@ -11,6 +11,10 @@ import '../view_models/transaction_view_model.dart';
 import '../widgets/transaction_tile.dart';
 import '../widgets/balance_card.dart';
 import '../widgets/add_transaction_dialog.dart';
+import '../widgets/glass_app_bar.dart';
+import '../widgets/range_selector.dart';
+import '../widgets/empty_state_view.dart';
+import '../widgets/glass_action_button.dart';
 import '../utils/responsive_utils.dart';
 import '../utils/transaction_utils.dart';
 import 'settings_page.dart';
@@ -112,14 +116,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         controller: _scrollController,
         physics: const BouncingScrollPhysics(),
         slivers: [
-          _buildAppBar(context, theme, themeViewModel.isDarkMode,
-              themeViewModel.useAdaptiveColor),
+          GlassAppBar(title: 'Aspends Tracker'),
           _buildBalanceSection(context, transactionViewModel),
           if (txns.isNotEmpty)
             _buildTransactionList(
                 grouped, theme, themeViewModel.useAdaptiveColor)
           else
-            _buildEmptyState(),
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: _buildEmptyState(),
+            ),
           SliverToBoxAdapter(
               child:
                   SizedBox(height: MediaQuery.of(context).padding.bottom + 80)),
@@ -129,79 +135,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildAppBar(
-      BuildContext context, ThemeData theme, bool isDark, bool useAdaptive) {
-    return SliverAppBar(
-      expandedHeight: ResponsiveUtils.getResponsiveAppBarHeight(context),
-      floating: true,
-      pinned: true,
-      elevation: 1,
-      backgroundColor: Colors.transparent,
-      flexibleSpace: Stack(
-        fit: StackFit.expand,
-        children: [
-          // Persistent Glass Effect Layer
-          ClipRRect(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      theme.colorScheme.primary.withValues(alpha: 0.15),
-                      theme.colorScheme.surface.withValues(alpha: 0.15),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-          // Subtle Bottom Border
-          // Align(
-          //   alignment: Alignment.bottomCenter,
-          //   child: Container(
-          //     height: 1,
-          //     color: isDark
-          //         ? Colors.white.withValues(alpha: 0.1)
-          //         : Colors.black.withValues(alpha: 0.05),
-          //   ),
-          // ),
-          FlexibleSpaceBar(
-            title: Text(
-              'Aspends Tracker',
-              style: GoogleFonts.nunito(
-                fontSize: ResponsiveUtils.getResponsiveFontSize(context,
-                    mobile: 20, tablet: 24, desktop: 28),
-                fontWeight: FontWeight.bold,
-                color: theme.colorScheme.onSurface,
-              ),
-            ),
-          ),
-        ],
-      ),
-      actions: [
-        // Real-time search is now integrated in the body
-      ],
-    );
-  }
-
   void _updateDateRange() {
-    final now = DateTime.now();
-    _endDate = now;
-    if (_selectedRange == 'Day') {
-      _startDate = DateTime(now.year, now.month, now.day);
-    } else if (_selectedRange == 'Week') {
-      _startDate = now.subtract(Duration(days: now.weekday - 1));
-      _startDate = DateTime(_startDate.year, _startDate.month, _startDate.day);
-    } else if (_selectedRange == 'Month') {
-      _startDate = DateTime(now.year, now.month, 1);
-    } else if (_selectedRange == 'Year') {
-      _startDate = DateTime(now.year, 1, 1);
-    } else {
-      _startDate = DateTime(2000);
-    }
+    final range = TransactionUtils.getDateRange(_selectedRange);
+    _startDate = range.$1;
+    _endDate = range.$2;
   }
 
   Widget _buildBalanceSection(
@@ -323,66 +260,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildRangeSelector(BuildContext context) {
-    final theme = Theme.of(context);
-    final ranges = ['All', 'Day', 'Week', 'Month', 'Year'];
-
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        children: ranges.map((range) {
-          final isSelected = _selectedRange == range;
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: ZoomTapAnimation(
-              onTap: () {
-                setState(() {
-                  _selectedRange = range;
-                  _updateDateRange();
-                });
-                HapticFeedback.lightImpact();
-              },
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? theme.colorScheme.primary
-                      : theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isSelected
-                        ? theme.colorScheme.primary
-                        : theme.dividerColor.withValues(alpha: 0.1),
-                  ),
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: theme.colorScheme.primary
-                                .withValues(alpha: 0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          )
-                        ]
-                      : null,
-                ),
-                child: Text(
-                  range,
-                  style: GoogleFonts.nunito(
-                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                    color: isSelected
-                        ? Colors.white
-                        : theme.textTheme.bodyMedium?.color
-                            ?.withValues(alpha: 0.6),
-                    fontSize: 13,
-                  ),
-                ),
-              ),
-            ),
-          );
-        }).toList(),
-      ),
+    return RangeSelector(
+      ranges: const ['All', 'Day', 'Week', 'Month', 'Year'],
+      selectedRange: _selectedRange,
+      onRangeSelected: (range) {
+        setState(() {
+          _selectedRange = range;
+          _updateDateRange();
+        });
+      },
     );
   }
 
@@ -423,196 +309,82 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildEmptyState() {
-    final theme = Theme.of(context);
-    return SliverFillRemaining(
-      hasScrollBody: false,
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(32),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.05),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.account_balance_wallet_outlined,
-                  size: 80,
-                  color: theme.colorScheme.primary.withValues(alpha: 0.4),
-                ),
-              ),
-              const SizedBox(height: 32),
-              Text(
-                'Your wallet is quiet',
-                style: GoogleFonts.nunito(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.onSurface,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Start by adding a transaction manually or enable auto-detection to track your spending effortlessly.',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.nunito(
-                  fontSize: 16,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                  height: 1.5,
-                ),
-              ),
-              const SizedBox(height: 48),
-              FutureBuilder<bool>(
-                future: TransactionDetectionService.isEnabled(),
-                builder: (context, snapshot) {
-                  final isEnabled = snapshot.data ?? false;
-                  if (isEnabled) return const SizedBox.shrink();
+    return EmptyStateView(
+      icon: Icons.account_balance_wallet_outlined,
+      title: 'Your wallet is quiet',
+      description:
+          'Start by adding a transaction manually or enable auto-detection to track your spending effortlessly.',
+      action: FutureBuilder<bool>(
+        future: TransactionDetectionService.isEnabled(),
+        builder: (context, snapshot) {
+          final isEnabled = snapshot.data ?? false;
+          if (isEnabled) return const SizedBox.shrink();
 
-                  return ZoomTapAnimation(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const SettingsPage()),
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 16),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            theme.colorScheme.primary,
-                            theme.colorScheme.secondary,
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: theme.colorScheme.primary
-                                .withValues(alpha: 0.3),
-                            blurRadius: 15,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.auto_awesome,
-                              color: Colors.white, size: 20),
-                          const SizedBox(width: 12),
-                          Text(
-                            'Enable Auto-Detection',
-                            style: GoogleFonts.nunito(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+          return ZoomTapAnimation(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsPage()),
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Theme.of(context).colorScheme.primary,
+                    Theme.of(context).colorScheme.secondary,
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withValues(alpha: 0.3),
+                    blurRadius: 15,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Enable Auto-Detection',
+                    style: GoogleFonts.nunito(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
 
   Widget _buildDualFab(ThemeData theme) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 80),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(32),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(32),
-              border: Border.all(
-                color: theme.colorScheme.outline.withValues(alpha: 0.2),
-                width: 1,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildActionFab(
-                  icon: Icons.add,
-                  label: '',
-                  color: Colors.green,
-                  onTap: () => _showAddTransactionDialog(isIncome: true),
-                  theme: theme,
-                ),
-                const SizedBox(width: 8),
-                _buildActionFab(
-                  icon: Icons.remove,
-                  label: '',
-                  color: Colors.red,
-                  onTap: () => _showAddTransactionDialog(isIncome: false),
-                  theme: theme,
-                ),
-              ],
-            ),
-          ),
+    return GlassFab(
+      children: [
+        GlassActionButton(
+          icon: Icons.add,
+          color: Colors.green,
+          onTap: () => _showAddTransactionDialog(isIncome: true),
         ),
-      ),
-    );
-  }
-
-  Widget _buildActionFab({
-    required IconData icon,
-    String? label,
-    required Color color,
-    required VoidCallback onTap,
-    required ThemeData theme,
-  }) {
-    return ZoomTapAnimation(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        onTap();
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: color.withValues(alpha: 0.3),
-            width: 1,
-          ),
+        const SizedBox(width: 8),
+        GlassActionButton(
+          icon: Icons.remove,
+          color: Colors.red,
+          onTap: () => _showAddTransactionDialog(isIncome: false),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: color, size: 22),
-            //const SizedBox(width: 8),
-            Text(
-              label!,
-              style: GoogleFonts.nunito(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: theme.colorScheme.onSurface,
-              ),
-            ),
-          ],
-        ),
-      ),
+      ],
     );
   }
 
