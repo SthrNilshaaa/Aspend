@@ -214,176 +214,174 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 600),
-          child: ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-              child: Container(
-                padding: ResponsiveUtils.getResponsiveEdgeInsets(context,
-                    horizontal: 24, vertical: 24),
-                decoration: BoxDecoration(
-                  color: theme.scaffoldBackgroundColor.withValues(alpha: 0.65),
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(32)),
-                  border: Border(
-                    top: BorderSide(
-                      color: theme.colorScheme.primary.withValues(alpha: 0.2),
-                      width: 1.5,
-                    ),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 600),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+            child: Container(
+              padding: ResponsiveUtils.getResponsiveEdgeInsets(context,
+                  horizontal: 24, vertical: 24),
+              decoration: BoxDecoration(
+                color: theme.scaffoldBackgroundColor.withValues(alpha: 0.80),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(32)),
+                border: Border(
+                  top: BorderSide(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                    width: 1.5,
                   ),
                 ),
-                child: Form(
-                  key: _formKey,
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          widget.existingTransaction != null
-                              ? (widget.isIncome
-                                  ? 'Edit Income'
-                                  : 'Edit Expense')
-                              : (widget.isIncome
-                                  ? 'Add Income'
-                                  : 'Add Expense'),
-                          style: GoogleFonts.nunito(
-                            fontSize: ResponsiveUtils.getResponsiveFontSize(
-                                context,
-                                mobile: 20,
-                                tablet: 24,
-                                desktop: 28),
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
+              ),
+              child: Form(
+                key: _formKey,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        widget.existingTransaction != null
+                            ? (widget.isIncome
+                                ? 'Edit Income'
+                                : 'Edit Expense')
+                            : (widget.isIncome
+                                ? 'Add Income'
+                                : 'Add Expense'),
+                        style: GoogleFonts.nunito(
+                          fontSize: ResponsiveUtils.getResponsiveFontSize(
+                              context,
+                              mobile: 20,
+                              tablet: 24,
+                              desktop: 28),
+                          fontWeight: FontWeight.bold,
                         ),
-                        const SizedBox(height: 24),
-                        TextFormField(
-                          controller: _amountController,
-                          keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true),
-                          style: GoogleFonts.nunito(
-                            fontSize: ResponsiveUtils.getResponsiveFontSize(
-                                context,
-                                mobile: 18,
-                                tablet: 20,
-                                desktop: 22),
-                          ),
-                          decoration: InputDecoration(
-                            labelText: 'Amount',
-                            labelStyle: GoogleFonts.nunito(),
-                            prefixIcon: const Icon(Icons.currency_rupee),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
-                          validator: (val) =>
-                              (val == null || val.isEmpty) ? 'Required' : null,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 24),
+                      TextFormField(
+                        controller: _amountController,
+                        keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true),
+                        style: GoogleFonts.nunito(
+                          fontSize: ResponsiveUtils.getResponsiveFontSize(
+                              context,
+                              mobile: 18,
+                              tablet: 20,
+                              desktop: 22),
                         ),
-                        const SizedBox(height: 16),
-                        DropdownButtonFormField<String>(
-                          initialValue: _category,
-                          style: GoogleFonts.nunito(
-                              color: theme.colorScheme.onSurface, fontSize: 16),
-                          decoration: InputDecoration(
-                            labelText: 'Category',
-                            labelStyle: GoogleFonts.nunito(),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
-                          items: categories
-                              .map((c) =>
-                                  DropdownMenuItem(value: c, child: Text(c)))
-                              .toList(),
-                          onChanged: (val) => setState(() => _category = val!),
-                        ),
-                        const SizedBox(height: 16),
-                        DropdownButtonFormField<String>(
-                          initialValue: _account,
-                          style: GoogleFonts.nunito(
-                              color: theme.colorScheme.onSurface, fontSize: 16),
-                          decoration: InputDecoration(
-                            labelText: 'Account',
-                            labelStyle: GoogleFonts.nunito(),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
-                          items: accounts
-                              .map((a) =>
-                                  DropdownMenuItem(value: a, child: Text(a)))
-                              .toList(),
-                          onChanged: (val) => setState(() => _account = val!),
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _noteController,
-                          style: GoogleFonts.nunito(fontSize: 16),
-                          decoration: InputDecoration(
-                            labelText: 'Note (Optional)',
-                            labelStyle: GoogleFonts.nunito(),
-                            prefixIcon: const Icon(Icons.note_alt_outlined),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
+                        decoration: InputDecoration(
+                          labelText: 'Amount',
+                          labelStyle: GoogleFonts.nunito(),
+                          prefixIcon: const Icon(Icons.currency_rupee),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        if (_imagePaths.isNotEmpty) ...[
-                          SizedBox(
-                            height: 80,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: _imagePaths.length,
-                              itemBuilder: (context, index) => Container(
-                                margin: const EdgeInsets.only(right: 8),
-                                width: 80,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8),
-                                  image: DecorationImage(
-                                    image: FileImage(File(_imagePaths[index])),
-                                    fit: BoxFit.cover,
-                                  ),
+                        validator: (val) =>
+                            (val == null || val.isEmpty) ? 'Required' : null,
+                      ),
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        initialValue: _category,
+                        style: GoogleFonts.nunito(
+                            color: theme.colorScheme.onSurface, fontSize: 16),
+                        decoration: InputDecoration(
+                          labelText: 'Category',
+                          labelStyle: GoogleFonts.nunito(),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        items: categories
+                            .map((c) =>
+                                DropdownMenuItem(value: c, child: Text(c)))
+                            .toList(),
+                        onChanged: (val) => setState(() => _category = val!),
+                      ),
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        initialValue: _account,
+                        style: GoogleFonts.nunito(
+                            color: theme.colorScheme.onSurface, fontSize: 16),
+                        decoration: InputDecoration(
+                          labelText: 'Account',
+                          labelStyle: GoogleFonts.nunito(),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        items: accounts
+                            .map((a) =>
+                                DropdownMenuItem(value: a, child: Text(a)))
+                            .toList(),
+                        onChanged: (val) => setState(() => _account = val!),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _noteController,
+                        style: GoogleFonts.nunito(fontSize: 16),
+                        decoration: InputDecoration(
+                          labelText: 'Note (Optional)',
+                          labelStyle: GoogleFonts.nunito(),
+                          prefixIcon: const Icon(Icons.note_alt_outlined),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      if (_imagePaths.isNotEmpty) ...[
+                        SizedBox(
+                          height: 80,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: _imagePaths.length,
+                            itemBuilder: (context, index) => Container(
+                              margin: const EdgeInsets.only(right: 8),
+                              width: 80,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                image: DecorationImage(
+                                  image: FileImage(File(_imagePaths[index])),
+                                  fit: BoxFit.cover,
                                 ),
                               ),
                             ),
                           ),
-                          const SizedBox(height: 8),
-                        ],
-                        OutlinedButton.icon(
-                          onPressed: _pickImage,
-                          icon: const Icon(Icons.add_a_photo_outlined),
-                          label: const Text('Add Attachment'),
                         ),
-                        const SizedBox(height: 24),
-                        ElevatedButton(
-                          onPressed: _submit,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                widget.isIncome ? Colors.green : Colors.red,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 18),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
-                          child: Text(
-                            (widget.existingTransaction != null ||
-                                    widget.existingPersonTransaction != null)
-                                ? 'Update Transaction'
-                                : 'Save Transaction',
-                            style: GoogleFonts.nunito(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
+                        const SizedBox(height: 8),
                       ],
-                    ),
+                      OutlinedButton.icon(
+                        onPressed: _pickImage,
+                        icon: const Icon(Icons.add_a_photo_outlined),
+                        label: const Text('Add Attachment'),
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton(
+                        onPressed: _submit,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              widget.isIncome ? Colors.green : Colors.red,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 18),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: Text(
+                          (widget.existingTransaction != null ||
+                                  widget.existingPersonTransaction != null)
+                              ? 'Update Transaction'
+                              : 'Save Transaction',
+                          style: GoogleFonts.nunito(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
