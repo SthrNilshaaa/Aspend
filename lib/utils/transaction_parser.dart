@@ -54,11 +54,14 @@ class ParsedTransaction {
 
 class TransactionParser {
   static final List<RegExp> _amountPatterns = [
-    // Handle ₹, Rs., INR, Rs
+    // Handle ₹, Rs., INR, Rs with symbol before number
     RegExp(r'(?:Rs\.?|INR|₹|\$)\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)',
         caseSensitive: false),
     // Handle cases where amount comes after "of" or "for"
-    RegExp(r'(?:of|for)\s*(?:Rs\.?|INR|₹|\$)\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)',
+    RegExp(r'(?:of|for)\s*(?:Rs\.?|INR|₹|\$)?\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)',
+        caseSensitive: false),
+    // Handle symbol after number (e.g., 500 Rs)
+    RegExp(r'(\d+(?:,\d{3})*(?:\.\d{1,2})?)\s*(?:Rs\.?|INR|₹|\$)',
         caseSensitive: false),
   ];
 
@@ -314,14 +317,17 @@ class TransactionParser {
 
     // 5. Extract Account (last 4 digits)
     String? account;
-    final accountMatch =
-        RegExp(r'a/c\s*(?:xx|x+)?(\d{4})', caseSensitive: false)
-                .firstMatch(text) ??
-            RegExp(r'acct\s*(?:xx|x+)?(\d{4})', caseSensitive: false)
-                .firstMatch(text);
+    final accountMatch = RegExp(
+                r'(?:a/c|acct|acc|account|card)\s*(?:xx|x+)?(\d{4})',
+                caseSensitive: false)
+            .firstMatch(text) ??
+        RegExp(r'\b\d{4}\b',
+                caseSensitive:
+                    false) // Fallback to any 4 digit number if in a/c context
+            .firstMatch(text);
 
     if (accountMatch != null) {
-      account = 'A/c XX${accountMatch.group(1)}';
+      account = 'A/c XX${accountMatch.group(1) ?? accountMatch.group(0)}';
     } else if (lowerText.contains('upi')) {
       account = 'UPI';
     } else if (lowerText.contains('wallet')) {
@@ -331,33 +337,38 @@ class TransactionParser {
     // 5. Extract Merchant/Recipient/Sender
     String? merchant;
     // Look for patterns like "paid to X", "sent to X", "received from X", "at X", "to X"
-    final merchantMatch = RegExp(
-            r'(?:to|from|at|towards)\s+([a-zA-Z0-9\.\s]+?)(?:\.|\s+via|\s+using|\s+on|\s+ref|\s+successful|\s+completed|\s+of|$)',
-            caseSensitive: false)
-        .firstMatch(text);
-    if (merchantMatch != null) {
-      merchant = merchantMatch.group(1)?.trim();
-      // Remove common noises from merchant name
-      merchant = merchant
-          ?.replaceAll(RegExp(r'\d{10}'), '')
-          .trim(); // Remove phone numbers
-      if (merchant?.isEmpty ?? true) merchant = null;
+    final merchantPatterns = [
+      RegExp(
+          r'(?:to|from|at|towards|for)\s+([a-zA-Z0-9\.\s&]+?)(?:\.|\s+via|\s+using|\s+on|\s+ref|\s+successful|\s+completed|\s+of|$)',
+          caseSensitive: false),
+      RegExp(r'spent\s+on\s+([a-zA-Z0-9\.\s&]+?)(?:\.|\s+via|\s+using|$)',
+          caseSensitive: false),
+      RegExp(r'payment\s+to\s+([a-zA-Z0-9\.\s&]+?)(?:\.|\s+for|$)',
+          caseSensitive: false),
+    ];
+
+    for (final pattern in merchantPatterns) {
+      final match = pattern.firstMatch(text);
+      if (match != null) {
+        merchant = match.group(1)?.trim();
+        if (merchant != null && merchant.isNotEmpty) break;
+      }
     }
 
-    // Fallback for simple "Payment to Merchant"
-    if (merchant == null) {
-      final simpleMerchant = RegExp(
-              r'to\s+([a-zA-Z0-9\s]+?)\s+(?:successful|completed)',
-              caseSensitive: false)
-          .firstMatch(text);
-      if (simpleMerchant != null) {
-        merchant = simpleMerchant.group(1)?.trim();
-      }
+    if (merchant != null) {
+      // Remove common noises from merchant name
+      merchant = merchant
+          .replaceAll(RegExp(r'\d{10}'), '') // Remove phone numbers
+          .replaceAll(RegExp(r'vpa|upi|bank', caseSensitive: false),
+              '') // Remove tech terms
+          .trim();
+      if (merchant.isEmpty) merchant = null;
     }
 
     // 6. Extract Reference
     String? reference;
-    final refMatch = RegExp(r'(?:ref|txn|id|pnr|upi ref)[:\s]+([a-z0-9]+)',
+    final refMatch = RegExp(
+            r'(?:ref|txn|id|pnr|upi ref|rrn)[:\s\#]+([a-z0-9]+)',
             caseSensitive: false)
         .firstMatch(text);
     if (refMatch != null) {
@@ -367,7 +378,7 @@ class TransactionParser {
     // 7. Extract Balance
     double? balance;
     final balMatch = RegExp(
-            r'(?:bal|balance|avl bal)\s*(?:Rs\.?|INR|₹|\$)?\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)',
+            r'(?:bal|balance|avl bal|available balance)\s*(?:Rs\.?|INR|₹|\$)?\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)',
             caseSensitive: false)
         .firstMatch(text);
     if (balMatch != null) {
@@ -391,52 +402,79 @@ class TransactionParser {
   }
 
   static bool _isTransactionRelated(String text) {
-    // Exclude OTPs, failed transactions, and pending requests
-    if (text.contains('otp') ||
-        text.contains('verification code') ||
-        text.contains('failed') ||
-        text.contains('declined') ||
-        text.contains('unsuccessful') ||
-        text.contains('request') ||
-        text.contains('due') ||
-        text.contains('expire') ||
-        text.contains('limit exceeded') ||
-        text.contains('data consumed') ||
-        text.contains('speed data') ||
-        text.contains('data balance') ||
-        text.contains('usage alert')) {
+    if (text.isEmpty) return false;
+    final lowerText = text.toLowerCase();
+
+    // 1. HARD EXCLUSIONS
+    if (lowerText.contains('otp') ||
+        lowerText.contains('verification code') ||
+        lowerText.contains('secret code') ||
+        lowerText.contains('one time password')) {
       return false;
     }
 
-    final keywords = [
-      'credited',
-      'debited',
-      'paid',
-      'sent',
-      'received',
-      'spent',
-      'withdrawal',
-      'withdrawn',
-      'transfer',
-      'txn',
-      'transaction',
-      'successful',
-      'failed',
-      'added',
-      'wallet',
-      'a/c',
-      'acct',
-      'upi',
-      'refund',
-      'cashback',
-      'bill',
-      'recharge'
-    ];
-
-    for (final kw in keywords) {
-      if (text.contains(kw)) return true;
+    if (lowerText.contains('failed') ||
+        lowerText.contains('declined') ||
+        lowerText.contains('unsuccessful') ||
+        lowerText.contains('limit exceeded') ||
+        lowerText.contains('insufficient funds') ||
+        lowerText.contains('rejected')) {
+      return false;
     }
 
-    return false;
+    if (lowerText.contains('data consumed') ||
+        lowerText.contains('speed data') ||
+        lowerText.contains('data balance') ||
+        lowerText.contains('usage alert')) {
+      return false;
+    }
+
+    // 2. PROMOTIONAL FILTERING
+    final promoKeywords = [
+      'exclusive', 'limited', 'get up to', 'win', 'grab', 'congratulations',
+      'reward', 'claim', 'gift', 'offer', 'bonus', 'available', 'unlocked',
+      'eligible', 'pre-approved', 'apply now', 'disbursed', 'ready for',
+      'increase your limit', 'unsubscribe', 'remind', 'lowest interest', '0% emi'
+    ];
+    
+    if (promoKeywords.any((kw) => lowerText.contains(kw))) {
+      return false;
+    }
+
+    // Reminder and Redundant check
+    if (lowerText.contains('pay your bill') || 
+        lowerText.contains('received payment against')) {
+      return false;
+    }
+
+    // URL Check (likely promo)
+    if (lowerText.contains('http') || lowerText.contains('.ly/') || lowerText.contains('.co/')) {
+      final strongTxKeywords = ['debited', 'credited', 'spent', 'received', 'sent'];
+      if (!strongTxKeywords.any((kw) => lowerText.contains(kw))) {
+        return false;
+      }
+    }
+
+    // 3. TRANSACTION STRUCTURE VALIDATION
+    final hasAmountMarker = lowerText.contains('rs') || 
+                           lowerText.contains('inr') || 
+                           lowerText.contains('₹') || 
+                           lowerText.contains(r'$') ||
+                           lowerText.contains('amt');
+    
+    final directionKeywords = [
+      'credited', 'debited', 'paid', 'sent', 'received', 
+      'spent', 'withdrawal', 'withdrawn', 'transfer', 
+      'added', 'refund', 'cashback'
+    ];
+    final hasDirection = directionKeywords.any((kw) => lowerText.contains(kw));
+
+    final hasAccount = lowerText.contains('a/c') || 
+                      lowerText.contains('acct') || 
+                      lowerText.contains('card xx') || 
+                      lowerText.contains('upi') ||
+                      lowerText.contains('wallet');
+
+    return hasDirection && (hasAmountMarker || hasAccount);
   }
 }

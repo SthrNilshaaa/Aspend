@@ -904,7 +904,7 @@ class _SettingsPageState extends State<SettingsPage> {
         _buildSettingsTile(
           icon: Icons.info_outline,
           title: 'Version',
-          subtitle: '5.8.0',
+          subtitle: '5.9.1',
           onTap: null,
         ),
         _buildSettingsTile(
