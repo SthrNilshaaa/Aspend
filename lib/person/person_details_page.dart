@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -17,7 +15,6 @@ import '../widgets/add_transaction_dialog.dart';
 import '../widgets/glass_app_bar.dart';
 import '../widgets/empty_state_view.dart';
 import '../widgets/glass_action_button.dart';
-import '../utils/responsive_utils.dart';
 
 class PersonDetailPage extends StatefulWidget {
   final Person person;
@@ -104,434 +101,405 @@ class _PersonDetailPageState extends State<PersonDetailPage>
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: PreferredSize(
-        preferredSize:
-            Size.fromHeight(ResponsiveUtils.getResponsiveAppBarHeight(context)),
-        child: GlassAppBar(
-          title: person.name,
-          centerTitle: true,
-          actions: [
-            IconButton(
-              icon: const Icon(
-                Icons.delete_outline,
-                color: Colors.red,
-                size: 24,
-              ),
-              onPressed: () {
-                HapticFeedback.heavyImpact();
-                _showDeleteConfirmation(context, person);
-              },
-            ),
-            IconButton(
-              icon: const Icon(
-                Icons.edit_outlined,
-                size: 24,
-              ),
-              onPressed: () => _showEditPersonDialog(context, person),
-            ),
-          ],
+      floatingActionButton: AnimatedSlide(
+        offset: _showFab ? Offset.zero : const Offset(0, 2),
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        child: AnimatedOpacity(
+          opacity: _showFab ? 1.0 : 0.0,
+          duration: const Duration(milliseconds: 300),
+          child: _buildDualFab(theme),
         ),
       ),
-      floatingActionButton: _showFab ? _buildDualFab(theme) : null,
-      body: FadeTransition(
-        opacity: _fadeAnimation,
-        child: SlideTransition(
-          position: _slideAnimation,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: ModernCard(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 60,
-                            height: 60,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: theme.colorScheme.primary
-                                  .withValues(alpha: 0.1),
-                            ),
-                            child: person.photoPath != null
-                                ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(30),
-                                    child: Image.file(
-                                      File(person.photoPath!),
-                                      fit: BoxFit.cover,
-                                    ),
-                                  )
-                                : Icon(
-                                    isPositive
-                                        ? Icons.trending_up
-                                        : Icons.trending_down,
-                                    color: isPositive
-                                        ? Colors.greenAccent.shade700
-                                        : Colors.redAccent,
-                                    size: 30,
-                                  ),
-                          ),
-                          const SizedBox(width: 20),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Current Balance',
-                                  style: GoogleFonts.nunito(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                                Text(
-                                  '₹${total.abs().toStringAsFixed(2)}',
-                                  style: GoogleFonts.nunito(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.w900,
-                                    color: isPositive
-                                        ? Colors.greenAccent.shade700
-                                        : Colors.redAccent,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (total != 0) ...[
-                        const SizedBox(height: 20),
-                        ZoomTapAnimation(
-                          onTap: () => _settleBalance(context, total, person),
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.primary,
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: theme.colorScheme.primary
-                                      .withValues(alpha: 0.3),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Center(
-                              child: Text(
-                                'Settle Balance',
-                                style: GoogleFonts.nunito(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 15,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
+      body: CustomScrollView(
+        controller: _scrollController,
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          GlassAppBar(
+            title: person.name,
+            centerTitle: true,
+            actions: [
+              IconButton(
+                icon: const Icon(
+                  Icons.delete_outline,
+                  color: Colors.red,
+                  size: 24,
                 ),
+                onPressed: () {
+                  HapticFeedback.heavyImpact();
+                  _showDeleteConfirmation(context, person);
+                },
               ),
-
-              // Transactions Header
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
+              IconButton(
+                icon: const Icon(
+                  Icons.edit_outlined,
+                  size: 24,
+                ),
+                onPressed: () => _showEditPersonDialog(context, person),
+              ),
+            ],
+          ),
+          SliverToBoxAdapter(
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: SlideTransition(
+                position: _slideAnimation,
+                child: Column(
                   children: [
-                    Text(
-                      'Transactions',
-                      style: GoogleFonts.nunito(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.onSurface,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: useAdaptive
-                            ? theme.colorScheme.primary.withValues(alpha: 0.1)
-                            : theme.colorScheme.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        '${txs.length}',
-                        style: GoogleFonts.nunito(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: useAdaptive
-                              ? theme.colorScheme.primary
-                              : theme.colorScheme.primary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // Transactions List
-              Expanded(
-                child: txs.isEmpty
-                    ? EmptyStateView(
-                        icon: Icons.receipt_long_outlined,
-                        title: 'No transactions yet',
-                        description:
-                            'Add your first transaction with ${person.name}',
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: txs.length + 1, // +1 for bottom padding
-                        itemBuilder: (c, i) {
-                          // Add bottom padding as last item
-                          if (i == txs.length) {
-                            return const SizedBox(height: 80);
-                          }
-
-                          final tx = txs[i];
-                          final sign = tx.isIncome ? '+' : '-';
-                          final isPositiveTx = tx.isIncome;
-
-                          return AnimatedBuilder(
-                            animation: _fadeController,
-                            builder: (context, child) {
-                              return Transform.translate(
-                                offset:
-                                    Offset(0, 20 * (1 - _fadeController.value)),
-                                child: Opacity(
-                                  opacity: _fadeController.value,
-                                  child: Container(
-                                    margin: const EdgeInsets.only(bottom: 12),
-                                    child: GestureDetector(
-                                      onLongPress: () {
-                                        HapticFeedback.lightImpact();
-                                        _showDeleteTransactionDialog(
-                                            context, tx);
-                                      },
-                                      child: ZoomTapAnimation(
-                                        onTap: () {
-                                          HapticFeedback.lightImpact();
-                                          showModalBottomSheet(
-                                            context: context,
-                                            isScrollControlled: true,
-                                            backgroundColor: Colors.transparent,
-                                            builder: (context) =>
-                                                AddTransactionDialog(
-                                              isIncome: tx.isIncome,
-                                              existingPersonTransaction: tx,
-                                            ),
-                                          );
-                                        },
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            gradient: LinearGradient(
-                                              colors: useAdaptive
-                                                  ? [
-                                                      theme.colorScheme.surface,
-                                                      theme.colorScheme.surface
-                                                          .withValues(
-                                                              alpha: 0.8),
-                                                    ]
-                                                  : [
-                                                      theme.colorScheme.surface,
-                                                      theme.colorScheme.surface
-                                                          .withValues(
-                                                              alpha: 0.8),
-                                                    ],
-                                              begin: Alignment.topLeft,
-                                              end: Alignment.bottomRight,
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(16),
-                                            border: Border.all(
-                                              color: useAdaptive
-                                                  ? theme.colorScheme.primary
-                                                      .withValues(alpha: 0.3)
-                                                  : isDark
-                                                      ? Colors.teal.shade900
-                                                          .withValues(
-                                                              alpha: 0.3)
-                                                      : Colors.teal.withValues(
-                                                          alpha: 0.3),
-                                              width: 1,
-                                            ),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: useAdaptive
-                                                    ? theme.colorScheme.shadow
-                                                        .withValues(alpha: 0.1)
-                                                    : theme.colorScheme.shadow
-                                                        .withValues(alpha: 0.1),
-                                                blurRadius: 8,
-                                                offset: const Offset(0, 2),
-                                              ),
-                                            ],
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: ModernCard(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  width: 60,
+                                  height: 60,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: theme.colorScheme.primary
+                                        .withValues(alpha: 0.1),
+                                  ),
+                                  child: person.photoPath != null
+                                      ? ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(30),
+                                          child: Image.file(
+                                            File(person.photoPath!),
+                                            fit: BoxFit.cover,
                                           ),
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(16),
-                                            child: Row(
-                                              children: [
-                                                Container(
-                                                  width: 50,
-                                                  height: 50,
-                                                  decoration: BoxDecoration(
-                                                    gradient: LinearGradient(
-                                                      colors: useAdaptive
-                                                          ? [
-                                                              isPositiveTx
-                                                                  ? Colors.green
-                                                                  : Colors.red,
-                                                              isPositiveTx
-                                                                  ? Colors.green
-                                                                      .withValues(
-                                                                          alpha:
-                                                                              0.8)
-                                                                  : Colors.red
-                                                                      .withValues(
-                                                                          alpha:
-                                                                              0.8),
-                                                            ]
-                                                          : [
-                                                              isPositiveTx
-                                                                  ? Colors.green
-                                                                  : Colors.red,
-                                                              isPositiveTx
-                                                                  ? Colors.green
-                                                                      .withValues(
-                                                                          alpha:
-                                                                              0.8)
-                                                                  : Colors.red
-                                                                      .withValues(
-                                                                          alpha:
-                                                                              0.8),
-                                                            ],
-                                                    ),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            25),
-                                                  ),
-                                                  child: Icon(
-                                                    isPositiveTx
-                                                        ? Icons.add
-                                                        : Icons.remove,
-                                                    color: Colors.white,
-                                                    size: 24,
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 16),
-                                                Expanded(
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text(
-                                                        tx.note.isEmpty
-                                                            ? 'No note'
-                                                            : tx.note,
-                                                        style:
-                                                            GoogleFonts.nunito(
-                                                          fontSize: 16,
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                          color: theme
-                                                              .colorScheme
-                                                              .onSurface,
-                                                        ),
-                                                      ),
-                                                      const SizedBox(height: 4),
-                                                      Text(
-                                                        DateFormat.yMMMd()
-                                                            .add_jm()
-                                                            .format(tx.date),
-                                                        style:
-                                                            GoogleFonts.nunito(
-                                                          fontSize: 14,
-                                                          color: theme
-                                                              .colorScheme
-                                                              .onSurface
-                                                              .withValues(
-                                                                  alpha: 0.7),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.end,
-                                                  children: [
-                                                    Text(
-                                                      '$sign₹${tx.amount.abs().toStringAsFixed(2)}',
-                                                      style: GoogleFonts.nunito(
-                                                        fontSize: 18,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: isPositiveTx
-                                                            ? Colors.green
-                                                            : Colors.red,
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 4),
-                                                    Container(
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                          horizontal: 6,
-                                                          vertical: 2),
-                                                      decoration: BoxDecoration(
-                                                        color: isPositiveTx
-                                                            ? Colors.green
-                                                                .withValues(
-                                                                    alpha: 0.1)
-                                                            : Colors.red
-                                                                .withValues(
-                                                                    alpha: 0.1),
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(8),
-                                                      ),
-                                                      child: Text(
-                                                        isPositiveTx
-                                                            ? 'Credit'
-                                                            : 'Debit',
-                                                        style:
-                                                            GoogleFonts.nunito(
-                                                          fontSize: 10,
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                          color: isPositiveTx
-                                                              ? Colors.green
-                                                              : Colors.red,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
+                                        )
+                                      : Icon(
+                                          isPositive
+                                              ? Icons.trending_up
+                                              : Icons.trending_down,
+                                          color: isPositive
+                                              ? Colors.greenAccent.shade700
+                                              : Colors.redAccent,
+                                          size: 30,
                                         ),
+                                ),
+                                const SizedBox(width: 20),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Current Balance',
+                                        style: GoogleFonts.nunito(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                      Text(
+                                        '₹${total.abs().toStringAsFixed(2)}',
+                                        style: GoogleFonts.nunito(
+                                          fontSize: 28,
+                                          fontWeight: FontWeight.w900,
+                                          color: isPositive
+                                              ? Colors.greenAccent.shade700
+                                              : Colors.redAccent,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (total != 0) ...[
+                              const SizedBox(height: 20),
+                              ZoomTapAnimation(
+                                onTap: () =>
+                                    _settleBalance(context, total, person),
+                                child: Container(
+                                  width: double.infinity,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: theme.colorScheme.primary,
+                                    borderRadius: BorderRadius.circular(16),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: theme.colorScheme.primary
+                                            .withValues(alpha: 0.3),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      'Settle Balance',
+                                      style: GoogleFonts.nunito(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 15,
                                       ),
                                     ),
                                   ),
                                 ),
-                              );
-                            },
-                          );
-                        },
+                              ),
+                            ],
+                          ],
+                        ),
                       ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        children: [
+                          Text(
+                            'Transactions',
+                            style: GoogleFonts.nunito(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primary
+                                  .withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              '${txs.length}',
+                              style: GoogleFonts.nunito(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: theme.colorScheme.primary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
               ),
-            ],
+            ),
           ),
-        ),
+          if (txs.isEmpty)
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: EmptyStateView(
+                icon: Icons.receipt_long_outlined,
+                title: 'No transactions yet',
+                description: 'Add your first transaction with ${person.name}',
+              ),
+            )
+          else
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (c, i) {
+                    final tx = txs[i];
+                    final sign = tx.isIncome ? '+' : '-';
+                    final isPositiveTx = tx.isIncome;
+
+                    return AnimatedBuilder(
+                      animation: _fadeController,
+                      builder: (context, child) {
+                        return Transform.translate(
+                          offset: Offset(0, 20 * (1 - _fadeController.value)),
+                          child: Opacity(
+                            opacity: _fadeController.value,
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              child: GestureDetector(
+                                onLongPress: () {
+                                  HapticFeedback.lightImpact();
+                                  _showDeleteTransactionDialog(context, tx);
+                                },
+                                child: ZoomTapAnimation(
+                                  onTap: () {
+                                    HapticFeedback.lightImpact();
+                                    showModalBottomSheet(
+                                      context: context,
+                                      isScrollControlled: true,
+                                      backgroundColor: Colors.transparent,
+                                      builder: (context) =>
+                                          AddTransactionDialog(
+                                        isIncome: tx.isIncome,
+                                        existingPersonTransaction: tx,
+                                      ),
+                                    );
+                                  },
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: useAdaptive
+                                            ? [
+                                                theme.colorScheme.surface,
+                                                theme.colorScheme.surface
+                                                    .withValues(alpha: 0.8),
+                                              ]
+                                            : [
+                                                theme.colorScheme.surface,
+                                                theme.colorScheme.surface
+                                                    .withValues(alpha: 0.8),
+                                              ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: useAdaptive
+                                            ? theme.colorScheme.primary
+                                                .withValues(alpha: 0.3)
+                                            : isDark
+                                                ? Colors.teal.shade900
+                                                    .withValues(alpha: 0.3)
+                                                : Colors.teal
+                                                    .withValues(alpha: 0.3),
+                                        width: 1,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: useAdaptive
+                                              ? theme.colorScheme.shadow
+                                                  .withValues(alpha: 0.1)
+                                              : theme.colorScheme.shadow
+                                                  .withValues(alpha: 0.1),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            width: 50,
+                                            height: 50,
+                                            decoration: BoxDecoration(
+                                              gradient: LinearGradient(
+                                                colors: [
+                                                  isPositiveTx
+                                                      ? Colors.green
+                                                      : Colors.red,
+                                                  isPositiveTx
+                                                      ? Colors.green.withValues(
+                                                          alpha: 0.8)
+                                                      : Colors.red.withValues(
+                                                          alpha: 0.8),
+                                                ],
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(25),
+                                            ),
+                                            child: Icon(
+                                              isPositiveTx
+                                                  ? Icons.add
+                                                  : Icons.remove,
+                                              color: Colors.white,
+                                              size: 24,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 16),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  tx.note.isEmpty
+                                                      ? 'No note'
+                                                      : tx.note,
+                                                  style: GoogleFonts.nunito(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: theme
+                                                        .colorScheme.onSurface,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Text(
+                                                  DateFormat.yMMMd()
+                                                      .add_jm()
+                                                      .format(tx.date),
+                                                  style: GoogleFonts.nunito(
+                                                    fontSize: 14,
+                                                    color: theme
+                                                        .colorScheme.onSurface
+                                                        .withValues(alpha: 0.7),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.end,
+                                            children: [
+                                              Text(
+                                                '$sign₹${tx.amount.abs().toStringAsFixed(2)}',
+                                                style: GoogleFonts.nunito(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: isPositiveTx
+                                                      ? Colors.green
+                                                      : Colors.red,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 6,
+                                                        vertical: 2),
+                                                decoration: BoxDecoration(
+                                                  color: isPositiveTx
+                                                      ? Colors.green.withValues(
+                                                          alpha: 0.1)
+                                                      : Colors.red.withValues(
+                                                          alpha: 0.1),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                                child: Text(
+                                                  isPositiveTx
+                                                      ? 'Credit'
+                                                      : 'Debit',
+                                                  style: GoogleFonts.nunito(
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: isPositiveTx
+                                                        ? Colors.green
+                                                        : Colors.red,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                  childCount: txs.length,
+                ),
+              ),
+            ),
+          const SliverToBoxAdapter(child: SizedBox(height: 100)),
+        ],
       ),
     );
   }

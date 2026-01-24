@@ -8,11 +8,16 @@ class GlassAppBar extends StatelessWidget {
   final List<Widget>? actions;
   final bool centerTitle;
 
+  final Widget? leading;
+  final bool automaticallyImplyLeading;
+
   const GlassAppBar({
     super.key,
     required this.title,
     this.actions,
     this.centerTitle = false,
+    this.leading,
+    this.automaticallyImplyLeading = true,
   });
 
   @override
@@ -26,6 +31,8 @@ class GlassAppBar extends StatelessWidget {
       elevation: 1,
       backgroundColor: Colors.transparent,
       actions: actions,
+      leading: leading,
+      automaticallyImplyLeading: automaticallyImplyLeading,
       flexibleSpace: Stack(
         fit: StackFit.expand,
         children: [
