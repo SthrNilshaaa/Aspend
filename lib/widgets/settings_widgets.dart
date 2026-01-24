@@ -58,6 +58,7 @@ class SettingTile extends StatelessWidget {
   final String title;
   final String? subtitle;
   final Widget? trailing;
+  final bool isDestructive;
   final VoidCallback? onTap;
 
   const SettingTile({
@@ -66,19 +67,22 @@ class SettingTile extends StatelessWidget {
     required this.title,
     this.subtitle,
     this.trailing,
+    this.isDestructive = false,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final primaryColor = isDestructive ? Colors.red : theme.colorScheme.primary;
+
     return Card(
       elevation: 0,
-      color: theme.colorScheme.surface.withValues(alpha: 0.5),
+      color: primaryColor.withValues(alpha: 0.05),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: theme.dividerColor.withValues(alpha: 0.05),
+          color: primaryColor.withValues(alpha: 0.1),
           width: 1,
         ),
       ),
@@ -88,21 +92,27 @@ class SettingTile extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: theme.colorScheme.primary.withValues(alpha: 0.1),
+            color: primaryColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, color: theme.colorScheme.primary, size: 22),
+          child: Icon(icon, color: primaryColor, size: 22),
         ),
         title: Text(
           title,
-          style: GoogleFonts.nunito(fontWeight: FontWeight.bold, fontSize: 16),
+          style: GoogleFonts.nunito(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+            color: isDestructive ? Colors.red : null,
+          ),
         ),
         subtitle: subtitle != null
             ? Text(
                 subtitle!,
                 style: GoogleFonts.nunito(
                   fontSize: 13,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  color: isDestructive
+                      ? Colors.red.withValues(alpha: 0.7)
+                      : theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               )
             : null,

@@ -17,7 +17,6 @@ import '../widgets/add_transaction_dialog.dart';
 import '../widgets/glass_app_bar.dart';
 import '../widgets/empty_state_view.dart';
 import '../widgets/glass_action_button.dart';
-import '../utils/error_handler.dart';
 import '../utils/responsive_utils.dart';
 
 class PersonDetailPage extends StatefulWidget {

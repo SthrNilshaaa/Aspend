@@ -440,7 +440,7 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
     required ThemeData theme,
   }) {
     return DropdownButtonFormField<String>(
-      value: value,
+      initialValue: value,
       style: GoogleFonts.nunito(
           color: theme.colorScheme.onSurface,
           fontSize: 16,

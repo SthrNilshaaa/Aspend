@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -215,10 +214,8 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
                             const SizedBox(height: 32),
                             _buildSectionHeader('History'),
                             const SizedBox(height: 16),
-                            ...filteredTxs
-                                .map((tx) =>
-                                    TransactionTile(transaction: tx, index: 0))
-                                .toList(),
+                            ...filteredTxs.map((tx) =>
+                                TransactionTile(transaction: tx, index: 0)),
                           ],
                         ),
                       const SizedBox(height: 100),

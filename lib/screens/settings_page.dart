@@ -1,6 +1,8 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:local_auth/local_auth.dart';
 import '../view_models/theme_view_model.dart';
 import 'package:flutter/services.dart';
 import 'package:printing/printing.dart';
@@ -109,7 +111,6 @@ class _SettingsPageState extends State<SettingsPage> {
       body: CustomScrollView(
         //controller: _scrollController,
         physics: const BouncingScrollPhysics(),
-        slivers: [
         slivers: [
           GlassAppBar(
             title: 'Settings',
@@ -728,7 +729,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildBackupSection(BuildContext context, bool isDark) {
     return Column(
       children: [
-        _buildSettingsTile(
+        SettingTile(
           icon: Icons.upload_file,
           title: 'Export Transactions',
           subtitle: 'Backup your data to CSV',
@@ -742,7 +743,7 @@ class _SettingsPageState extends State<SettingsPage> {
             }
           },
         ),
-        _buildSettingsTile(
+        SettingTile(
           icon: Icons.download,
           title: 'Import Transactions',
           subtitle: 'Restore data from backup',
@@ -756,7 +757,7 @@ class _SettingsPageState extends State<SettingsPage> {
             }
           },
         ),
-        _buildSettingsTile(
+        SettingTile(
           icon: Icons.picture_as_pdf,
           title: 'Export as PDF',
           subtitle: 'Generate PDF reports',
@@ -773,7 +774,7 @@ class _SettingsPageState extends State<SettingsPage> {
             }
           },
         ),
-        _buildSettingsTile(
+        SettingTile(
           icon: Icons.groups,
           title: 'Export People Data',
           subtitle: 'Backup people transactions',
@@ -797,7 +798,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildDataManagementSection(BuildContext context, bool isDark) {
     return Column(
       children: [
-        _buildSettingsTile(
+        SettingTile(
           icon: Icons.ios_share,
           title: 'Export People Data (JSON)',
           subtitle: 'Backup people and transactions',
@@ -811,7 +812,7 @@ class _SettingsPageState extends State<SettingsPage> {
             }
           },
         ),
-        _buildSettingsTile(
+        SettingTile(
           icon: Icons.import_export,
           title: 'Import People Data (JSON)',
           subtitle: 'Restore people data from backup',
@@ -825,7 +826,7 @@ class _SettingsPageState extends State<SettingsPage> {
             }
           },
         ),
-        _buildSettingsTile(
+        SettingTile(
           icon: Icons.delete_forever,
           title: 'Delete All Data',
           subtitle: '⚠️ This action cannot be undone',
@@ -835,7 +836,7 @@ class _SettingsPageState extends State<SettingsPage> {
             _confirmDeleteAll(context);
           },
         ),
-        _buildSettingsTile(
+        SettingTile(
           icon: Icons.refresh,
           title: 'Reset Intro',
           subtitle: 'Show intro screens again',
@@ -851,13 +852,13 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildAppInfoSection(BuildContext context, bool isDark) {
     return Column(
       children: [
-        _buildSettingsTile(
+        SettingTile(
           icon: Icons.info_outline,
           title: 'Version',
           subtitle: '5.9.1',
           onTap: null,
         ),
-        _buildSettingsTile(
+        SettingTile(
           icon: Icons.description,
           title: 'Privacy Policy',
           subtitle: 'Read our privacy policy',
@@ -866,7 +867,7 @@ class _SettingsPageState extends State<SettingsPage> {
             _showSnackBar(context, 'Privacy policy coming soon!');
           },
         ),
-        _buildSettingsTile(
+        SettingTile(
           icon: Icons.help_outline,
           title: 'Help & Support',
           subtitle: 'Get help and contact support',
@@ -882,7 +883,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildBudgetSection(BuildContext context) {
     final themeViewModel = context.watch<ThemeViewModel>();
     final budget = themeViewModel.monthlyBudget;
-    return _buildSettingsTile(
+    return SettingTile(
       icon: Icons.track_changes,
       title: 'Monthly Budget',
       subtitle: budget > 0
@@ -894,7 +895,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Widget _buildBalanceCalculationTile(BuildContext context) {
     final viewModel = context.watch<ThemeViewModel>();
-    return _buildSettingsTile(
+    return SettingTile(
       icon: Icons.calculate_outlined,
       title: 'Join Previous Month Balance',
       subtitle: 'Include previous month balance in current total',
@@ -944,9 +945,6 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildSettingsTile({
-    required IconData icon,
-    required String title,
 
   void _showSnackBar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -1014,13 +1012,16 @@ class _SettingsPageState extends State<SettingsPage> {
               try {
                 final box = await Hive.openBox<double>('balanceBox');
                 await box.clear();
+                if (!context.mounted) return;
                 await Provider.of<TransactionViewModel>(context, listen: false)
                     .deleteAllData();
                 await Provider.of<PersonViewModel>(context, listen: false)
                     .deleteAllData();
+                if (!context.mounted) return;
                 Navigator.pop(context);
                 _showSnackBar(context, 'All data deleted successfully!');
               } catch (e) {
+                if (!context.mounted) return;
                 Navigator.pop(context);
                 _showSnackBar(
                     context, 'Failed to delete all data. Please try again.');
@@ -1087,9 +1088,11 @@ class _SettingsPageState extends State<SettingsPage> {
                 // Reset introCompleted flag in settings box
                 final settingsBox = await Hive.openBox('settings');
                 await settingsBox.put('introCompleted', false);
+                if (!context.mounted) return;
                 Navigator.pop(context);
                 _showSnackBar(context, 'Intro reset successfully!');
               } catch (e) {
+                if (!context.mounted) return;
                 Navigator.pop(context);
                 _showSnackBar(
                     context, 'Failed to reset intro. Please try again.\n$e');
