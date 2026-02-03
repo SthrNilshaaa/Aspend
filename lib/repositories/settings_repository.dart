@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import '../models/theme.dart';
 
 class SettingsRepository {
   static const String _settingsBoxName = 'settings';
@@ -10,17 +9,22 @@ class SettingsRepository {
   static const String _introCompletedKey = 'introCompleted';
   static const String _monthlyBudgetKey = 'monthlyBudget';
   static const String _joinPreviousMonthBalanceKey = 'joinPreviousMonthBalance';
+  static const String _customCategoriesKey = 'customCategories'; // Legacy
+  static const String _customAccountsKey = 'customAccounts'; // Legacy
+  static const String _incomeCategoriesKey = 'incomeCategories';
+  static const String _expenseCategoriesKey = 'expenseCategories';
+  static const String _accountsKey = 'accounts_list';
 
   Box get _settingsBox => Hive.box(_settingsBoxName);
 
-  AppTheme getAppTheme() {
+  ThemeMode getThemeMode() {
     final index =
-        _settingsBox.get(_themeKey, defaultValue: AppTheme.system.index);
-    return AppTheme.values[index];
+        _settingsBox.get(_themeKey, defaultValue: ThemeMode.system.index);
+    return ThemeMode.values[index];
   }
 
-  Future<void> setAppTheme(AppTheme theme) async {
-    await _settingsBox.put(_themeKey, theme.index);
+  Future<void> setThemeMode(ThemeMode mode) async {
+    await _settingsBox.put(_themeKey, mode.index);
   }
 
   bool getUseAdaptiveColor() {
@@ -67,6 +71,83 @@ class SettingsRepository {
   Future<void> setJoinPreviousMonthBalance(bool value) async {
     await _settingsBox.put(_joinPreviousMonthBalanceKey, value);
   }
+
+  List<String> getIncomeCategories() {
+    final def = [
+      'Salary',
+      'Freelance',
+      'Bonus',
+      'Investment',
+      'Interest',
+      'Rent Received',
+      'Gift',
+      'Cashback',
+      'Business',
+      'Refund',
+      'Other'
+    ];
+    return List<String>.from(
+        _settingsBox.get(_incomeCategoriesKey, defaultValue: def));
+  }
+
+  Future<void> setIncomeCategories(List<String> list) async =>
+      await _settingsBox.put(_incomeCategoriesKey, list);
+
+  List<String> getExpenseCategories() {
+    final def = [
+      'Food',
+      'Groceries',
+      'Transport',
+      'Fuel',
+      'Shopping',
+      'Bills',
+      'Rent',
+      'Entertainment',
+      'Health',
+      'Education',
+      'Travel',
+      'Maintenance',
+      'Insurance',
+      'Subscription',
+      'Personal Care',
+      'Tax',
+      'Gifts',
+      'Charity',
+      'Loan Repayment',
+      'Other'
+    ];
+    return List<String>.from(
+        _settingsBox.get(_expenseCategoriesKey, defaultValue: def));
+  }
+
+  Future<void> setExpenseCategories(List<String> list) async =>
+      await _settingsBox.put(_expenseCategoriesKey, list);
+
+  List<String> getAccounts() {
+    final def = [
+      'Cash',
+      'Bank',
+      'Savings',
+      'Wallet',
+      'UPI',
+      'Credit Card',
+      'Debit Card',
+      'Online'
+    ];
+    return List<String>.from(_settingsBox.get(_accountsKey, defaultValue: def));
+  }
+
+  Future<void> setAccounts(List<String> list) async =>
+      await _settingsBox.put(_accountsKey, list);
+
+  List<String> getCustomCategories() => List<String>.from(
+      _settingsBox.get(_customCategoriesKey, defaultValue: <String>[]));
+  Future<void> setCustomCategories(List<String> categories) async =>
+      await _settingsBox.put(_customCategoriesKey, categories);
+  List<String> getCustomAccounts() => List<String>.from(
+      _settingsBox.get(_customAccountsKey, defaultValue: <String>[]));
+  Future<void> setCustomAccounts(List<String> accounts) async =>
+      await _settingsBox.put(_customAccountsKey, accounts);
 
   Stream<BoxEvent> watchSettings() {
     return _settingsBox.watch();

@@ -14,7 +14,6 @@ import 'package:hive/hive.dart';
 import '../backup/export_csv.dart';
 import '../backup/import_csv.dart';
 import '../backup/person_backup_helper.dart';
-import '../models/theme.dart';
 import '../view_models/transaction_view_model.dart';
 import '../view_models/person_view_model.dart';
 import '../services/pdf_service.dart';
@@ -194,6 +193,16 @@ class _SettingsPageState extends State<SettingsPage> {
                       ),
                       const SizedBox(height: 24),
 
+                      // Custom Dropdown Items Section
+                      TitledSection(
+                        title: 'Custom Dropdown Items',
+                        icon: Icons.list_alt,
+                        children: [
+                          _buildCustomOptionsSection(context),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+
                       // App Info Section
                       TitledSection(
                         title: 'App Information',
@@ -229,7 +238,6 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
     );
   }
-
 
   Widget _buildThemeCard(BuildContext context, bool isDark) {
     final theme = Theme.of(context);
@@ -274,20 +282,20 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             const SizedBox(height: 16),
             DropdownButtonHideUnderline(
-              child: DropdownButton<AppTheme>(
-                value: context.watch<ThemeViewModel>().appTheme,
+              child: DropdownButton<ThemeMode>(
+                value: context.watch<ThemeViewModel>().themeMode,
                 isExpanded: true,
                 icon: const Icon(Icons.arrow_drop_down),
-                onChanged: (theme) {
+                onChanged: (mode) {
                   HapticFeedback.lightImpact();
-                  if (theme != null) {
-                    context.read<ThemeViewModel>().setTheme(theme);
+                  if (mode != null) {
+                    context.read<ThemeViewModel>().setThemeMode(mode);
                   }
                 },
-                items: AppTheme.values.map((theme) {
-                  final label = theme.toString().split('.').last.capitalize();
+                items: ThemeMode.values.map((mode) {
+                  final label = mode.toString().split('.').last.capitalize();
                   return DropdownMenuItem(
-                    value: theme,
+                    value: mode,
                     child: Text(label),
                   );
                 }).toList(),
@@ -321,7 +329,7 @@ class _SettingsPageState extends State<SettingsPage> {
           value: viewModel.useAdaptiveColor,
           onChanged: (value) {
             HapticFeedback.lightImpact();
-            viewModel.setAdaptiveColor(value);
+            viewModel.setUseAdaptiveColor(value);
           },
         ),
       ],
@@ -849,6 +857,202 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  Widget _buildCustomOptionsSection(BuildContext context) {
+    return Column(
+      children: [
+        SettingTile(
+          icon: Icons.category_outlined,
+          title: 'Income Categories',
+          subtitle: 'Manage categories for income',
+          onTap: () => _showManageItemsDialog(context, 'Income'),
+        ),
+        SettingTile(
+          icon: Icons.category_outlined,
+          title: 'Expense Categories',
+          subtitle: 'Manage categories for expenses',
+          onTap: () => _showManageItemsDialog(context, 'Expense'),
+        ),
+        SettingTile(
+          icon: Icons.account_balance_outlined,
+          title: 'Accounts',
+          subtitle: 'Manage your accounts',
+          onTap: () => _showManageItemsDialog(context, 'Account'),
+        ),
+      ],
+    );
+  }
+
+  void _showManageItemsDialog(BuildContext context, String type) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            final themeViewModel = context.watch<ThemeViewModel>();
+            final items = (type == 'Income')
+                ? themeViewModel.incomeCategories
+                : (type == 'Expense')
+                    ? themeViewModel.expenseCategories
+                    : themeViewModel.accounts;
+
+            return Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              padding: const EdgeInsets.all(24),
+              height: MediaQuery.of(context).size.height * 0.75,
+              child: Column(
+                children: [
+                  Text('Manage ${type}s',
+                      style: GoogleFonts.nunito(
+                          fontSize: 18, fontWeight: FontWeight.bold)),
+                  const Divider(),
+                  Expanded(
+                    child: items.isEmpty
+                        ? Center(
+                            child: Text(
+                              'No ${type.toLowerCase()}s found.',
+                              style: GoogleFonts.nunito(color: Colors.grey),
+                            ),
+                          )
+                        : ListView.builder(
+                            itemCount: items.length,
+                            itemBuilder: (context, index) {
+                              final item = items[index];
+                              return ListTile(
+                                title: Text(item, style: GoogleFonts.nunito()),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit_outlined,
+                                          size: 20),
+                                      onPressed: () => _showEditItemDialog(
+                                          context,
+                                          item,
+                                          type,
+                                          (n) => setStateDialog(() {})),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete_outline,
+                                          color: Colors.red, size: 20),
+                                      onPressed: () {
+                                        themeViewModel.removeItem(item, type);
+                                        setStateDialog(() {});
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                      icon: const Icon(Icons.add),
+                      label: Text('Add $type',
+                          style:
+                              GoogleFonts.nunito(fontWeight: FontWeight.bold)),
+                      onPressed: () => _showEditItemDialog(
+                          context, null, type, (n) => setStateDialog(() {})),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showEditItemDialog(
+      BuildContext context, String? old, String type, Function(String) onDone) {
+    final controller = TextEditingController(text: old);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Padding(
+        padding:
+            EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('${old == null ? 'Add' : 'Edit'} $type',
+                  style: GoogleFonts.nunito(
+                      fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 24),
+              TextField(
+                controller: controller,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: 'Enter name...',
+                  labelText: '$type Name',
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+                textCapitalization: TextCapitalization.words,
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancel'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () {
+                        final val = controller.text.trim();
+                        if (val.isNotEmpty) {
+                          final themeViewModel = context.read<ThemeViewModel>();
+                          if (old == null)
+                            themeViewModel.addItem(val, type);
+                          else
+                            themeViewModel.updateItem(old, val, type);
+                          onDone(val);
+                          Navigator.pop(context);
+                        }
+                      },
+                      child: const Text('Save'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildAppInfoSection(BuildContext context, bool isDark) {
     return Column(
       children: [
@@ -944,7 +1148,6 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
     );
   }
-
 
   void _showSnackBar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(

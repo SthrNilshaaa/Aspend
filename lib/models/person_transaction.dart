@@ -23,19 +23,21 @@ class PersonTransaction extends HiveObject {
   });
 
   Map<String, dynamic> toJson() => {
-    'personName': personName,
-    'amount': amount,
-    'note': note,
-    'date': date.toIso8601String(),
-    'isIncome': isIncome,
-  };
+        'personName': personName,
+        'amount': amount,
+        'note': note,
+        'date': date.toIso8601String(),
+        'isIncome': isIncome,
+      };
 
-  factory PersonTransaction.fromJson(Map<String, dynamic> json) => PersonTransaction(
-    personName: json['personName'],
-    amount: json['amount'],
-    note: json['note'],
-    date: DateTime.parse(json['date']),
-    isIncome: json['isIncome'] ?? (json['amount'] >= 0), // Default based on amount for backward compatibility
-  );
+  factory PersonTransaction.fromJson(Map<String, dynamic> json) =>
+      PersonTransaction(
+        personName: json['personName'],
+        amount: json['amount'],
+        note: json['note'],
+        date: DateTime.parse(json['date']),
+        isIncome: json['isIncome'] ??
+            (json['amount'] >=
+                0), // Default based on amount for backward compatibility
+      );
 }
-

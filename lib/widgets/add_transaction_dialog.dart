@@ -1,13 +1,12 @@
 import 'dart:io';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../models/transaction.dart';
 import '../view_models/transaction_view_model.dart';
+import '../view_models/theme_view_model.dart';
 import '../view_models/person_view_model.dart';
-import 'package:aspends_tracker/models/person_transaction.dart';
-import '../utils/responsive_utils.dart';
+import '../models/person_transaction.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AddTransactionDialog extends StatefulWidget {
@@ -32,175 +31,94 @@ class AddTransactionDialog extends StatefulWidget {
 
 class _AddTransactionDialogState extends State<AddTransactionDialog> {
   final _formKey = GlobalKey<FormState>();
-  final _amountController = TextEditingController();
-  final _noteController = TextEditingController();
+  final _amount = TextEditingController();
+  final _note = TextEditingController();
   late String _category;
-  String _account = 'Cash';
-  final List<String> _imagePaths = [];
-  final ImagePicker _picker = ImagePicker();
-
-  final List<String> incomeCategories = [
-    'Salary',
-    'Freelance',
-    'Bonus',
-    'Investment',
-    'Interest',
-    'Rent Received',
-    'Gift',
-    'Cashback',
-    'Business',
-    'Refund',
-    'Other'
-  ];
-  final List<String> expenseCategories = [
-    'Food',
-    'Groceries',
-    'Transport',
-    'Fuel',
-    'Shopping',
-    'Bills',
-    'Rent',
-    'Entertainment',
-    'Health',
-    'Education',
-    'Travel',
-    'Maintenance',
-    'Insurance',
-    'Subscription',
-    'Personal Care',
-    'Tax',
-    'Gifts',
-    'Charity',
-    'Loan Repayment',
-    'Other'
-  ];
-  final List<String> accounts = [
-    'Cash',
-    'Bank',
-    'Savings',
-    'Wallet',
-    'UPI',
-    'Credit Card',
-    'Debit Card',
-    'Online'
-  ];
+  late String _account;
+  final List<String> _images = [];
 
   @override
   void initState() {
     super.initState();
-    if (widget.existingTransaction != null) {
-      _amountController.text = widget.existingTransaction!.amount.toString();
-      _noteController.text = widget.existingTransaction!.note;
-      _category = widget.existingTransaction!.category;
-      _account = widget.existingTransaction!.account;
-      if (widget.existingTransaction!.imagePaths != null) {
-        _imagePaths.addAll(widget.existingTransaction!.imagePaths!);
-      }
-    } else if (widget.existingPersonTransaction != null) {
-      _amountController.text =
-          widget.existingPersonTransaction!.amount.toString();
-      _noteController.text = widget.existingPersonTransaction!.note;
-      _category =
-          'Other'; // Person transactions don't have categories by default
-      _account = 'Cash';
+    final tx = widget.existingTransaction;
+    final ctx = widget.existingPersonTransaction;
+    _category = tx?.category ?? (widget.isIncome ? 'Salary' : 'Food');
+    _account = tx?.account ?? 'Cash';
+    if (tx != null) {
+      _amount.text = tx.amount.toString();
+      _note.text = tx.note;
+      _images.addAll(tx.imagePaths ?? []);
+    } else if (ctx != null) {
+      _amount.text = ctx.amount.toString();
+      _note.text = ctx.note;
+      _category = 'Other';
     } else {
-      _category = widget.isIncome ? 'Salary' : 'Food';
-      if (widget.initialNote != null) {
-        _noteController.text = widget.initialNote!;
-      }
-      if (widget.initialAmount != null) {
-        _amountController.text = widget.initialAmount!.abs().toStringAsFixed(2);
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _amountController.dispose();
-    _noteController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      setState(() {
-        _imagePaths.add(image.path);
-      });
+      _note.text = widget.initialNote ?? '';
+      _amount.text = widget.initialAmount?.abs().toStringAsFixed(2) ?? '';
     }
   }
 
   void _submit() {
-    if (_formKey.currentState!.validate()) {
-      final amount = double.parse(_amountController.text);
+    if (!_formKey.currentState!.validate()) return;
+    final amount = double.parse(_amount.text);
+    final vm = context.read<TransactionViewModel>();
+    final pvm = context.read<PersonViewModel>();
 
-      if (widget.existingTransaction != null) {
-        final updatedTx = Transaction(
-          amount: amount,
-          note: _noteController.text,
-          date: widget.existingTransaction!.date,
-          isIncome: widget.isIncome,
-          category: _category,
-          account: _account,
-          imagePaths: _imagePaths,
-        );
-
-        context
-            .read<TransactionViewModel>()
-            .updateTransaction(widget.existingTransaction!, updatedTx);
-      } else if (widget.existingPersonTransaction != null) {
-        final updatedPersonTx = PersonTransaction(
-          personName: widget.existingPersonTransaction!.personName,
-          amount: amount,
-          note: _noteController.text,
-          date: widget.existingPersonTransaction!.date,
-          isIncome: widget.isIncome,
-        );
-
-        context.read<PersonViewModel>().updatePersonTransaction(
-            widget.existingPersonTransaction!, updatedPersonTx);
-      } else {
-        final transaction = Transaction(
-          amount: amount,
-          note: _noteController.text,
-          date: DateTime.now(),
-          isIncome: widget.isIncome,
-          category: _category,
-          account: _account,
-          imagePaths: _imagePaths,
-        );
-
-        context.read<TransactionViewModel>().addTransaction(transaction);
-        _checkAndAddPersonTransactions(transaction);
-      }
-      Navigator.pop(context);
+    if (widget.existingTransaction != null) {
+      vm.updateTransaction(
+          widget.existingTransaction!,
+          Transaction(
+            amount: amount,
+            note: _note.text,
+            date: widget.existingTransaction!.date,
+            isIncome: widget.isIncome,
+            category: _category,
+            account: _account,
+            imagePaths: _images,
+          ));
+    } else if (widget.existingPersonTransaction != null) {
+      pvm.updatePersonTransaction(
+          widget.existingPersonTransaction!,
+          PersonTransaction(
+            personName: widget.existingPersonTransaction!.personName,
+            amount: amount,
+            note: _note.text,
+            date: widget.existingPersonTransaction!.date,
+            isIncome: widget.isIncome,
+          ));
+    } else {
+      final tx = Transaction(
+        amount: amount,
+        note: _note.text,
+        date: DateTime.now(),
+        isIncome: widget.isIncome,
+        category: _category,
+        account: _account,
+        imagePaths: _images,
+      );
+      vm.addTransaction(tx);
+      _syncPerson(tx, pvm);
     }
+    Navigator.pop(context);
   }
 
-  void _checkAndAddPersonTransactions(Transaction tx) {
+  void _syncPerson(Transaction tx, PersonViewModel pvm) {
     if (tx.note.isEmpty) return;
-
-    final personViewModel = context.read<PersonViewModel>();
-    final people = personViewModel.people;
-    final note = tx.note.toLowerCase();
-
-    for (final person in people) {
-      if (note.contains(person.name.toLowerCase())) {
-        final personTx = PersonTransaction(
-          personName: person.name,
-          amount: tx.amount,
-          note: tx.note,
-          date: tx.date,
-          isIncome: tx.isIncome,
-        );
-        personViewModel.addPersonTransaction(personTx, person.name);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Transaction also added to ${person.name}'s record"),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+    for (final p in pvm.people) {
+      if (tx.note.toLowerCase().contains(p.name.toLowerCase())) {
+        pvm.addPersonTransaction(
+            PersonTransaction(
+              personName: p.name,
+              amount: tx.amount,
+              note: tx.note,
+              date: tx.date,
+              isIncome: tx.isIncome,
+            ),
+            p.name);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Linked to ${p.name}'s record"),
+          behavior: SnackBarBehavior.floating,
+        ));
       }
     }
   }
@@ -208,223 +126,97 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final categories = widget.isIncome ? incomeCategories : expenseCategories;
+    final tvm = context.watch<ThemeViewModel>();
+    final cats = widget.isIncome ? tvm.incomeCategories : tvm.expenseCategories;
+    final accs = tvm.accounts;
+
+    if (!cats.contains(_category)) {
+      _category = cats.isNotEmpty ? cats.first : 'Other';
+    }
+    if (!accs.contains(_account)) {
+      _account = accs.isNotEmpty ? accs.first : 'Cash';
+    }
 
     return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 600),
-        child: ClipRRect(
+      padding:
+          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: theme.scaffoldBackgroundColor,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
-            child: Container(
-              padding: ResponsiveUtils.getResponsiveEdgeInsets(context,
-                  horizontal: 24, vertical: 24),
-              decoration: BoxDecoration(
-                color: theme.scaffoldBackgroundColor.withValues(alpha: 0.80),
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(32)),
-                border: Border(
-                  top: BorderSide(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.2),
-                    width: 1.5,
-                  ),
+        ),
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(widget.isIncome ? 'Income' : 'Expense',
+                    style: GoogleFonts.nunito(
+                        fontSize: 22, fontWeight: FontWeight.w900),
+                    textAlign: TextAlign.center),
+                const SizedBox(height: 32),
+                TextFormField(
+                  controller: _amount,
+                  keyboardType: TextInputType.number,
+                  style: GoogleFonts.nunito(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: widget.isIncome ? Colors.green : Colors.red),
+                  textAlign: TextAlign.center,
+                  decoration: const InputDecoration(
+                      hintText: '0', prefixIcon: Icon(Icons.currency_rupee)),
+                  validator: (v) => (v?.isEmpty ?? true) ? 'Required' : null,
                 ),
-              ),
-              child: Form(
-                key: _formKey,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        widget.existingTransaction != null
-                            ? (widget.isIncome ? 'Edit Income' : 'Edit Expense')
-                            : (widget.isIncome ? 'Add Income' : 'Add Expense'),
-                        style: GoogleFonts.nunito(
-                          fontSize: ResponsiveUtils.getResponsiveFontSize(
-                              context,
-                              mobile: 22,
-                              tablet: 26,
-                              desktop: 28),
-                          fontWeight: FontWeight.w900,
-                          color: theme.colorScheme.onSurface,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 32),
-                      TextFormField(
-                        controller: _amountController,
-                        keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true),
-                        style: GoogleFonts.nunito(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: widget.isIncome ? Colors.green : Colors.red,
-                        ),
-                        textAlign: TextAlign.center,
-                        decoration: InputDecoration(
-                          hintText: '0.00',
-                          prefixIcon: const Icon(Icons.currency_rupee),
-                          filled: true,
-                          fillColor:
-                              theme.colorScheme.surface.withValues(alpha: 0.4),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(24),
-                            borderSide: BorderSide.none,
-                          ),
-                          contentPadding:
-                              const EdgeInsets.symmetric(vertical: 20),
-                        ),
-                        validator: (val) =>
-                            (val == null || val.isEmpty) ? 'Required' : null,
-                      ),
-                      const SizedBox(height: 24),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildDropdownField(
-                              label: 'Category',
-                              value: _category,
-                              items: categories,
-                              onChanged: (val) =>
-                                  setState(() => _category = val!),
-                              theme: theme,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildDropdownField(
-                              label: 'Account',
-                              value: _account,
-                              items: accounts,
-                              onChanged: (val) =>
-                                  setState(() => _account = val!),
-                              theme: theme,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _noteController,
-                        style: GoogleFonts.nunito(fontSize: 16),
-                        maxLines: 2,
-                        decoration: InputDecoration(
-                          labelText: 'Note (Optional)',
-                          labelStyle: GoogleFonts.nunito(),
-                          prefixIcon: const Icon(Icons.note_alt_outlined),
-                          filled: true,
-                          fillColor:
-                              theme.colorScheme.surface.withValues(alpha: 0.4),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      if (_imagePaths.isNotEmpty) ...[
-                        SizedBox(
-                          height: 90,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: _imagePaths.length,
-                            itemBuilder: (context, index) => Stack(
-                              children: [
-                                Container(
-                                  margin: const EdgeInsets.only(right: 12),
-                                  width: 90,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(16),
-                                    image: DecorationImage(
-                                      image:
-                                          FileImage(File(_imagePaths[index])),
-                                      fit: BoxFit.cover,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color:
-                                            Colors.black.withValues(alpha: 0.1),
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 4,
-                                  right: 16,
-                                  child: GestureDetector(
-                                    onTap: () => setState(
-                                        () => _imagePaths.removeAt(index)),
-                                    child: Container(
-                                      padding: const EdgeInsets.all(4),
-                                      decoration: const BoxDecoration(
-                                        color: Colors.red,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Icon(Icons.close,
-                                          size: 12, color: Colors.white),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-                      TextButton.icon(
-                        onPressed: _pickImage,
-                        icon: const Icon(Icons.add_a_photo_outlined),
-                        label: Text(
-                          'Add Attachment',
-                          style:
-                              GoogleFonts.nunito(fontWeight: FontWeight.w600),
-                        ),
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16)),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      ElevatedButton(
-                        onPressed: _submit,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              widget.isIncome ? Colors.green : Colors.red,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 18),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          elevation: 8,
-                          shadowColor:
-                              (widget.isIncome ? Colors.green : Colors.red)
-                                  .withValues(alpha: 0.4),
-                        ),
-                        child: Text(
-                          (widget.existingTransaction != null ||
-                                  widget.existingPersonTransaction != null)
-                              ? 'Update Transaction'
-                              : 'Save Transaction',
-                          style: GoogleFonts.nunito(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                const SizedBox(height: 24),
+                Row(children: [
+                  Expanded(
+                      child: _picker(
+                          'Category',
+                          _category,
+                          cats,
+                          (v) => setState(() => _category = v),
+                          widget.isIncome ? 'Income' : 'Expense')),
+                  const SizedBox(width: 12),
+                  Expanded(
+                      child: _picker('Account', _account, accs,
+                          (v) => setState(() => _account = v), 'Account')),
+                ]),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _note,
+                  maxLines: 2,
+                  decoration: const InputDecoration(
+                      labelText: 'Note',
+                      prefixIcon: Icon(Icons.note_alt_outlined)),
                 ),
-              ),
+                const SizedBox(height: 24),
+                if (_images.isNotEmpty) _imageGrid(),
+                TextButton.icon(
+                  onPressed: () async {
+                    final img = await ImagePicker()
+                        .pickImage(source: ImageSource.gallery);
+                    if (img != null) setState(() => _images.add(img.path));
+                  },
+                  icon: const Icon(Icons.add_a_photo_outlined),
+                  label: const Text('Add Attachment'),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: _submit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        widget.isIncome ? Colors.green : Colors.red,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                  ),
+                  child: Text('Save Transaction',
+                      style: GoogleFonts.nunito(
+                          fontSize: 18, fontWeight: FontWeight.w900)),
+                ),
+              ],
             ),
           ),
         ),
@@ -432,33 +224,115 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
     );
   }
 
-  Widget _buildDropdownField({
-    required String label,
-    required String value,
-    required List<String> items,
-    required ValueChanged<String?> onChanged,
-    required ThemeData theme,
-  }) {
-    return DropdownButtonFormField<String>(
-      initialValue: value,
-      style: GoogleFonts.nunito(
-          color: theme.colorScheme.onSurface,
-          fontSize: 16,
-          fontWeight: FontWeight.w600),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: GoogleFonts.nunito(),
-        filled: true,
-        fillColor: theme.colorScheme.surface.withValues(alpha: 0.4),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide.none,
+  Widget _picker(String label, String val, List<String> items,
+      ValueChanged<String> onDone, String type) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label,
+            style: GoogleFonts.nunito(fontSize: 12, color: Colors.grey)),
+        const SizedBox(height: 4),
+        InkWell(
+          onTap: () => _showManageItems(context, type, items, val, onDone),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.withAlpha(100)),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Expanded(child: Text(val, style: GoogleFonts.nunito())),
+                const Icon(Icons.arrow_drop_down),
+              ],
+            ),
+          ),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      ],
+    );
+  }
+
+  void _showManageItems(BuildContext context, String type, List<String> items,
+      String selected, ValueChanged<String> onDone) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (c) => StatefulBuilder(builder: (c, setStateSheet) {
+        final tvm = c.watch<ThemeViewModel>();
+        final currentItems = (type == 'Income')
+            ? tvm.incomeCategories
+            : (type == 'Expense')
+                ? tvm.expenseCategories
+                : tvm.accounts;
+
+        return Container(
+          decoration: BoxDecoration(
+              color: Theme.of(c).scaffoldBackgroundColor,
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(24))),
+          padding: const EdgeInsets.all(24),
+          height: MediaQuery.of(c).size.height * 0.7,
+          child: Column(
+            children: [
+              Text('Select $type',
+                  style: GoogleFonts.nunito(
+                      fontSize: 18, fontWeight: FontWeight.bold)),
+              const Divider(),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: currentItems.length,
+                  itemBuilder: (c, i) {
+                    final item = currentItems[i];
+                    return ListTile(
+                      title: Text(item,
+                          style: GoogleFonts.nunito(
+                              fontWeight: item == selected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal)),
+                      onTap: () {
+                        onDone(item);
+                        Navigator.pop(c);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _imageGrid() {
+    return SizedBox(
+      height: 90,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: _images.length,
+        itemBuilder: (c, i) => Stack(children: [
+          Container(
+            margin: const EdgeInsets.only(right: 12),
+            width: 90,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              image: DecorationImage(
+                  image: FileImage(File(_images[i])), fit: BoxFit.cover),
+            ),
+          ),
+          Positioned(
+              top: 4,
+              right: 16,
+              child: GestureDetector(
+                onTap: () => setState(() => _images.removeAt(i)),
+                child: const CircleAvatar(
+                    radius: 10,
+                    backgroundColor: Colors.red,
+                    child: Icon(Icons.close, size: 12, color: Colors.white)),
+              )),
+        ]),
       ),
-      items:
-          items.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-      onChanged: onChanged,
     );
   }
 }

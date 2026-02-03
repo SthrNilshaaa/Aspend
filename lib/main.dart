@@ -31,7 +31,6 @@ void main() async {
   Hive.registerAdapter(PersonTransactionAdapter());
   Hive.registerAdapter(DetectionHistoryAdapter());
 
-  print('Main: Box opening started');
   try {
     await Future.wait([
       if (!Hive.isBoxOpen('transactions'))
@@ -45,7 +44,6 @@ void main() async {
         Hive.openBox<DetectionHistory>('detection_history'),
     ]);
   } catch (e) {
-    print('Main: Box opening error: $e');
     runApp(MaterialApp(
       home: Scaffold(
         body: Center(
@@ -59,18 +57,12 @@ void main() async {
     ));
     return;
   }
-  print('Main: Box opening finished');
 
   await FlutterDisplayMode.setHighRefreshRate();
-  print('Main: Refresh rate set');
 
   try {
-    print('Main: NativeBridge init starting');
     await NativeBridge.initialize();
-    print('Main: NativeBridge init finished');
-    print('Main: TransactionDetectionService init starting');
     await TransactionDetectionService.initialize();
-    print('Main: TransactionDetectionService init finished');
   } catch (e) {
     debugPrint('Error initializing transaction detection services: $e');
   }
@@ -80,7 +72,6 @@ void main() async {
   final transactionRepo = TransactionRepository();
   final personRepo = PersonRepository();
   final settingsRepo = SettingsRepository();
-  print('Main: Repositories initialized');
 
   runApp(
     MultiProvider(
