@@ -156,11 +156,12 @@ class _SplashScreenState extends State<SplashScreen>
                           width: 2,
                         ),
                       ),
-                      child: Icon(
-                        Icons.account_balance_wallet,
-                        size: ResponsiveUtils.getResponsiveIconSize(context,
+                      child: Image(
+                        image: AssetImage("assets/icons/Aspend_Logo_Transparent.png"),
+                        height: ResponsiveUtils.getResponsiveIconSize(context,
                             mobile: 60, tablet: 70, desktop: 80),
-                        color: Colors.white,
+                        width: ResponsiveUtils.getResponsiveIconSize(context,
+                            mobile: 60, tablet: 70, desktop: 80),
                       ),
                     ),
                     const SizedBox(height: 24),

@@ -122,7 +122,7 @@ class MyApp extends StatelessWidget {
             colorScheme: scheme,
             useMaterial3: true,
             fontFamily: 'NFont',
-            textTheme: GoogleFonts.nunitoTextTheme(
+            textTheme: GoogleFonts.dmSansTextTheme(
               scheme.brightness == Brightness.dark
                   ? ThemeData.dark().textTheme
                   : ThemeData.light().textTheme,

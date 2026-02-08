@@ -56,16 +56,18 @@ flutter:
   fonts:
     - family: NFont
       fonts:
-        - asset: assets/font/RobotoSerif_36pt-Regular.ttf
+        - asset: assets/font/DMSans_36pt-Bold.ttf
     - family: Nunito
       fonts:
-        - asset: assets/font/RobotoSerif_36pt-Regular.ttf
+        - asset: assets/font/DMSans_36pt-Bold.ttf
 
 flutter_launcher_icons:
-  android:
-    generate: true
   ios: false
-  image_path: "assets/icons/Aspend_Logo.png"
+  android: true
+  adaptive_icon_background: "#0D1311"
+  adaptive_icon_foreground: "assets/icons/Aspend_Logo_Transparent.png"
+  image_path: "assets/icons/Aspend_Logo_Transparent.png"
+  adaptive_icon_foreground_inset: 20
 
 
 file_picker:
