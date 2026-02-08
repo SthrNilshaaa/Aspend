@@ -65,7 +65,7 @@ flutter_launcher_icons:
   android:
     generate: true
   ios: false
-  image_path: "assets/icons/ex.png"
+  image_path: "assets/icons/Aspend_Logo.png"
 
 
 file_picker:
