@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
+import '../const/app_dimensions.dart';
+import '../const/app_typography.dart';
 
 class RangeSelector extends StatelessWidget {
   final List<String> ranges;
@@ -24,26 +26,30 @@ class RangeSelector extends StatelessWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       physics: const BouncingScrollPhysics(),
-      padding:
-          padding ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: padding ??
+          const EdgeInsets.symmetric(
+              horizontal: AppDimensions.paddingStandard,
+              vertical: AppDimensions.paddingSmall),
       child: Row(
         children: ranges.map((range) {
           final isSelected = selectedRange == range;
           return Padding(
-            padding: const EdgeInsets.only(right: 8),
+            padding: const EdgeInsets.only(right: AppDimensions.paddingSmall),
             child: ZoomTapAnimation(
               onTap: () {
                 onRangeSelected(range);
                 HapticFeedback.lightImpact();
               },
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.paddingStandard,
+                    vertical: AppDimensions.paddingSmall),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? theme.colorScheme.primary
                       : theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusMedium),
                   border: Border.all(
                     color: isSelected
                         ? theme.colorScheme.primary
@@ -54,7 +60,7 @@ class RangeSelector extends StatelessWidget {
                           BoxShadow(
                             color: theme.colorScheme.primary
                                 .withValues(alpha: 0.3),
-                            blurRadius: 8,
+                            blurRadius: AppDimensions.blurRadiusStandard,
                             offset: const Offset(0, 2),
                           )
                         ]
@@ -62,13 +68,13 @@ class RangeSelector extends StatelessWidget {
                 ),
                 child: Text(
                   range,
-                  style: GoogleFonts.nunito(
+                  style: GoogleFonts.dmSans(
                     fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                     color: isSelected
                         ? Colors.white
                         : theme.textTheme.bodyMedium?.color
                             ?.withValues(alpha: 0.6),
-                    fontSize: 13,
+                    fontSize: AppTypography.fontSizeSmall - 1,
                   ),
                 ),
               ),

@@ -14,6 +14,10 @@ import '../utils/responsive_utils.dart';
 import '../widgets/modern_card.dart';
 import '../widgets/glass_app_bar.dart';
 import '../widgets/empty_state_view.dart';
+import '../const/app_strings.dart';
+import '../const/app_colors.dart';
+import '../const/app_dimensions.dart';
+import '../const/app_typography.dart';
 
 class PeopleTab extends StatefulWidget {
   const PeopleTab({super.key});
@@ -62,13 +66,16 @@ class _PeopleTabState extends State<PeopleTab> {
       context: context,
       builder: (_) => StatefulBuilder(
         builder: (context, setStateDialog) => AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+              borderRadius:
+                  BorderRadius.circular(AppDimensions.borderRadiusLarge)),
           title: Text(
-            existingPerson == null ? 'Add New Person' : 'Edit Person',
-            style: GoogleFonts.nunito(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
+            existingPerson == null
+                ? AppStrings.addNewPerson
+                : AppStrings.editPerson,
+            style: GoogleFonts.dmSans(
+              fontSize: AppTypography.fontSizeLarge,
+              fontWeight: AppTypography.fontWeightBold,
               color: theme.colorScheme.primary,
             ),
           ),
@@ -96,7 +103,8 @@ class _PeopleTabState extends State<PeopleTab> {
                     color: selectedPhotoPath != null
                         ? theme.colorScheme.primary.withValues(alpha: 0.1)
                         : theme.colorScheme.surface,
-                    borderRadius: BorderRadius.circular(50),
+                    borderRadius:
+                        BorderRadius.circular(AppDimensions.borderRadiusFull),
                     border: Border.all(
                       color: selectedPhotoPath != null
                           ? theme.colorScheme.primary
@@ -106,7 +114,8 @@ class _PeopleTabState extends State<PeopleTab> {
                   ),
                   child: selectedPhotoPath != null
                       ? ClipRRect(
-                          borderRadius: BorderRadius.circular(48),
+                          borderRadius: BorderRadius.circular(
+                              AppDimensions.borderRadiusFull),
                           child: selectedPhotoPath!.startsWith('assets/')
                               ? Image.asset(selectedPhotoPath!,
                                   width: 96, height: 96, fit: BoxFit.cover)
@@ -122,16 +131,16 @@ class _PeopleTabState extends State<PeopleTab> {
                           children: [
                             Icon(
                               Icons.add_a_photo,
-                              size: 30,
+                              size: AppDimensions.iconSizeXLarge + 2,
                               color: theme.colorScheme.primary,
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Add Photo',
-                              style: GoogleFonts.nunito(
-                                fontSize: 12,
+                              AppStrings.addPhoto,
+                              style: GoogleFonts.dmSans(
+                                fontSize: AppTypography.fontSizeXSmall,
                                 color: theme.colorScheme.primary,
-                                fontWeight: FontWeight.w600,
+                                fontWeight: AppTypography.fontWeightSemiBold,
                               ),
                             ),
                           ],
@@ -141,10 +150,10 @@ class _PeopleTabState extends State<PeopleTab> {
               const SizedBox(height: 20),
               Text(
                 existingPerson == null
-                    ? 'Enter the name of the person you want to track transactions with'
-                    : 'Update the details for this person',
-                style: GoogleFonts.nunito(
-                  fontSize: 14,
+                    ? AppStrings.enterNameHint
+                    : AppStrings.updateDetailsHint,
+                style: GoogleFonts.dmSans(
+                  fontSize: AppTypography.fontSizeSmall,
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
                 textAlign: TextAlign.center,
@@ -153,17 +162,18 @@ class _PeopleTabState extends State<PeopleTab> {
               TextField(
                 controller: controller,
                 decoration: InputDecoration(
-                  labelText: 'Person Name',
-                  labelStyle: GoogleFonts.nunito(fontSize: 16),
+                  labelText: AppStrings.personName,
+                  labelStyle: GoogleFonts.dmSans(fontSize: 16),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius:
+                        BorderRadius.circular(AppDimensions.borderRadiusSmall),
                   ),
                   filled: true,
                   fillColor: theme.colorScheme.surface,
                   prefixIcon: Icon(Icons.person_outline,
                       color: theme.colorScheme.primary),
                 ),
-                style: GoogleFonts.nunito(fontSize: 16),
+                style: GoogleFonts.dmSans(fontSize: 16),
                 autofocus: true,
               ),
             ],
@@ -173,7 +183,7 @@ class _PeopleTabState extends State<PeopleTab> {
               onPressed: () => Navigator.pop(context),
               child: Text(
                 'Cancel',
-                style: GoogleFonts.nunito(
+                style: GoogleFonts.dmSans(
                     fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
@@ -202,11 +212,12 @@ class _PeopleTabState extends State<PeopleTab> {
                 backgroundColor: theme.colorScheme.primary,
                 foregroundColor: theme.colorScheme.onPrimary,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                    borderRadius:
+                        BorderRadius.circular(AppDimensions.borderRadiusSmall)),
               ),
               child: Text(
                 existingPerson == null ? 'Add' : 'Update',
-                style: GoogleFonts.nunito(
+                style: GoogleFonts.dmSans(
                     fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
@@ -230,7 +241,7 @@ class _PeopleTabState extends State<PeopleTab> {
           Text(
             label,
             textAlign: TextAlign.center,
-            style: GoogleFonts.nunito(
+            style: GoogleFonts.dmSans(
               fontSize: ResponsiveUtils.getResponsiveFontSize(context,
                   mobile: 13, tablet: 15, desktop: 17),
               fontWeight: FontWeight.w600,
@@ -251,10 +262,12 @@ class _PeopleTabState extends State<PeopleTab> {
               Flexible(
                 child: Text(
                   '₹${amount.toStringAsFixed(2)}',
-                  style: GoogleFonts.nunito(
+                  style: GoogleFonts.dmSans(
                     fontSize: ResponsiveUtils.getResponsiveFontSize(context,
-                        mobile: 17, tablet: 20, desktop: 24),
-                    fontWeight: FontWeight.bold,
+                        mobile: AppTypography.fontSizeLarge - 3,
+                        tablet: AppTypography.fontSizeLarge,
+                        desktop: AppTypography.fontSizeXLarge),
+                    fontWeight: AppTypography.fontWeightBold,
                     color: color,
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -284,7 +297,7 @@ class _PeopleTabState extends State<PeopleTab> {
         controller: _scrollController,
         physics: const BouncingScrollPhysics(),
         slivers: [
-          GlassAppBar(title: 'People', centerTitle: true),
+          GlassAppBar(title: AppStrings.people, centerTitle: true),
 
           // NEW: Conditional Sliver for Total Debit and Credit Summary
           SliverToBoxAdapter(
@@ -298,9 +311,9 @@ class _PeopleTabState extends State<PeopleTab> {
                       children: [
                         _buildSummaryInfo(
                           context,
-                          label: 'You Get',
+                          label: AppStrings.youGet,
                           amount: totalYouGet,
-                          color: Colors.greenAccent.shade700,
+                          color: AppColors.accentGreen,
                           icon: Icons.arrow_downward_rounded,
                         ),
                         Container(
@@ -311,9 +324,9 @@ class _PeopleTabState extends State<PeopleTab> {
                         ),
                         _buildSummaryInfo(
                           context,
-                          label: 'You Give',
+                          label: AppStrings.youGive,
                           amount: totalYouGive,
-                          color: Colors.redAccent,
+                          color: AppColors.accentRed,
                           icon: Icons.arrow_upward_rounded,
                         ),
                       ],
@@ -331,17 +344,18 @@ class _PeopleTabState extends State<PeopleTab> {
                 onChanged: (val) =>
                     setState(() => _searchQuery = val.toLowerCase()),
                 decoration: InputDecoration(
-                  hintText: 'Search people...',
+                  hintText: AppStrings.searchPeople,
                   prefixIcon: const Icon(Icons.search),
                   filled: true,
                   fillColor: theme.colorScheme.surface,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius:
+                        BorderRadius.circular(AppDimensions.borderRadiusMedium),
                     borderSide: BorderSide.none,
                   ),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                 ),
-                style: GoogleFonts.nunito(),
+                style: GoogleFonts.dmSans(),
               ),
             ),
           ),
@@ -350,7 +364,7 @@ class _PeopleTabState extends State<PeopleTab> {
             SliverFillRemaining(
               child: EmptyStateView(
                 icon: Icons.people_outline,
-                title: 'No people added yet',
+                title: AppStrings.noPeopleYet,
                 description: 'Add people to track transactions with them',
               ),
             )
@@ -412,7 +426,8 @@ class _PeopleTabState extends State<PeopleTab> {
                               ),
                               child: person.photoPath != null
                                   ? ClipRRect(
-                                      borderRadius: BorderRadius.circular(32),
+                                      borderRadius: BorderRadius.circular(
+                                          AppDimensions.borderRadiusXLarge),
                                       child: person.photoPath!
                                               .startsWith('assets/')
                                           ? Image.asset(person.photoPath!,
@@ -434,14 +449,20 @@ class _PeopleTabState extends State<PeopleTab> {
                                 children: [
                                   Text(
                                     person.name,
-                                    style: GoogleFonts.nunito(
+                                    style: GoogleFonts.dmSans(
                                       fontWeight: FontWeight.w800,
                                       fontSize:
                                           ResponsiveUtils.getResponsiveFontSize(
                                               context,
-                                              mobile: 15,
-                                              tablet: 17,
-                                              desktop: 19),
+                                              mobile:
+                                                  AppTypography.fontSizeSmall +
+                                                      1,
+                                              tablet:
+                                                  AppTypography.fontSizeMedium +
+                                                      1,
+                                              desktop:
+                                                  AppTypography.fontSizeLarge -
+                                                      1),
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -449,12 +470,14 @@ class _PeopleTabState extends State<PeopleTab> {
                                   const SizedBox(height: 2),
                                   Text(
                                     isPositive
-                                        ? 'You will get'
-                                        : 'You will give',
-                                    style: GoogleFonts.nunito(
-                                      fontSize: 11,
+                                        ? AppStrings.youWillGet
+                                        : AppStrings.youWillGive,
+                                    style: GoogleFonts.dmSans(
+                                      fontSize:
+                                          AppTypography.fontSizeXSmall - 1,
                                       color: Colors.grey,
-                                      fontWeight: FontWeight.w600,
+                                      fontWeight:
+                                          AppTypography.fontWeightSemiBold,
                                     ),
                                   ),
                                 ],
@@ -467,7 +490,7 @@ class _PeopleTabState extends State<PeopleTab> {
                               children: [
                                 Text(
                                   '₹${total.abs().toStringAsFixed(0)}',
-                                  style: GoogleFonts.nunito(
+                                  style: GoogleFonts.dmSans(
                                     fontWeight: FontWeight.w900,
                                     fontSize:
                                         ResponsiveUtils.getResponsiveFontSize(
@@ -476,8 +499,8 @@ class _PeopleTabState extends State<PeopleTab> {
                                             tablet: 18,
                                             desktop: 20),
                                     color: isPositive
-                                        ? Colors.greenAccent.shade700
-                                        : Colors.redAccent,
+                                        ? AppColors.accentGreen
+                                        : AppColors.accentRed,
                                   ),
                                 ),
                               ],
@@ -532,10 +555,10 @@ class _PeopleTabState extends State<PeopleTab> {
                 elevation: 0,
                 icon: const Icon(Icons.person_add, size: 24),
                 label: Text(
-                  'Add Person',
-                  style: GoogleFonts.nunito(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                  AppStrings.addPerson,
+                  style: GoogleFonts.dmSans(
+                      fontSize: AppTypography.fontSizeMedium,
+                      fontWeight: AppTypography.fontWeightSemiBold,
                       color: theme.colorScheme.onSurface),
                 ),
               ),

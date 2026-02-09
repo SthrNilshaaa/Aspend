@@ -20,6 +20,10 @@ import 'view_models/person_view_model.dart';
 import 'screens/splash_screen.dart';
 import 'services/transaction_detection_service.dart';
 import 'services/native_bridge.dart';
+import 'const/app_colors.dart';
+import 'const/app_strings.dart';
+import 'const/app_typography.dart';
+import 'const/app_dimensions.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -103,7 +107,8 @@ class MyApp extends StatelessWidget {
         final themeViewModel = context.watch<ThemeViewModel>();
 
         final useAdaptive = themeViewModel.useAdaptiveColor;
-        final customSeedColor = themeViewModel.customSeedColor ?? Colors.teal;
+        final customSeedColor =
+            themeViewModel.customSeedColor ?? AppColors.primaryGreen;
         final lightSchemeFinal = useAdaptive
             ? (lightDynamic ??
                 ColorScheme.fromSeed(
@@ -121,7 +126,7 @@ class MyApp extends StatelessWidget {
           return ThemeData(
             colorScheme: scheme,
             useMaterial3: true,
-            fontFamily: 'NFont',
+            fontFamily: AppTypography.legacyFontFamily,
             textTheme: GoogleFonts.dmSansTextTheme(
               scheme.brightness == Brightness.dark
                   ? ThemeData.dark().textTheme
@@ -130,21 +135,25 @@ class MyApp extends StatelessWidget {
             cardTheme: CardThemeData(
               elevation: 2,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusMedium)),
               color: scheme.surface,
             ),
             inputDecorationTheme: InputDecorationTheme(
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadiusSmall),
                 borderSide: BorderSide(color: scheme.outline),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadiusSmall),
                 borderSide:
                     BorderSide(color: scheme.outline.withValues(alpha: 0.5)),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadiusSmall),
                 borderSide: BorderSide(color: scheme.primary, width: 2),
               ),
               filled: true,
@@ -154,7 +163,8 @@ class MyApp extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 elevation: 2,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                    borderRadius:
+                        BorderRadius.circular(AppDimensions.borderRadiusSmall)),
                 padding:
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
@@ -164,7 +174,7 @@ class MyApp extends StatelessWidget {
 
         return MaterialApp(
           debugShowCheckedModeBanner: false,
-          title: 'Aspends Tracker',
+          title: AppStrings.appName,
           themeMode: themeViewModel.themeMode,
           theme: createTheme(lightSchemeFinal),
           darkTheme: createTheme(darkSchemeFinal),

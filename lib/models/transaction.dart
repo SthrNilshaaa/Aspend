@@ -54,4 +54,19 @@ class Transaction extends HiveObject {
     this.originalText,
     this.source,
   });
+
+  Map<String, dynamic> toJson() => {
+        'amount': amount,
+        'note': note,
+        'category': category,
+        'account': account,
+        'date': date.toIso8601String(),
+        'isIncome': isIncome,
+        'imagePaths': imagePaths,
+        'bankName': bankName,
+        'reference': reference,
+        'balanceAfter': balanceAfter,
+        'originalText': originalText,
+        'source': source,
+      };
 }

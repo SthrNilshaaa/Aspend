@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../const/app_dimensions.dart';
 
 class ModernCard extends StatelessWidget {
   final Widget child;
@@ -12,7 +13,7 @@ class ModernCard extends StatelessWidget {
     super.key,
     required this.child,
     this.padding,
-    this.borderRadius = 24,
+    this.borderRadius = AppDimensions.borderRadiusLarge,
     this.color,
     this.boxShadow,
     this.border,
@@ -24,7 +25,7 @@ class ModernCard extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return Container(
-      padding: padding ?? const EdgeInsets.all(16),
+      padding: padding ?? const EdgeInsets.all(AppDimensions.paddingStandard),
       decoration: BoxDecoration(
         color: color ?? theme.cardColor,
         borderRadius: BorderRadius.circular(borderRadius),
@@ -39,7 +40,7 @@ class ModernCard extends StatelessWidget {
             [
               BoxShadow(
                 color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
-                blurRadius: 20,
+                blurRadius: AppDimensions.blurRadiusLarge,
                 offset: const Offset(0, 10),
               ),
             ],

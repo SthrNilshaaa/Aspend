@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import '../const/app_dimensions.dart';
 
 class ImagePreviewWithInteraction extends StatefulWidget {
   final String imagePath;
@@ -49,11 +50,12 @@ class _ImagePreviewWithInteractionState
           child: Hero(
             tag: widget.imagePath,
             child: Container(
-              margin: const EdgeInsets.only(right: 8),
+              margin: const EdgeInsets.only(right: AppDimensions.paddingSmall),
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadiusSmall),
                 image: DecorationImage(
                   image: FileImage(File(widget.imagePath)),
                   fit: BoxFit.cover,
@@ -103,7 +105,8 @@ class FullScreenImageDialog extends StatelessWidget {
             top: 40,
             right: 20,
             child: IconButton(
-              icon: const Icon(Icons.close, color: Colors.white, size: 30),
+              icon: Icon(Icons.close,
+                  color: Colors.white, size: AppDimensions.iconSizeXLarge + 2),
               onPressed: () => Navigator.pop(context),
             ),
           ),

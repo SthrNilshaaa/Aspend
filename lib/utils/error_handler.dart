@@ -15,7 +15,7 @@ class ErrorHandler {
             Expanded(
               child: Text(
                 message,
-                style: GoogleFonts.nunito(
+                style: GoogleFonts.dmSans(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
@@ -54,7 +54,7 @@ class ErrorHandler {
             Expanded(
               child: Text(
                 message,
-                style: GoogleFonts.nunito(
+                style: GoogleFonts.dmSans(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
@@ -93,7 +93,7 @@ class ErrorHandler {
             Expanded(
               child: Text(
                 message,
-                style: GoogleFonts.nunito(
+                style: GoogleFonts.dmSans(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
@@ -131,7 +131,7 @@ class ErrorHandler {
             Expanded(
               child: Text(
                 message,
-                style: GoogleFonts.nunito(
+                style: GoogleFonts.dmSans(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
@@ -171,14 +171,14 @@ class ErrorHandler {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           title,
-          style: GoogleFonts.nunito(
+          style: GoogleFonts.dmSans(
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
         content: Text(
           message,
-          style: GoogleFonts.nunito(
+          style: GoogleFonts.dmSans(
             fontSize: 14,
           ),
         ),
@@ -187,7 +187,7 @@ class ErrorHandler {
             onPressed: () => Navigator.of(context).pop(false),
             child: Text(
               cancelText,
-              style: GoogleFonts.nunito(
+              style: GoogleFonts.dmSans(
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -200,7 +200,7 @@ class ErrorHandler {
             ),
             child: Text(
               confirmText,
-              style: GoogleFonts.nunito(
+              style: GoogleFonts.dmSans(
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -229,7 +229,7 @@ class ErrorHandler {
             Expanded(
               child: Text(
                 title,
-                style: GoogleFonts.nunito(
+                style: GoogleFonts.dmSans(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -243,7 +243,7 @@ class ErrorHandler {
           children: [
             Text(
               message,
-              style: GoogleFonts.nunito(
+              style: GoogleFonts.dmSans(
                 fontSize: 14,
               ),
             ),
@@ -257,7 +257,7 @@ class ErrorHandler {
                 ),
                 child: Text(
                   details,
-                  style: GoogleFonts.nunito(
+                  style: GoogleFonts.dmSans(
                     fontSize: 12,
                     color: Colors.grey.shade700,
                   ),
@@ -275,7 +275,7 @@ class ErrorHandler {
               },
               child: Text(
                 'Retry',
-                style: GoogleFonts.nunito(
+                style: GoogleFonts.dmSans(
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -284,7 +284,7 @@ class ErrorHandler {
             onPressed: () => Navigator.of(context).pop(),
             child: Text(
               'OK',
-              style: GoogleFonts.nunito(
+              style: GoogleFonts.dmSans(
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -334,7 +334,7 @@ class ErrorHandler {
             Expanded(
               child: Text(
                 message,
-                style: GoogleFonts.nunito(
+                style: GoogleFonts.dmSans(
                   fontSize: 14,
                 ),
               ),

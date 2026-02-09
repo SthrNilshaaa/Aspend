@@ -147,14 +147,14 @@ class _HistoryCard extends StatelessWidget {
         ),
         title: Text(
           isDetected ? 'Successfully Detected' : 'Skipped / Unrecognized',
-          style: GoogleFonts.nunito(
+          style: GoogleFonts.dmSans(
             fontWeight: FontWeight.bold,
             fontSize: 14,
           ),
         ),
         subtitle: Text(
           DateFormat('MMM d, hh:mm a').format(entry.timestamp),
-          style: GoogleFonts.nunito(fontSize: 12, color: Colors.grey),
+          style: GoogleFonts.dmSans(fontSize: 12, color: Colors.grey),
         ),
         children: [
           Padding(
@@ -166,7 +166,7 @@ class _HistoryCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   'Message Content:',
-                  style: GoogleFonts.nunito(
+                  style: GoogleFonts.dmSans(
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
                     color: Colors.grey,
@@ -183,7 +183,7 @@ class _HistoryCard extends StatelessWidget {
                   ),
                   child: Text(
                     entry.text,
-                    style: GoogleFonts.nunito(
+                    style: GoogleFonts.dmSans(
                         fontSize: 13, fontStyle: FontStyle.italic),
                   ),
                 ),
@@ -191,7 +191,7 @@ class _HistoryCard extends StatelessWidget {
                   const SizedBox(height: 12),
                   Text(
                     'Reason: ${entry.reason}',
-                    style: GoogleFonts.nunito(
+                    style: GoogleFonts.dmSans(
                       fontSize: 12,
                       color: Colors.orange.shade800,
                       fontWeight: FontWeight.w500,
@@ -202,7 +202,7 @@ class _HistoryCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     'App: ${entry.packageName}',
-                    style: GoogleFonts.nunito(
+                    style: GoogleFonts.dmSans(
                       fontSize: 11,
                       color: Colors.grey,
                     ),
@@ -230,7 +230,7 @@ class _HistoryCard extends StatelessWidget {
                         },
                         icon: const Icon(Icons.add_task, size: 18),
                         label: Text('Add Manually',
-                            style: GoogleFonts.nunito(
+                            style: GoogleFonts.dmSans(
                                 fontSize: 12, fontWeight: FontWeight.bold)),
                         style: TextButton.styleFrom(
                           foregroundColor: theme.colorScheme.primary,

@@ -138,11 +138,12 @@ class TransactionViewModel with ChangeNotifier {
     return l;
   }
 
-  List<Transaction> getTransactionsInRange(DateTime start, DateTime end) => _txs
-      .where((t) =>
-          t.date.isAfter(start.subtract(const Duration(seconds: 1))) &&
-          t.date.isBefore(end.add(const Duration(days: 1))))
-      .toList();
+  List<Transaction> getTransactionsInRange(DateTime start, DateTime end) =>
+      sortedTransactions
+          .where((t) =>
+              t.date.isAfter(start.subtract(const Duration(seconds: 1))) &&
+              t.date.isBefore(end.add(const Duration(days: 1))))
+          .toList();
 
   double get totalSpend =>
       _txs.where((t) => !t.isIncome).fold(0.0, (s, t) => s + t.amount);

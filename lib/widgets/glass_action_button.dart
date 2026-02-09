@@ -1,11 +1,14 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
+import '../const/app_dimensions.dart';
+import '../const/app_typography.dart';
 
 class GlassActionButton extends StatelessWidget {
-  final IconData icon;
+  final dynamic icon;
   final String? label;
   final Color color;
   final VoidCallback onTap;
@@ -27,10 +30,10 @@ class GlassActionButton extends StatelessWidget {
         onTap();
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 18),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusLarge),
           border: Border.all(
             color: color.withValues(alpha: 0.3),
             width: 1,
@@ -39,14 +42,21 @@ class GlassActionButton extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: color, size: 22),
+            icon is String
+                ? SvgPicture.asset(
+                    icon,
+                    colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+                    width: 22,
+                    height: 22,
+                  )
+                : Icon(icon, color: color, size: 22),
             if (label != null && label!.isNotEmpty) ...[
               const SizedBox(width: 8),
               Text(
                 label!,
-                style: GoogleFonts.nunito(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
+                style: GoogleFonts.dmSans(
+                  fontSize: AppTypography.fontSizeSmall,
+                  fontWeight: AppTypography.fontWeightBold,
                   color: theme.colorScheme.onSurface,
                 ),
               ),
@@ -65,7 +75,7 @@ class GlassFab extends StatelessWidget {
   const GlassFab({
     super.key,
     required this.children,
-    this.marginBottom = 80,
+    this.marginBottom = 50,
   });
 
   @override
@@ -81,7 +91,8 @@ class GlassFab extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             decoration: BoxDecoration(
               color: theme.colorScheme.surface.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(32),
+              borderRadius:
+                  BorderRadius.circular(AppDimensions.borderRadiusXLarge),
               border: Border.all(
                 color: theme.colorScheme.outline.withValues(alpha: 0.2),
                 width: 1,

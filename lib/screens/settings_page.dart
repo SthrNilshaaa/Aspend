@@ -11,9 +11,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 //import 'dart:io';
 
-import '../backup/export_csv.dart';
-import '../backup/import_csv.dart';
-import '../backup/person_backup_helper.dart';
+import '../services/backup_service.dart';
 import '../view_models/transaction_view_model.dart';
 import '../view_models/person_view_model.dart';
 import '../services/pdf_service.dart';
@@ -24,6 +22,8 @@ import '../utils/error_handler.dart';
 import 'detection_history_page.dart';
 import '../widgets/glass_app_bar.dart';
 import '../widgets/settings_widgets.dart';
+import '../const/app_strings.dart';
+import '../const/app_constants.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -42,7 +42,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _loadAppLockSetting() async {
-    final box = await Hive.openBox('settings');
+    final box = await Hive.openBox(AppConstants.settingsBox);
     setState(() {
       _appLockEnabled = box.get('appLockEnabled', defaultValue: false);
     });
@@ -80,7 +80,7 @@ class _SettingsPageState extends State<SettingsPage> {
         }
       }
 
-      final box = await Hive.openBox('settings');
+      final box = await Hive.openBox(AppConstants.settingsBox);
       await box.put('appLockEnabled', enabled);
       setState(() {
         _appLockEnabled = enabled;
@@ -112,7 +112,7 @@ class _SettingsPageState extends State<SettingsPage> {
         physics: const BouncingScrollPhysics(),
         slivers: [
           GlassAppBar(
-            title: 'Settings',
+            title: AppStrings.settings,
             centerTitle: true,
           ),
 
@@ -129,7 +129,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     children: [
                       // Theme Section
                       TitledSection(
-                        title: 'Appearance',
+                        title: AppStrings.appearance,
                         icon: Icons.palette,
                         children: [
                           _buildThemeCard(context, isDark),
@@ -144,7 +144,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       const SizedBox(height: 24),
 
                       TitledSection(
-                        title: 'Security',
+                        title: AppStrings.security,
                         icon: Icons.security,
                         children: [
                           _buildAppLockSection(context),
@@ -154,7 +154,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
                       // Auto Detection Section
                       TitledSection(
-                        title: 'Auto Transaction Detection',
+                        title: AppStrings.autoDetection,
                         icon: Icons.auto_awesome,
                         children: [
                           _buildAutoDetectionSection(context),
@@ -164,7 +164,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
                       // Backup & Export Section
                       TitledSection(
-                        title: 'Backup & Export',
+                        title: AppStrings.backupExport,
                         icon: Icons.backup,
                         children: [
                           _buildBackupSection(context, isDark),
@@ -174,7 +174,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
                       // Data Management Section
                       TitledSection(
-                        title: 'Data Management',
+                        title: AppStrings.dataManagement,
                         icon: Icons.storage,
                         children: [
                           _buildDataManagementSection(context, isDark),
@@ -183,7 +183,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       const SizedBox(height: 24),
 
                       TitledSection(
-                        title: 'Budgeting & Balance',
+                        title: AppStrings.budgetingBalance,
                         icon: Icons.wallet_membership,
                         children: [
                           _buildBudgetSection(context),
@@ -195,7 +195,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
                       // Custom Dropdown Items Section
                       TitledSection(
-                        title: 'Custom Dropdown Items',
+                        title: AppStrings.customDropdowns,
                         icon: Icons.list_alt,
                         children: [
                           _buildCustomOptionsSection(context),
@@ -205,7 +205,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
                       // App Info Section
                       TitledSection(
-                        title: 'App Information',
+                        title: AppStrings.appInformation,
                         icon: Icons.info,
                         children: [
                           _buildAppInfoSection(context, isDark),
@@ -217,8 +217,8 @@ class _SettingsPageState extends State<SettingsPage> {
                         child: Padding(
                           padding: const EdgeInsets.only(top: 16, bottom: 8),
                           child: Text(
-                            'Developed with ❤️ by Sthrnilshaa',
-                            style: GoogleFonts.nunito(
+                            AppStrings.developedBy,
+                            style: GoogleFonts.dmSans(
                               fontSize: 12,
                               color: Colors.grey,
                               fontWeight: FontWeight.w500,
@@ -262,15 +262,15 @@ class _SettingsPageState extends State<SettingsPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Theme',
-                        style: GoogleFonts.nunito(
+                        AppStrings.theme,
+                        style: GoogleFonts.dmSans(
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
                         ),
                       ),
                       Text(
-                        'Choose your preferred theme',
-                        style: GoogleFonts.nunito(
+                        AppStrings.chooseTheme,
+                        style: GoogleFonts.dmSans(
                           fontSize: 14,
                           color: Colors.grey.shade600,
                         ),
@@ -317,8 +317,8 @@ class _SettingsPageState extends State<SettingsPage> {
             Icon(Icons.color_lens, color: Colors.teal.shade600, size: 24),
             const SizedBox(width: 12),
             Text(
-              'Adaptive Android Color',
-              style: GoogleFonts.nunito(
+              AppStrings.adaptiveColor,
+              style: GoogleFonts.dmSans(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
               ),
@@ -341,8 +341,8 @@ class _SettingsPageState extends State<SettingsPage> {
     final currentColor = viewModel.customSeedColor ?? Colors.teal;
     return SettingTile(
       icon: Icons.color_lens,
-      title: 'App Color',
-      subtitle: 'Select a custom app color',
+      title: AppStrings.appColor,
+      subtitle: AppStrings.selectColor,
       onTap: () async {
         Color selectedColor = currentColor;
         await showDialog(
@@ -390,8 +390,8 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildAppLockSection(BuildContext context) {
     return SettingTile(
       icon: Icons.lock,
-      title: 'App Lock',
-      subtitle: 'Require device authentication to open app',
+      title: AppStrings.appLock,
+      subtitle: AppStrings.appLockDesc,
       trailing: Switch(
         value: _appLockEnabled,
         onChanged: (value) async {
@@ -618,7 +618,7 @@ class _SettingsPageState extends State<SettingsPage> {
             Flexible(
               child: Text(
                 'Auto Transaction \n Detection',
-                style: GoogleFonts.nunito(
+                style: GoogleFonts.dmSans(
                   fontWeight: FontWeight.bold,
                   // fontSize: 20,
                   color: isDark ? Colors.white : Colors.black,
@@ -633,7 +633,7 @@ class _SettingsPageState extends State<SettingsPage> {
           children: [
             Text(
               'This feature will automatically detect transactions from:',
-              style: GoogleFonts.nunito(
+              style: GoogleFonts.dmSans(
                 fontWeight: FontWeight.w600,
                 color: isDark ? Colors.white70 : Colors.black87,
               ),
@@ -648,7 +648,7 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 12),
             Text(
               'Required permissions:',
-              style: GoogleFonts.nunito(
+              style: GoogleFonts.dmSans(
                 fontWeight: FontWeight.w600,
                 color: isDark ? Colors.white70 : Colors.black87,
               ),
@@ -666,7 +666,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               child: Text(
                 "💡 Tip: The app will only process messages that contain transaction amounts and keywords like 'credited', 'debited', 'paid', etc.",
-                style: GoogleFonts.nunito(
+                style: GoogleFonts.dmSans(
                   fontSize: 12,
                   color: Colors.blue.shade700,
                 ),
@@ -714,14 +714,14 @@ class _SettingsPageState extends State<SettingsPage> {
               children: [
                 Text(
                   title,
-                  style: GoogleFonts.nunito(
+                  style: GoogleFonts.dmSans(
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                   ),
                 ),
                 Text(
                   subtitle,
-                  style: GoogleFonts.nunito(
+                  style: GoogleFonts.dmSans(
                     fontSize: 12,
                     color: Colors.grey.shade600,
                   ),
@@ -739,12 +739,12 @@ class _SettingsPageState extends State<SettingsPage> {
       children: [
         SettingTile(
           icon: Icons.upload_file,
-          title: 'Export Transactions',
-          subtitle: 'Backup your data to CSV',
+          title: 'Export Transactions (CSV)',
+          subtitle: 'Export your transactions to CSV',
           onTap: () async {
             HapticFeedback.lightImpact();
             try {
-              await DataExporter.shareBackupFile();
+              await BackupService.exportToCsvAndShare();
               _showSnackBar(context, 'Export completed successfully!');
             } catch (e) {
               _showSnackBar(context, 'Export failed: $e');
@@ -752,16 +752,36 @@ class _SettingsPageState extends State<SettingsPage> {
           },
         ),
         SettingTile(
-          icon: Icons.download,
-          title: 'Import Transactions',
-          subtitle: 'Restore data from backup',
+          icon: Icons.backup,
+          title: 'Full Backup (JSON)',
+          subtitle: 'Backup all data to JSON',
           onTap: () async {
             HapticFeedback.lightImpact();
             try {
-              await DataImporter.importFromJson(context);
-              _showSnackBar(context, 'Import completed successfully!');
+              await BackupService.exportAllDataJsonAndShare();
+              _showSnackBar(context, 'Backup completed!');
             } catch (e) {
-              _showSnackBar(context, 'Import failed: $e');
+              _showSnackBar(context, 'Backup failed: $e');
+            }
+          },
+        ),
+        SettingTile(
+          icon: Icons.restore,
+          title: 'Restore Backup (JSON)',
+          subtitle: 'Restore all data from JSON backup',
+          onTap: () async {
+            HapticFeedback.lightImpact();
+            try {
+              final success = await BackupService.importDataFromJson(context);
+              if (success) {
+                _showSnackBar(context, 'Data restored successfully!');
+                // Restart app or reload all data might be needed,
+                // but since we are using reactive Hive watchers, it should work.
+              } else {
+                _showSnackBar(context, 'Restore failed or cancelled');
+              }
+            } catch (e) {
+              _showSnackBar(context, 'Restore failed: $e');
             }
           },
         ),
@@ -806,34 +826,6 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildDataManagementSection(BuildContext context, bool isDark) {
     return Column(
       children: [
-        SettingTile(
-          icon: Icons.ios_share,
-          title: 'Export People Data (JSON)',
-          subtitle: 'Backup people and transactions',
-          onTap: () async {
-            HapticFeedback.lightImpact();
-            try {
-              await PersonBackupHelper.exportToJsonAndShare();
-              _showSnackBar(context, 'People data exported!');
-            } catch (e) {
-              _showSnackBar(context, 'People data export failed: $e');
-            }
-          },
-        ),
-        SettingTile(
-          icon: Icons.import_export,
-          title: 'Import People Data (JSON)',
-          subtitle: 'Restore people data from backup',
-          onTap: () async {
-            HapticFeedback.lightImpact();
-            try {
-              await PersonBackupHelper.importFromJson(context);
-              _showSnackBar(context, 'People data imported successfully!');
-            } catch (e) {
-              _showSnackBar(context, 'People data import failed: $e');
-            }
-          },
-        ),
         SettingTile(
           icon: Icons.delete_forever,
           title: 'Delete All Data',
@@ -908,7 +900,7 @@ class _SettingsPageState extends State<SettingsPage> {
               child: Column(
                 children: [
                   Text('Manage ${type}s',
-                      style: GoogleFonts.nunito(
+                      style: GoogleFonts.dmSans(
                           fontSize: 18, fontWeight: FontWeight.bold)),
                   const Divider(),
                   Expanded(
@@ -916,7 +908,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         ? Center(
                             child: Text(
                               'No ${type.toLowerCase()}s found.',
-                              style: GoogleFonts.nunito(color: Colors.grey),
+                              style: GoogleFonts.dmSans(color: Colors.grey),
                             ),
                           )
                         : ListView.builder(
@@ -924,7 +916,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             itemBuilder: (context, index) {
                               final item = items[index];
                               return ListTile(
-                                title: Text(item, style: GoogleFonts.nunito()),
+                                title: Text(item, style: GoogleFonts.dmSans()),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
@@ -963,7 +955,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       icon: const Icon(Icons.add),
                       label: Text('Add $type',
                           style:
-                              GoogleFonts.nunito(fontWeight: FontWeight.bold)),
+                              GoogleFonts.dmSans(fontWeight: FontWeight.bold)),
                       onPressed: () => _showEditItemDialog(
                           context, null, type, (n) => setStateDialog(() {})),
                     ),
@@ -998,7 +990,7 @@ class _SettingsPageState extends State<SettingsPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text('${old == null ? 'Add' : 'Edit'} $type',
-                  style: GoogleFonts.nunito(
+                  style: GoogleFonts.dmSans(
                       fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 24),
               TextField(
@@ -1179,7 +1171,7 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(width: 8),
             Text(
               'Confirm Delete',
-              style: GoogleFonts.nunito(
+              style: GoogleFonts.dmSans(
                 fontWeight: FontWeight.bold,
                 color: isDark ? Colors.white : Colors.black,
               ),
@@ -1188,7 +1180,7 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
         content: Text(
           'Are you sure you want to delete all transactions and reset your balance? This action cannot be undone.',
-          style: GoogleFonts.nunito(
+          style: GoogleFonts.dmSans(
             color: isDark ? Colors.white70 : Colors.black87,
           ),
         ),
@@ -1252,7 +1244,7 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(width: 8),
             Text(
               'Reset Intro',
-              style: GoogleFonts.nunito(
+              style: GoogleFonts.dmSans(
                 fontWeight: FontWeight.bold,
                 color: isDark ? Colors.white : Colors.black,
               ),
@@ -1261,7 +1253,7 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
         content: Text(
           'This will show the intro screens again the next time you open the app. Your data will remain unchanged.',
-          style: GoogleFonts.nunito(
+          style: GoogleFonts.dmSans(
             color: isDark ? Colors.white70 : Colors.black87,
           ),
         ),

@@ -1,14 +1,16 @@
 import 'package:hive_flutter/hive_flutter.dart';
+import '../const/app_constants.dart';
 
 class HiveService {
-  static const String _settingsBoxName = 'settings';
-  static const String _transactionsBoxName = 'transactions';
-  static const String _balanceBoxName = 'balanceBox';
-  static const String _peopleBoxName = 'people';
-  static const String _personTransactionsBoxName = 'personTransactions';
+  static const String _settingsBoxName = AppConstants.settingsBox;
+  static const String _transactionsBoxName = AppConstants.transactionsBox;
+  static const String _balanceBoxName = AppConstants.balanceBox;
+  static const String _peopleBoxName = AppConstants.peopleBox;
+  static const String _personTransactionsBoxName =
+      AppConstants.personTransactionsBox;
 
   // Settings keys
-  static const String _introCompletedKey = 'introCompleted';
+  static const String _introCompletedKey = AppConstants.introCompletedKey;
   static const String _introCompletedAtKey = 'introCompletedAt';
   static const String _startingBalanceKey = 'startingBalance';
 
@@ -37,8 +39,10 @@ class HiveService {
   // Intro completion methods
   Future<bool> isIntroCompleted() async {
     try {
-      final introCompleted = _settingsBox.get(_introCompletedKey, defaultValue: false);
-      final introCompletedAt = _settingsBox.get(_introCompletedAtKey, defaultValue: 0);
+      final introCompleted =
+          _settingsBox.get(_introCompletedKey, defaultValue: false);
+      final introCompletedAt =
+          _settingsBox.get(_introCompletedAtKey, defaultValue: 0);
       return introCompleted == true && introCompletedAt > 0;
     } catch (e) {
       print('Error checking intro completion: $e');
@@ -49,7 +53,8 @@ class HiveService {
   Future<void> markIntroCompleted() async {
     try {
       await _settingsBox.put(_introCompletedKey, true);
-      await _settingsBox.put(_introCompletedAtKey, DateTime.now().millisecondsSinceEpoch);
+      await _settingsBox.put(
+          _introCompletedAtKey, DateTime.now().millisecondsSinceEpoch);
       await _settingsBox.flush();
     } catch (e) {
       print('Error marking intro as completed: $e');
@@ -208,4 +213,4 @@ class HiveService {
       print('Error closing Hive boxes: $e');
     }
   }
-} 
+}

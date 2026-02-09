@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
@@ -16,8 +18,15 @@ import '../widgets/glass_action_button.dart';
 import '../utils/responsive_utils.dart';
 import '../utils/transaction_utils.dart';
 import 'settings_page.dart';
+import 'transactions_history_page.dart';
 import '../services/native_bridge.dart';
 import '../services/transaction_detection_service.dart';
+import '../const/app_assets.dart';
+import '../const/app_strings.dart';
+import '../const/app_constants.dart';
+import '../const/app_colors.dart';
+import '../const/app_dimensions.dart';
+import '../const/app_typography.dart';
 import 'dart:async';
 
 class HomePage extends StatefulWidget {
@@ -68,7 +77,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void _handleUiEvent(String event) {
     // Solid delay to ensure: Splash is gone (1.5s) -> Transition finished (0.3s) -> Home visible (0.4s)
     // 2200ms ensures the user feels they have correctly "arrived" at the home screen.
-    Future.delayed(const Duration(milliseconds: 2200), () {
+    Future.delayed(AppConstants.homeArrivalDelay, () {
       if (!mounted) return;
       if (event == 'SHOW_ADD_INCOME') {
         _showAddTransactionDialog(isIncome: true);
@@ -114,7 +123,76 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         controller: _scrollController,
         physics: const BouncingScrollPhysics(),
         slivers: [
-          GlassAppBar(title: 'Aspends Tracker'),
+          GlassAppBar(
+            automaticallyImplyLeading: false,
+            centerTitle: false,
+            floating: false,
+            title: AppStrings.appNameShort,
+            leading: Padding(
+              padding: const EdgeInsets.only(
+                  left:
+                      AppDimensions.paddingSmall + AppDimensions.paddingXSmall),
+              child: Center(
+                child: Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: theme.dividerColor.withValues(alpha: 0.1),
+                      width: 1,
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(3.0),
+                    child: SvgPicture.asset(
+                      themeViewModel.isDarkMode
+                          ? SvgAppIcons.lightLogoIcon
+                          : SvgAppIcons.darkLogoIcon,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 16.0),
+                child: Stack(
+                  alignment: Alignment.topRight,
+                  children: [
+                    Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: theme.dividerColor.withValues(alpha: 0.1),
+                          width: 1,
+                        ),
+                      ),
+                      child: const Icon(Icons.notifications_none_rounded,
+                          size: AppDimensions.iconSizeLarge),
+                    ),
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: Container(
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: AppColors.accentGreen,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                              color: theme.colorScheme.surface, width: 2),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
           _buildBalanceSection(context, transactionViewModel),
           if (txns.isNotEmpty)
             _buildTransactionList(
@@ -125,8 +203,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               child: _buildEmptyState(),
             ),
           SliverToBoxAdapter(
-              child:
-                  SizedBox(height: MediaQuery.of(context).padding.bottom + 80)),
+              child: SizedBox(
+                  height: MediaQuery.of(context).padding.bottom +
+                      AppDimensions.paddingXLarge * 2.5)),
         ],
       ),
       floatingActionButton: _showFab ? _buildDualFab(theme) : null,
@@ -147,8 +226,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       child: Column(
         children: [
           Padding(
-            padding: ResponsiveUtils.getResponsiveEdgeInsets(context,
-                horizontal: 8, vertical: 8),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.paddingStandard,
+                vertical:
+                    AppDimensions.paddingSmall + AppDimensions.paddingXSmall),
             child: isLargeScreen
                 ? Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -179,32 +260,70 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     ],
                   ),
           ),
+
+          _buildDragHandle(context),
+
+          const SizedBox(height: AppDimensions.paddingXSmall),
           _buildSearchSection(context),
+          //
+          const SizedBox(height: AppDimensions.paddingStandard),
           Padding(
-            padding: ResponsiveUtils.getResponsiveEdgeInsets(context,
-                horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.paddingStandard,
+                vertical: AppDimensions.paddingSmall),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(Icons.history,
-                    size: ResponsiveUtils.getResponsiveIconSize(context,
-                        mobile: 20, tablet: 24, desktop: 28)),
-                const SizedBox(width: 8),
-                Text('Recent Transactions',
-                    style: GoogleFonts.nunito(
-                        fontSize: ResponsiveUtils.getResponsiveFontSize(context,
-                            mobile: 18, tablet: 20, desktop: 22),
-                        fontWeight: FontWeight.bold)),
-                const Spacer(),
-                IconButton(
-                  icon: Icon(Icons.sort_rounded,
-                      size: ResponsiveUtils.getResponsiveIconSize(context,
-                          mobile: 20, tablet: 24, desktop: 28)),
-                  onPressed: () => _showSortDialog(context, viewModel),
+                Text(
+                  AppStrings.transactionsTitle,
+                  style: GoogleFonts.dmSans(
+                    fontSize: AppTypography.fontSizeSubHeader,
+                    fontWeight: AppTypography.fontWeightBold,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              const TransactionsHistoryPage()),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      Text(
+                        AppStrings.viewAllLabel,
+                        style: GoogleFonts.dmSans(
+                          fontSize: AppTypography.fontSizeSmall,
+                          fontWeight: AppTypography.fontWeightMedium,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.7),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.arrow_forward_rounded,
+                        size: AppDimensions.iconSizeMedium,
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.7),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
+
+          const SizedBox(height: AppDimensions.paddingXSmall),
           _buildRangeSelector(context),
+          const SizedBox(height: AppDimensions.paddingStandard),
         ],
       ),
     );
@@ -212,48 +331,221 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Widget _buildSearchSection(BuildContext context) {
     final theme = Theme.of(context);
+    final transactionViewModel = context.watch<TransactionViewModel>();
+    final isDark = context.watch<ThemeViewModel>().isDarkMode;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: TextField(
-        onChanged: (val) {
-          final query = val.toLowerCase();
-          setState(() {
-            _searchQuery = query.isEmpty ? null : query;
-            _filteredTransactions = query.isEmpty
-                ? null
-                : context
-                    .read<TransactionViewModel>()
-                    .transactions
-                    .where((t) =>
-                        t.note.toLowerCase().contains(query) ||
-                        t.category.toLowerCase().contains(query))
-                    .toList();
-          });
-        },
-        decoration: InputDecoration(
-          hintText: 'Search note, category...',
-          prefixIcon: const Icon(Icons.search),
-          suffixIcon: _searchQuery != null
-              ? IconButton(
-                  icon: const Icon(Icons.clear, size: 20),
-                  onPressed: () {
-                    setState(() {
-                      _searchQuery = null;
-                      _filteredTransactions = null;
-                    });
-                  },
-                )
-              : null,
-          filled: true,
-          fillColor: theme.colorScheme.surface,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide.none,
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.paddingStandard,
+          vertical: AppDimensions.paddingSmall),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              height: 54,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : Colors.black.withValues(alpha: 0.05),
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadiusFull),
+                border: Border.all(
+                  color: theme.dividerColor.withValues(alpha: 0.1),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(6.0),
+                    child: Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color:
+                            theme.colorScheme.primary.withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: SvgPicture.asset(
+                          SvgAppIcons.searchIcon,
+                          colorFilter: ColorFilter.mode(
+                              theme.colorScheme.primary, BlendMode.srcIn),
+                          width: 25,
+                          height: 25,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    width: 1,
+                    height: 24,
+                    color: theme.dividerColor.withValues(alpha: 0.2),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextField(
+                      onChanged: (val) {
+                        final query = val.toLowerCase();
+                        setState(() {
+                          _searchQuery = query.isEmpty ? null : query;
+                          _filteredTransactions = query.isEmpty
+                              ? null
+                              : transactionViewModel.transactions
+                                  .where((t) =>
+                                      t.note.toLowerCase().contains(query) ||
+                                      t.category.toLowerCase().contains(query))
+                                  .toList();
+                        });
+                      },
+                      //transaparnt search bar
+                      decoration: InputDecoration(
+                        hintText: AppStrings.searchHint,
+                        hintStyle: GoogleFonts.dmSans(
+                          color: isDark ? Colors.white38 : Colors.black38,
+                          fontSize: AppTypography.fontSizeSmall,
+                        ),
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        disabledBorder: InputBorder.none,
+                        filled: true,
+                        fillColor: Colors.transparent,
+                        contentPadding:
+                            const EdgeInsets.symmetric(vertical: 12),
+                        suffixIcon: _searchQuery != null
+                            ? IconButton(
+                                icon: const Icon(Icons.clear, size: 18),
+                                onPressed: () {
+                                  setState(() {
+                                    _searchQuery = null;
+                                    _filteredTransactions = null;
+                                  });
+                                },
+                              )
+                            : null,
+                      ),
+                      style: GoogleFonts.dmSans(
+                        fontSize: AppTypography.fontSizeSmall,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-        ),
-        style: GoogleFonts.nunito(),
+          const SizedBox(width: 12),
+          ZoomTapAnimation(
+            onTap: () {
+              HapticFeedback.mediumImpact();
+              _showSortDialog(context);
+            },
+            child: Container(
+              width: 54,
+              height: 54,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : Colors.black.withValues(alpha: 0.05),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: theme.dividerColor.withValues(alpha: 0.1),
+                  width: 1,
+                ),
+              ),
+              child: Center(
+                child: SvgPicture.asset(
+                  SvgAppIcons.filterIcon,
+                  colorFilter: ColorFilter.mode(
+                      theme.colorScheme.primary, BlendMode.srcIn),
+                  width: 20,
+                  height: 20,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
+    );
+  }
+
+  void _showSortDialog(BuildContext context) {
+    final theme = Theme.of(context);
+    final vm = context.read<TransactionViewModel>();
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(AppDimensions.borderRadiusXLarge)),
+        ),
+        padding: const EdgeInsets.all(AppDimensions.paddingLarge),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: theme.dividerColor.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Sort By',
+              style: GoogleFonts.dmSans(
+                fontSize: AppTypography.fontSizeLarge,
+                fontWeight: AppTypography.fontWeightBold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildSortOption(
+                context, 'Date (Newest)', SortOption.dateNewest, vm),
+            _buildSortOption(
+                context, 'Date (Oldest)', SortOption.dateOldest, vm),
+            _buildSortOption(
+                context, 'Amount (Highest)', SortOption.amountHighest, vm),
+            _buildSortOption(
+                context, 'Amount (Lowest)', SortOption.amountLowest, vm),
+            _buildSortOption(context, 'Category', SortOption.category, vm),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSortOption(BuildContext context, String title, SortOption option,
+      TransactionViewModel vm) {
+    final theme = Theme.of(context);
+    final isSelected = vm.currentSortOption == option;
+
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      title: Text(
+        title,
+        style: GoogleFonts.dmSans(
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          color: isSelected
+              ? theme.colorScheme.primary
+              : theme.colorScheme.onSurface,
+        ),
+      ),
+      trailing: isSelected
+          ? Icon(Icons.check_circle_rounded, color: theme.colorScheme.primary)
+          : null,
+      onTap: () {
+        vm.setSortOption(option);
+        Navigator.pop(context);
+      },
     );
   }
 
@@ -272,36 +564,66 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Widget _buildTransactionList(Map<String, List<Transaction>> grouped,
       ThemeData theme, bool useAdaptive) {
-    return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          final dateKey = grouped.keys.elementAt(index);
-          final dayTxs = grouped[dateKey]!;
+    return SliverPadding(
+      padding:
+          const EdgeInsets.symmetric(horizontal: AppDimensions.paddingStandard),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            final dateKey = grouped.keys.elementAt(index);
+            final dayTxs = grouped[dateKey]!;
+            final relativeDate = TransactionUtils.formatRelativeDate(dateKey);
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: ResponsiveUtils.getResponsiveEdgeInsets(context,
-                    horizontal: 10, vertical: 6),
-                child: Text(
-                  dateKey,
-                  style: GoogleFonts.nunito(
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.primary,
-                    fontSize: ResponsiveUtils.getResponsiveFontSize(context,
-                        mobile: 14, tablet: 16, desktop: 18),
+            return Padding(
+              padding:
+                  const EdgeInsets.only(bottom: AppDimensions.paddingLarge),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(
+                        left: AppDimensions.paddingXSmall,
+                        bottom: AppDimensions.paddingXSmall),
+                    child: Text(
+                      relativeDate,
+                      style: GoogleFonts.dmSans(
+                        fontWeight: FontWeight.w800,
+                        color: theme.colorScheme.primary.withValues(alpha: 0.8),
+                        fontSize: ResponsiveUtils.getResponsiveFontSize(context,
+                            mobile: AppTypography.fontSizeSmall,
+                            tablet: AppTypography.fontSizeMedium,
+                            desktop: AppTypography.fontSizeSmall + 4),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
                   ),
-                ),
+                  ...dayTxs.asMap().entries.map((entry) => Padding(
+                        padding: const EdgeInsets.only(
+                            bottom: AppDimensions.paddingSmall),
+                        child: TransactionTile(
+                          transaction: entry.value,
+                          index: entry.key,
+                        ),
+                      )),
+                ],
               ),
-              ...dayTxs.asMap().entries.map((entry) => TransactionTile(
-                    transaction: entry.value,
-                    index: entry.key,
-                  )),
-            ],
-          );
-        },
-        childCount: grouped.length,
+            );
+          },
+          childCount: grouped.length,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDragHandle(BuildContext context) {
+    return Center(
+      child: Container(
+        width: AppDimensions.avatarSizeStandard,
+        height: AppDimensions.spacingXSmall,
+        decoration: BoxDecoration(
+          color: Theme.of(context).dividerColor.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(AppDimensions.spacingTiny),
+        ),
       ),
     );
   }
@@ -309,9 +631,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Widget _buildEmptyState() {
     return EmptyStateView(
       icon: Icons.account_balance_wallet_outlined,
-      title: 'Your wallet is quiet',
-      description:
-          'Start by adding a transaction manually or enable auto-detection to track your spending effortlessly.',
+      title: AppStrings.emptyWalletTitle,
+      description: AppStrings.emptyWalletDesc,
       action: FutureBuilder<bool>(
         future: TransactionDetectionService.isEnabled(),
         builder: (context, snapshot) {
@@ -334,14 +655,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     Theme.of(context).colorScheme.secondary,
                   ],
                 ),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadiusLarge),
                 boxShadow: [
                   BoxShadow(
                     color: Theme.of(context)
                         .colorScheme
                         .primary
                         .withValues(alpha: 0.3),
-                    blurRadius: 15,
+                    blurRadius: AppDimensions.blurRadiusStandard,
                     offset: const Offset(0, 8),
                   ),
                 ],
@@ -352,11 +674,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
                   const SizedBox(width: 12),
                   Text(
-                    'Enable Auto-Detection',
-                    style: GoogleFonts.nunito(
+                    AppStrings.enableAutoDetection,
+                    style: GoogleFonts.dmSans(
                       color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      fontWeight: AppTypography.fontWeightBold,
+                      fontSize: AppTypography.fontSizeMedium,
                     ),
                   ),
                 ],
@@ -372,60 +694,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return GlassFab(
       children: [
         GlassActionButton(
-          icon: Icons.add,
-          color: Colors.green,
+          icon: SvgAppIcons.incomeIcon,
+          color: AppColors.accentGreen,
           onTap: () => _showAddTransactionDialog(isIncome: true),
         ),
         const SizedBox(width: 8),
         GlassActionButton(
-          icon: Icons.remove,
-          color: Colors.red,
+          icon: SvgAppIcons.expenseIcon,
+          color: AppColors.accentRed,
           onTap: () => _showAddTransactionDialog(isIncome: false),
         ),
       ],
-    );
-  }
-
-  void _showSortDialog(BuildContext context, TransactionViewModel viewModel) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Sort By'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _sortOptionTile(context, viewModel, SortOption.dateNewest,
-                'Date: NewestFirst', Icons.calendar_today),
-            _sortOptionTile(context, viewModel, SortOption.dateOldest,
-                'Date: Oldest First', Icons.history),
-            _sortOptionTile(context, viewModel, SortOption.amountHighest,
-                'Amount: Highest', Icons.arrow_upward),
-            _sortOptionTile(context, viewModel, SortOption.amountLowest,
-                'Amount: Lowest', Icons.arrow_downward),
-            _sortOptionTile(context, viewModel, SortOption.category, 'Category',
-                Icons.category),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _sortOptionTile(BuildContext context, TransactionViewModel viewModel,
-      SortOption option, String title, IconData icon) {
-    final isSelected = viewModel.currentSortOption == option;
-    return ListTile(
-      leading:
-          Icon(icon, color: isSelected ? Theme.of(context).primaryColor : null),
-      title: Text(title,
-          style: GoogleFonts.nunito(
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
-      onTap: () {
-        viewModel.setSortOption(option);
-        Navigator.pop(context);
-      },
-      trailing: isSelected
-          ? Icon(Icons.check, color: Theme.of(context).primaryColor)
-          : null,
     );
   }
 
@@ -457,7 +736,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         padding: EdgeInsets.all(isCompact ? 16 : 20),
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusLarge),
           border: Border.all(
             color: isOverBudget
                 ? Colors.redAccent.withValues(alpha: 0.3)
@@ -466,7 +745,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
+              blurRadius: AppDimensions.spacingStandard - 6,
               offset: const Offset(0, 4),
             ),
           ],
@@ -479,17 +758,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               children: [
                 Expanded(
                   child: Text(
-                    'Budget',
-                    style: GoogleFonts.nunito(
-                      fontWeight: FontWeight.w800,
-                      fontSize: isCompact ? 14 : 16,
+                    AppStrings.budget,
+                    style: GoogleFonts.dmSans(
+                      fontWeight: AppTypography.fontWeightExtraBold,
+                      fontSize: isCompact
+                          ? AppTypography.fontSizeSmall
+                          : AppTypography.fontSizeMedium,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 Text(
                   '₹${spent.toStringAsFixed(0)}',
-                  style: GoogleFonts.nunito(
+                  style: GoogleFonts.dmSans(
                     fontWeight: FontWeight.w700,
                     fontSize: isCompact ? 13 : 14,
                     color: isOverBudget ? Colors.redAccent : Colors.grey,
@@ -497,26 +778,27 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
             ClipRRect(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppDimensions.paddingSmall),
               child: LinearProgressIndicator(
                 value: percentage,
                 minHeight: isCompact ? 8 : 10,
                 backgroundColor: theme.dividerColor.withValues(alpha: 0.1),
                 valueColor: AlwaysStoppedAnimation(
-                  isOverBudget ? Colors.redAccent : theme.colorScheme.primary,
+                  isOverBudget
+                      ? AppColors.accentRed
+                      : theme.colorScheme.primary,
                 ),
               ),
             ),
             if (!isCompact && isOverBudget) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: AppDimensions.paddingLarge),
               Text(
                 '⚠️ Over by ₹${(spent - budget).toStringAsFixed(0)}',
-                style: GoogleFonts.nunito(
-                  fontSize: 12,
-                  color: Colors.redAccent,
-                  fontWeight: FontWeight.w600,
+                style: GoogleFonts.dmSans(
+                  fontSize: AppTypography.fontSizeXSmall,
+                  color: AppColors.accentRed,
+                  fontWeight: AppTypography.fontWeightSemiBold,
                 ),
               ),
             ],

@@ -39,6 +39,7 @@ dependencies:
   liquid_pull_to_refresh: ^3.0.1
   flutter_colorpicker: ^1.1.0
   custom_refresh_indicator: ^4.0.1
+  flutter_svg: ^2.2.3
 
 dev_dependencies:
   flutter_test:
@@ -51,13 +52,15 @@ enable-impeller: true
 flutter:
   uses-material-design: true
 
-  # assets:
+  assets:
+    - assets/icons/
+    - assets/font/
 
   fonts:
     - family: NFont
       fonts:
         - asset: assets/font/DMSans_36pt-Bold.ttf
-    - family: Nunito
+    - family: DMSans
       fonts:
         - asset: assets/font/DMSans_36pt-Bold.ttf
 
@@ -65,9 +68,11 @@ flutter_launcher_icons:
   ios: false
   android: true
   adaptive_icon_background: "#0D1311"
-  adaptive_icon_foreground: "assets/icons/Aspend_Logo_Transparent.png"
-  image_path: "assets/icons/Aspend_Logo_Transparent.png"
-  adaptive_icon_foreground_inset: 20
+  adaptive_icon_foreground: "assets/icons/Logo_Final_transparent.png"
+  image_path: "assets/icons/Logo_Final_transparent.png"
+  adaptive_icon_foreground_inset: 25
+
+
 
 
 file_picker:

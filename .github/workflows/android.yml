@@ -108,6 +108,10 @@ jobs:
           CHANGELOG="${CHANGELOG//$'\n'/'%0A'}"
           echo "changelog=$CHANGELOG" >> $GITHUB_OUTPUT
 
+      # - name: Build launcher icons
+      #   run: |
+      #     flutter pub run flutter_launcher_icons:main
+
       - name: Build release APKs
         run: |
           echo "=== Building release APKs ==="

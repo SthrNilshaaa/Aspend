@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../models/transaction.dart';
@@ -8,6 +9,12 @@ import '../view_models/theme_view_model.dart';
 import '../view_models/person_view_model.dart';
 import '../models/person_transaction.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:zoom_tap_animation/zoom_tap_animation.dart';
+import '../const/app_colors.dart';
+import '../const/app_dimensions.dart';
+import '../const/app_typography.dart';
+import '../const/app_assets.dart';
 
 class AddTransactionDialog extends StatefulWidget {
   final bool isIncome;
@@ -35,6 +42,7 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
   final _note = TextEditingController();
   late String _category;
   late String _account;
+  late DateTime _selectedDate;
   final List<String> _images = [];
 
   @override
@@ -44,6 +52,7 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
     final ctx = widget.existingPersonTransaction;
     _category = tx?.category ?? (widget.isIncome ? 'Salary' : 'Food');
     _account = tx?.account ?? 'Cash';
+    _selectedDate = tx?.date ?? ctx?.date ?? DateTime.now();
     if (tx != null) {
       _amount.text = tx.amount.toString();
       _note.text = tx.note;
@@ -70,7 +79,7 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
           Transaction(
             amount: amount,
             note: _note.text,
-            date: widget.existingTransaction!.date,
+            date: _selectedDate,
             isIncome: widget.isIncome,
             category: _category,
             account: _account,
@@ -83,14 +92,14 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
             personName: widget.existingPersonTransaction!.personName,
             amount: amount,
             note: _note.text,
-            date: widget.existingPersonTransaction!.date,
+            date: _selectedDate,
             isIncome: widget.isIncome,
           ));
     } else {
       final tx = Transaction(
         amount: amount,
         note: _note.text,
-        date: DateTime.now(),
+        date: _selectedDate,
         isIncome: widget.isIncome,
         category: _category,
         account: _account,
@@ -127,6 +136,7 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final tvm = context.watch<ThemeViewModel>();
+    final isDark = tvm.isDarkMode;
     final cats = widget.isIncome ? tvm.incomeCategories : tvm.expenseCategories;
     final accs = tvm.accounts;
 
@@ -144,7 +154,8 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           color: theme.scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(AppDimensions.borderRadiusXLarge)),
         ),
         child: Form(
           key: _formKey,
@@ -153,68 +164,212 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(widget.isIncome ? 'Income' : 'Expense',
-                    style: GoogleFonts.nunito(
-                        fontSize: 22, fontWeight: FontWeight.w900),
-                    textAlign: TextAlign.center),
-                const SizedBox(height: 32),
-                TextFormField(
-                  controller: _amount,
-                  keyboardType: TextInputType.number,
-                  style: GoogleFonts.nunito(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: widget.isIncome ? Colors.green : Colors.red),
-                  textAlign: TextAlign.center,
-                  decoration: const InputDecoration(
-                      hintText: '0', prefixIcon: Icon(Icons.currency_rupee)),
-                  validator: (v) => (v?.isEmpty ?? true) ? 'Required' : null,
+                // Pill-shaped Header for Amount
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: AppDimensions.paddingLarge,
+                      horizontal: AppDimensions.paddingXLarge),
+                  decoration: BoxDecoration(
+                    color: (widget.isIncome
+                            ? AppColors.accentGreen
+                            : AppColors.accentRed)
+                        .withValues(alpha: isDark ? 0.1 : 0.05),
+                    borderRadius: BorderRadius.circular(
+                        AppDimensions.borderRadiusXLarge + 8),
+                    border: Border.all(
+                      color: (widget.isIncome
+                              ? AppColors.accentGreen
+                              : AppColors.accentRed)
+                          .withValues(alpha: 0.15),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '₹',
+                        style: GoogleFonts.dmSans(
+                          fontSize: AppTypography.fontSizeXLarge,
+                          fontWeight: AppTypography.fontWeightBlack,
+                          color: widget.isIncome
+                              ? AppColors.accentGreen
+                              : AppColors.accentRed,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextFormField(
+                          controller: _amount,
+                          keyboardType: TextInputType.number,
+                          style: GoogleFonts.dmSans(
+                            fontSize: AppTypography.fontSizeGigantic - 4,
+                            fontWeight: AppTypography.fontWeightBlack,
+                            color: widget.isIncome
+                                ? AppColors.accentGreen
+                                : AppColors.accentRed,
+                            letterSpacing: -1,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: '0',
+                            hintStyle: TextStyle(
+                              color: (widget.isIncome
+                                      ? AppColors.accentGreen
+                                      : AppColors.accentRed)
+                                  .withValues(alpha: 0.3),
+                            ),
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            disabledBorder: InputBorder.none,
+                            filled: true,
+                            fillColor: Colors.transparent,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                          textAlign: TextAlign.start,
+                          validator: (v) =>
+                              (v?.isEmpty ?? true) ? 'Required' : null,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 24),
-                Row(children: [
-                  Expanded(
+                const SizedBox(height: 32),
+
+                // Date & Category Pickers Row
+                Row(
+                  children: [
+                    Expanded(
                       child: _picker(
                           'Category',
                           _category,
                           cats,
                           (v) => setState(() => _category = v),
-                          widget.isIncome ? 'Income' : 'Expense')),
-                  const SizedBox(width: 12),
-                  Expanded(
+                          widget.isIncome ? 'Income' : 'Expense'),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
                       child: _picker('Account', _account, accs,
-                          (v) => setState(() => _account = v), 'Account')),
-                ]),
+                          (v) => setState(() => _account = v), 'Account'),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 16),
+
+                // Date Picker
+                _picker(
+                    'Date',
+                    DateFormat('dd MMM, yyyy').format(_selectedDate),
+                    [],
+                    (v) {},
+                    'Date'),
+
+                const SizedBox(height: 16),
+
+                // Note Input
                 TextFormField(
                   controller: _note,
                   maxLines: 2,
-                  decoration: const InputDecoration(
-                      labelText: 'Note',
-                      prefixIcon: Icon(Icons.note_alt_outlined)),
-                ),
-                const SizedBox(height: 24),
-                if (_images.isNotEmpty) _imageGrid(),
-                TextButton.icon(
-                  onPressed: () async {
-                    final img = await ImagePicker()
-                        .pickImage(source: ImageSource.gallery);
-                    if (img != null) setState(() => _images.add(img.path));
-                  },
-                  icon: const Icon(Icons.add_a_photo_outlined),
-                  label: const Text('Add Attachment'),
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        widget.isIncome ? Colors.green : Colors.red,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 18),
+                  style: GoogleFonts.dmSans(
+                    fontWeight: FontWeight.w600,
+                    fontSize: AppTypography.fontSizeSmall + 1,
                   ),
-                  child: Text('Save Transaction',
-                      style: GoogleFonts.nunito(
-                          fontSize: 18, fontWeight: FontWeight.w900)),
+                  decoration: InputDecoration(
+                    labelText: 'Note',
+                    labelStyle: GoogleFonts.dmSans(
+                      color: theme.textTheme.bodySmall?.color
+                          ?.withValues(alpha: 0.5),
+                    ),
+                    floatingLabelStyle: GoogleFonts.dmSans(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.all(14.0),
+                      child: SvgPicture.asset(
+                        SvgAppIcons.noteIcon,
+                        colorFilter: ColorFilter.mode(
+                            theme.colorScheme.primary.withValues(alpha: 0.5),
+                            BlendMode.srcIn),
+                        width: 20,
+                        height: 20,
+                      ),
+                    ),
+                    filled: true,
+                    fillColor: theme.colorScheme.surface,
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
+                          AppDimensions.borderRadiusLarge),
+                      borderSide: BorderSide(
+                          color: theme.dividerColor.withValues(alpha: 0.1)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
+                          AppDimensions.borderRadiusLarge),
+                      borderSide: BorderSide(
+                          color: theme.colorScheme.primary, width: 2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                if (_images.isNotEmpty) ...[
+                  _imageGrid(),
+                  const SizedBox(height: 16),
+                ],
+
+                // Action Buttons
+                Row(
+                  children: [
+                    ZoomTapAnimation(
+                      onTap: () async {
+                        final img = await ImagePicker()
+                            .pickImage(source: ImageSource.gallery);
+                        if (img != null) setState(() => _images.add(img.path));
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color:
+                              theme.colorScheme.primary.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: theme.colorScheme.primary
+                                .withValues(alpha: 0.2),
+                          ),
+                        ),
+                        child: Icon(Icons.add_a_photo_rounded,
+                            color: theme.colorScheme.primary),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: _submit,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: widget.isIncome
+                              ? AppColors.accentGreen
+                              : AppColors.accentRed,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                                AppDimensions.borderRadiusFull),
+                          ),
+                        ),
+                        child: Text(
+                          widget.existingTransaction != null
+                              ? 'Update Transaction'
+                              : 'Save Transaction',
+                          style: GoogleFonts.dmSans(
+                            fontSize: AppTypography.fontSizeMedium,
+                            fontWeight: AppTypography.fontWeightBlack,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -230,20 +385,39 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label,
-            style: GoogleFonts.nunito(fontSize: 12, color: Colors.grey)),
+            style: GoogleFonts.dmSans(
+                fontSize: AppTypography.fontSizeXSmall, color: Colors.grey)),
         const SizedBox(height: 4),
         InkWell(
-          onTap: () => _showManageItems(context, type, items, val, onDone),
+          onTap: () async {
+            if (type == 'Date') {
+              final date = await showDatePicker(
+                context: context,
+                initialDate: _selectedDate,
+                firstDate: DateTime(2000),
+                lastDate: DateTime.now().add(const Duration(days: 365)),
+              );
+              if (date != null) setState(() => _selectedDate = date);
+            } else {
+              _showManageItems(context, type, items, val, onDone);
+            }
+          },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             decoration: BoxDecoration(
               border: Border.all(color: Colors.grey.withAlpha(100)),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius:
+                  BorderRadius.circular(AppDimensions.borderRadiusSmall),
             ),
             child: Row(
               children: [
-                Expanded(child: Text(val, style: GoogleFonts.nunito())),
-                const Icon(Icons.arrow_drop_down),
+                if (type == 'Date') ...[
+                  const Icon(Icons.calendar_today,
+                      size: 16, color: Colors.grey),
+                  const SizedBox(width: 8),
+                ],
+                Expanded(child: Text(val, style: GoogleFonts.dmSans())),
+                if (type != 'Date') const Icon(Icons.arrow_drop_down),
               ],
             ),
           ),
@@ -269,15 +443,16 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
         return Container(
           decoration: BoxDecoration(
               color: Theme.of(c).scaffoldBackgroundColor,
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(24))),
+              borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(AppDimensions.borderRadiusLarge))),
           padding: const EdgeInsets.all(24),
           height: MediaQuery.of(c).size.height * 0.7,
           child: Column(
             children: [
               Text('Select $type',
-                  style: GoogleFonts.nunito(
-                      fontSize: 18, fontWeight: FontWeight.bold)),
+                  style: GoogleFonts.dmSans(
+                      fontSize: AppTypography.fontSizeLarge - 2,
+                      fontWeight: AppTypography.fontWeightBold)),
               const Divider(),
               Expanded(
                 child: ListView.builder(
@@ -286,7 +461,7 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                     final item = currentItems[i];
                     return ListTile(
                       title: Text(item,
-                          style: GoogleFonts.nunito(
+                          style: GoogleFonts.dmSans(
                               fontWeight: item == selected
                                   ? FontWeight.bold
                                   : FontWeight.normal)),
@@ -316,7 +491,8 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
             margin: const EdgeInsets.only(right: 12),
             width: 90,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius:
+                  BorderRadius.circular(AppDimensions.borderRadiusMedium),
               image: DecorationImage(
                   image: FileImage(File(_images[i])), fit: BoxFit.cover),
             ),
@@ -328,8 +504,10 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                 onTap: () => setState(() => _images.removeAt(i)),
                 child: const CircleAvatar(
                     radius: 10,
-                    backgroundColor: Colors.red,
-                    child: Icon(Icons.close, size: 12, color: Colors.white)),
+                    backgroundColor: AppColors.accentRed,
+                    child: Icon(Icons.close,
+                        size: AppTypography.fontSizeXSmall,
+                        color: Colors.white)),
               )),
         ]),
       ),

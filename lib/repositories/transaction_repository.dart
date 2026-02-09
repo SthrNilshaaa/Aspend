@@ -1,9 +1,10 @@
 import 'package:hive/hive.dart';
 import '../models/transaction.dart';
+import '../const/app_constants.dart';
 
 class TransactionRepository {
-  static const String _txBoxName = 'transactions';
-  static const String _balanceBoxName = 'balanceBox';
+  static const String _txBoxName = AppConstants.transactionsBox;
+  static const String _balanceBoxName = AppConstants.balanceBox;
   static const String _currentBalanceKey = 'currentBalance';
 
   Box<Transaction> get _txBox => Hive.box<Transaction>(_txBoxName);

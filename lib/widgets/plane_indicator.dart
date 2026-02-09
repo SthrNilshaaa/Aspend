@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
 import 'package:flutter/material.dart';
+import '../const/app_colors.dart';
+import '../const/app_dimensions.dart';
 
 class _Cloud {
   static const _light = Color(0xFF96CDDE);
@@ -179,13 +181,13 @@ class _PlaneIndicatorState extends State<PlaneIndicator>
             width: 172,
             height: 50,
             decoration: BoxDecoration(
-              color: Colors.blue.shade600,
+              color: AppColors.primaryGreen,
               borderRadius: BorderRadius.circular(25),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.flight,
               color: Colors.white,
-              size: 30,
+              size: AppDimensions.iconSizeXLarge + 2,
             ),
           ),
           builder: (BuildContext context, Widget? child) {
@@ -259,8 +261,10 @@ class _PlaneIndicatorState extends State<PlaneIndicator>
                                         begin: Alignment.topCenter,
                                         end: Alignment.bottomCenter,
                                         colors: [
-                                          Colors.blue[100]!.withValues(alpha: .2),
-                                          Colors.blue[100]!.withValues(alpha: 0.0)
+                                          AppColors.primaryGreen
+                                              .withValues(alpha: .2),
+                                          AppColors.primaryGreen
+                                              .withValues(alpha: 0.0)
                                         ],
                                       ),
                                     ),

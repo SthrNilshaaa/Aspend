@@ -7,6 +7,7 @@ class GlassAppBar extends StatelessWidget {
   final String title;
   final List<Widget>? actions;
   final bool centerTitle;
+  final bool floating;
 
   final Widget? leading;
   final bool automaticallyImplyLeading;
@@ -15,6 +16,7 @@ class GlassAppBar extends StatelessWidget {
     super.key,
     required this.title,
     this.actions,
+    this.floating = true,
     this.centerTitle = false,
     this.leading,
     this.automaticallyImplyLeading = true,
@@ -25,13 +27,24 @@ class GlassAppBar extends StatelessWidget {
     final theme = Theme.of(context);
 
     return SliverAppBar(
-      expandedHeight: ResponsiveUtils.getResponsiveAppBarHeight(context),
-      floating: true,
+      toolbarHeight: ResponsiveUtils.isMobile(context) ? 70 : 80,
+      expandedHeight: ResponsiveUtils.isMobile(context) ? 70 : 80,
+      floating: floating!,
       pinned: true,
-      elevation: 1,
+      elevation: 0,
       backgroundColor: Colors.transparent,
       actions: actions,
       leading: leading,
+      centerTitle: centerTitle,
+      title: Text(
+        title,
+        style: GoogleFonts.dmSans(
+          fontSize: ResponsiveUtils.getResponsiveFontSize(context,
+              mobile: 24, tablet: 24, desktop: 28),
+          fontWeight: FontWeight.bold,
+          color: theme.colorScheme.onSurface,
+        ),
+      ),
       automaticallyImplyLeading: automaticallyImplyLeading,
       flexibleSpace: Stack(
         fit: StackFit.expand,
@@ -54,17 +67,8 @@ class GlassAppBar extends StatelessWidget {
               ),
             ),
           ),
-          FlexibleSpaceBar(
-            centerTitle: centerTitle,
-            title: Text(
-              title,
-              style: GoogleFonts.nunito(
-                fontSize: ResponsiveUtils.getResponsiveFontSize(context,
-                    mobile: 20, tablet: 24, desktop: 28),
-                fontWeight: FontWeight.bold,
-                color: theme.colorScheme.onSurface,
-              ),
-            ),
+          const FlexibleSpaceBar(
+            centerTitle: false,
           ),
         ],
       ),

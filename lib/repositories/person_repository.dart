@@ -1,10 +1,11 @@
 import 'package:hive/hive.dart';
 import '../models/person.dart';
 import '../models/person_transaction.dart';
+import '../const/app_constants.dart';
 
 class PersonRepository {
-  static const String _peopleBoxName = 'people';
-  static const String _txBoxName = 'personTransactions';
+  static const String _peopleBoxName = AppConstants.peopleBox;
+  static const String _txBoxName = AppConstants.personTransactionsBox;
 
   Box<Person> get _peopleBox => Hive.box<Person>(_peopleBoxName);
   Box<PersonTransaction> get _txBox => Hive.box<PersonTransaction>(_txBoxName);

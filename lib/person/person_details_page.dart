@@ -189,7 +189,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                                     children: [
                                       Text(
                                         'Current Balance',
-                                        style: GoogleFonts.nunito(
+                                        style: GoogleFonts.dmSans(
                                           fontSize: 14,
                                           fontWeight: FontWeight.w600,
                                           color: Colors.grey,
@@ -197,7 +197,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                                       ),
                                       Text(
                                         '₹${total.abs().toStringAsFixed(2)}',
-                                        style: GoogleFonts.nunito(
+                                        style: GoogleFonts.dmSans(
                                           fontSize: 28,
                                           fontWeight: FontWeight.w900,
                                           color: isPositive
@@ -234,7 +234,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                                   child: Center(
                                     child: Text(
                                       'Settle Balance',
-                                      style: GoogleFonts.nunito(
+                                      style: GoogleFonts.dmSans(
                                         color: Colors.white,
                                         fontWeight: FontWeight.w800,
                                         fontSize: 15,
@@ -254,7 +254,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                         children: [
                           Text(
                             'Transactions',
-                            style: GoogleFonts.nunito(
+                            style: GoogleFonts.dmSans(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                               color: theme.colorScheme.onSurface,
@@ -271,7 +271,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                             ),
                             child: Text(
                               '${txs.length}',
-                              style: GoogleFonts.nunito(
+                              style: GoogleFonts.dmSans(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 color: theme.colorScheme.primary,
@@ -416,7 +416,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                                                   tx.note.isEmpty
                                                       ? 'No note'
                                                       : tx.note,
-                                                  style: GoogleFonts.nunito(
+                                                  style: GoogleFonts.dmSans(
                                                     fontSize: 16,
                                                     fontWeight: FontWeight.w600,
                                                     color: theme
@@ -428,7 +428,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                                                   DateFormat.yMMMd()
                                                       .add_jm()
                                                       .format(tx.date),
-                                                  style: GoogleFonts.nunito(
+                                                  style: GoogleFonts.dmSans(
                                                     fontSize: 14,
                                                     color: theme
                                                         .colorScheme.onSurface
@@ -444,7 +444,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                                             children: [
                                               Text(
                                                 '$sign₹${tx.amount.abs().toStringAsFixed(2)}',
-                                                style: GoogleFonts.nunito(
+                                                style: GoogleFonts.dmSans(
                                                   fontSize: 18,
                                                   fontWeight: FontWeight.bold,
                                                   color: isPositiveTx
@@ -471,7 +471,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                                                   isPositiveTx
                                                       ? 'Credit'
                                                       : 'Debit',
-                                                  style: GoogleFonts.nunito(
+                                                  style: GoogleFonts.dmSans(
                                                     fontSize: 10,
                                                     fontWeight: FontWeight.w600,
                                                     color: isPositiveTx
@@ -512,15 +512,15 @@ class _PersonDetailPageState extends State<PersonDetailPage>
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text('Settle Balance',
-            style: GoogleFonts.nunito(fontWeight: FontWeight.bold)),
+            style: GoogleFonts.dmSans(fontWeight: FontWeight.bold)),
         content: Text(
           'This will add a transaction of ₹${currentTotal.abs().toStringAsFixed(2)} to bring the balance to zero. Continue?',
-          style: GoogleFonts.nunito(),
+          style: GoogleFonts.dmSans(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel', style: GoogleFonts.nunito()),
+            child: Text('Cancel', style: GoogleFonts.dmSans()),
           ),
           ElevatedButton(
             onPressed: () {
@@ -537,7 +537,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
               );
               HapticFeedback.mediumImpact();
             },
-            child: Text('Settle', style: GoogleFonts.nunito()),
+            child: Text('Settle', style: GoogleFonts.dmSans()),
           ),
         ],
       ),
@@ -551,7 +551,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           'Delete Person',
-          style: GoogleFonts.nunito(
+          style: GoogleFonts.dmSans(
             fontSize: 22,
             fontWeight: FontWeight.bold,
             color: Colors.red,
@@ -559,7 +559,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
         ),
         content: Text(
           'Are you sure you want to delete ${currentPerson.name}? This action cannot be undone.',
-          style: GoogleFonts.nunito(fontSize: 16),
+          style: GoogleFonts.dmSans(fontSize: 16),
         ),
         actions: [
           TextButton(
@@ -567,7 +567,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
             child: Text(
               'Cancel',
               style:
-                  GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600),
+                  GoogleFonts.dmSans(fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ),
           ElevatedButton(
@@ -586,7 +586,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
             child: Text(
               'Delete',
               style:
-                  GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600),
+                  GoogleFonts.dmSans(fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -602,7 +602,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           'Delete Transaction',
-          style: GoogleFonts.nunito(
+          style: GoogleFonts.dmSans(
             fontSize: 22,
             fontWeight: FontWeight.bold,
             color: Colors.red,
@@ -610,7 +610,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
         ),
         content: Text(
           'Are you sure you want to delete this transaction?',
-          style: GoogleFonts.nunito(fontSize: 16),
+          style: GoogleFonts.dmSans(fontSize: 16),
         ),
         actions: [
           TextButton(
@@ -618,7 +618,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
             child: Text(
               'Cancel',
               style:
-                  GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600),
+                  GoogleFonts.dmSans(fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ),
           ElevatedButton(
@@ -636,7 +636,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
             child: Text(
               'Delete',
               style:
-                  GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600),
+                  GoogleFonts.dmSans(fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -695,7 +695,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Text(
             'Edit Person',
-            style: GoogleFonts.nunito(
+            style: GoogleFonts.dmSans(
               fontSize: 22,
               fontWeight: FontWeight.bold,
               color: theme.colorScheme.primary,
@@ -758,7 +758,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                             const SizedBox(height: 4),
                             Text(
                               'Add Photo',
-                              style: GoogleFonts.nunito(
+                              style: GoogleFonts.dmSans(
                                 fontSize: 12,
                                 color: theme.colorScheme.primary,
                                 fontWeight: FontWeight.w600,
@@ -771,7 +771,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
               const SizedBox(height: 20),
               Text(
                 'Update the details for this person',
-                style: GoogleFonts.nunito(
+                style: GoogleFonts.dmSans(
                   fontSize: 14,
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
@@ -782,7 +782,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                 controller: controller,
                 decoration: InputDecoration(
                   labelText: 'Person Name',
-                  labelStyle: GoogleFonts.nunito(fontSize: 16),
+                  labelStyle: GoogleFonts.dmSans(fontSize: 16),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -791,7 +791,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                   prefixIcon: Icon(Icons.person_outline,
                       color: theme.colorScheme.primary),
                 ),
-                style: GoogleFonts.nunito(fontSize: 16),
+                style: GoogleFonts.dmSans(fontSize: 16),
                 autofocus: true,
               ),
             ],
@@ -801,7 +801,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
               onPressed: () => Navigator.pop(context),
               child: Text(
                 'Cancel',
-                style: GoogleFonts.nunito(
+                style: GoogleFonts.dmSans(
                     fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
@@ -828,7 +828,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
               ),
               child: Text(
                 'Update',
-                style: GoogleFonts.nunito(
+                style: GoogleFonts.dmSans(
                     fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),

@@ -5,12 +5,55 @@ class TransactionUtils {
   static Map<String, List<Transaction>> groupTransactionsByDate(
       List<Transaction> txns) {
     final Map<String, List<Transaction>> grouped = {};
-    for (final tx in txns) {
+    // Sort transactions by date descending before grouping
+    final sortedTxns = List<Transaction>.from(txns)
+      ..sort((a, b) => b.date.compareTo(a.date));
+
+    for (final tx in sortedTxns) {
       final dateKey =
           "${tx.date.year}-${tx.date.month.toString().padLeft(2, '0')}-${tx.date.day.toString().padLeft(2, '0')}";
       grouped.putIfAbsent(dateKey, () => []).add(tx);
     }
     return grouped;
+  }
+
+  static String formatRelativeDate(String dateKey) {
+    try {
+      final parts = dateKey.split('-');
+      if (parts.length != 3) return dateKey;
+
+      final date = DateTime(
+          int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+      final yesterday = today.subtract(const Duration(days: 1));
+
+      if (date.isAtSameMomentAs(today)) {
+        return 'Today';
+      } else if (date.isAtSameMomentAs(yesterday)) {
+        return 'Yesterday';
+      }
+
+      // For other dates, use simple formatting or just return the key if preferred
+      // But let's make it look nicer: "Feb 09, 2026"
+      const months = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec'
+      ];
+      return "${months[date.month - 1]} ${date.day.toString().padLeft(2, '0')}, ${date.year}";
+    } catch (e) {
+      return dateKey;
+    }
   }
 
   static IconData getCategoryIcon(String category) {

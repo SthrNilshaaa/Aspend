@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../utils/responsive_utils.dart';
+import '../const/app_dimensions.dart';
+import '../const/app_typography.dart';
+import '../const/app_colors.dart';
 
 class TitledSection extends StatelessWidget {
   final String title;
@@ -32,15 +35,19 @@ class TitledSection extends StatelessWidget {
                 icon,
                 color: primaryColor,
                 size: ResponsiveUtils.getResponsiveIconSize(context,
-                    mobile: 20, tablet: 24, desktop: 28),
+                    mobile: AppDimensions.iconSizeMedium,
+                    tablet: AppDimensions.iconSizeLarge,
+                    desktop: AppDimensions.iconSizeXLarge),
               ),
               const SizedBox(width: 8),
               Text(
                 title,
-                style: GoogleFonts.nunito(
+                style: GoogleFonts.dmSans(
                   fontSize: ResponsiveUtils.getResponsiveFontSize(context,
-                      mobile: 18, tablet: 20, desktop: 22),
-                  fontWeight: FontWeight.bold,
+                      mobile: AppTypography.fontSizeLarge - 2,
+                      tablet: AppTypography.fontSizeLarge,
+                      desktop: AppTypography.fontSizeLarge + 2),
+                  fontWeight: AppTypography.fontWeightBold,
                   color: primaryColor,
                 ),
               ),
@@ -74,13 +81,14 @@ class SettingTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final primaryColor = isDestructive ? Colors.red : theme.colorScheme.primary;
+    final primaryColor =
+        isDestructive ? AppColors.accentRed : theme.colorScheme.primary;
 
     return Card(
       elevation: 0,
       color: primaryColor.withValues(alpha: 0.05),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusMedium),
         side: BorderSide(
           color: primaryColor.withValues(alpha: 0.1),
           width: 1,
@@ -93,25 +101,26 @@ class SettingTile extends StatelessWidget {
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: primaryColor.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius:
+                BorderRadius.circular(AppDimensions.borderRadiusSmall),
           ),
           child: Icon(icon, color: primaryColor, size: 22),
         ),
         title: Text(
           title,
-          style: GoogleFonts.nunito(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            color: isDestructive ? Colors.red : null,
+          style: GoogleFonts.dmSans(
+            fontWeight: AppTypography.fontWeightBold,
+            fontSize: AppTypography.fontSizeMedium,
+            color: isDestructive ? AppColors.accentRed : null,
           ),
         ),
         subtitle: subtitle != null
             ? Text(
                 subtitle!,
-                style: GoogleFonts.nunito(
-                  fontSize: 13,
+                style: GoogleFonts.dmSans(
+                  fontSize: AppTypography.fontSizeXSmall + 1,
                   color: isDestructive
-                      ? Colors.red.withValues(alpha: 0.7)
+                      ? AppColors.accentRed.withValues(alpha: 0.7)
                       : theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
               )

@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import '../const/app_constants.dart';
 
 class SettingsRepository {
-  static const String _settingsBoxName = 'settings';
-  static const String _themeKey = 'theme';
-  static const String _adaptiveColorKey = 'adaptiveColor';
-  static const String _customColorKey = 'customSeedColor';
-  static const String _introCompletedKey = 'introCompleted';
-  static const String _monthlyBudgetKey = 'monthlyBudget';
-  static const String _joinPreviousMonthBalanceKey = 'joinPreviousMonthBalance';
+  static const String _settingsBoxName = AppConstants.settingsBox;
+  static const String _themeKey = AppConstants.themeKey;
+  static const String _adaptiveColorKey = AppConstants.adaptiveColorKey;
+  static const String _customColorKey = AppConstants.customColorKey;
+  static const String _introCompletedKey = AppConstants.introCompletedKey;
+  static const String _monthlyBudgetKey = AppConstants.monthlyBudgetKey;
+  static const String _joinPreviousMonthBalanceKey =
+      AppConstants.joinPreviousMonthBalanceKey;
   static const String _customCategoriesKey = 'customCategories'; // Legacy
   static const String _customAccountsKey = 'customAccounts'; // Legacy
-  static const String _incomeCategoriesKey = 'incomeCategories';
-  static const String _expenseCategoriesKey = 'expenseCategories';
-  static const String _accountsKey = 'accounts_list';
+  static const String _incomeCategoriesKey = AppConstants.incomeCategoriesKey;
+  static const String _expenseCategoriesKey = AppConstants.expenseCategoriesKey;
+  static const String _accountsKey = AppConstants.accountsKey;
 
   Box get _settingsBox => Hive.box(_settingsBoxName);
 
