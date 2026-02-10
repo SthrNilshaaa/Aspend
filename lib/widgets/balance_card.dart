@@ -86,9 +86,10 @@ class _BalanceCardState extends State<BalanceCard>
                 margin: const EdgeInsets.symmetric(
                     vertical: AppDimensions.paddingSmall),
                 decoration: BoxDecoration(
-                  color: Colors.red,
                   border: Border.all(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                    color: isDark
+                        ? theme.colorScheme.primary.withValues(alpha: 0.4)
+                        : theme.colorScheme.primary.withValues(alpha: 0.1),
                     width: 2,
                     style: BorderStyle.solid,
                   ),
@@ -122,7 +123,8 @@ class _BalanceCardState extends State<BalanceCard>
                           width: 150,
                           height: 150,
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.1),
+                            color: theme.colorScheme.primary
+                                .withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -134,7 +136,8 @@ class _BalanceCardState extends State<BalanceCard>
                           width: 150,
                           height: 150,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.1),
+                            color: theme.colorScheme.primary
+                                .withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -146,7 +149,8 @@ class _BalanceCardState extends State<BalanceCard>
                           width: 100,
                           height: 100,
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.05),
+                            color: theme.colorScheme.primary
+                                .withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -170,8 +174,11 @@ class _BalanceCardState extends State<BalanceCard>
                                           fontSize: AppTypography.fontSizeLarge,
                                           fontWeight:
                                               AppTypography.fontWeightExtraBold,
-                                          color: Colors.white
-                                              .withValues(alpha: 0.9),
+                                          color: isDark
+                                              ? Colors.white
+                                                  .withValues(alpha: 0.9)
+                                              : Colors.black
+                                                  .withValues(alpha: 0.9),
                                         ),
                                       ),
                                       GestureDetector(
@@ -219,8 +226,11 @@ class _BalanceCardState extends State<BalanceCard>
                                                   AppTypography.fontSizeXLarge,
                                               fontWeight: AppTypography
                                                   .fontWeightExtraBold,
-                                              color:
-                                                  Colors.white.withOpacity(0.9),
+                                              color: isDark
+                                                  ? Colors.white
+                                                      .withValues(alpha: 0.9)
+                                                  : Colors.black
+                                                      .withValues(alpha: 0.9),
                                             ),
                                           ),
                                           TextSpan(
@@ -253,6 +263,7 @@ class _BalanceCardState extends State<BalanceCard>
                                     totalIncome,
                                     SvgAppIcons.incomeIcon,
                                     AppColors.accentGreen,
+                                    isDark,
                                   ),
                                 ),
                                 Container(
@@ -269,6 +280,7 @@ class _BalanceCardState extends State<BalanceCard>
                                     totalExpenses,
                                     SvgAppIcons.expenseIcon,
                                     AppColors.accentRed,
+                                    isDark,
                                   ),
                                 ),
                               ],
@@ -288,7 +300,9 @@ class _BalanceCardState extends State<BalanceCard>
                 child: Container(
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppColors.accentGreen.withValues(alpha: 0.4),
+                    color: isDark
+                        ? AppColors.accentGreen.withValues(alpha: 0.6)
+                        : AppColors.accentGreen.withValues(alpha: 0.2),
                     // rounded corners only on the top
                     borderRadius: const BorderRadius.only(
                       bottomLeft:
@@ -314,7 +328,7 @@ class _BalanceCardState extends State<BalanceCard>
   }
 
   Widget _buildModernStatItem(
-      String label, double amount, dynamic icon, Color color) {
+      String label, double amount, dynamic icon, Color color, bool isDark) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -334,7 +348,9 @@ class _BalanceCardState extends State<BalanceCard>
               style: GoogleFonts.dmSans(
                 fontSize: AppTypography.fontSizeSmall,
                 fontWeight: AppTypography.fontWeightMedium,
-                color: Colors.white.withValues(alpha: 0.9),
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.9)
+                    : Colors.black.withValues(alpha: 0.9),
               ),
             ),
           ],
@@ -345,7 +361,9 @@ class _BalanceCardState extends State<BalanceCard>
           style: GoogleFonts.dmSans(
             fontSize: AppTypography.fontSizeLarge,
             fontWeight: AppTypography.fontWeightSemiBold,
-            color: Colors.white,
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.9)
+                : Colors.black.withValues(alpha: 0.9),
           ),
         ),
       ],

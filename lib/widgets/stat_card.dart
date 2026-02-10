@@ -4,8 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import '../const/app_dimensions.dart';
-import '../const/app_typography.dart';
-import '../const/app_assets.dart';
 
 class StatCard extends StatelessWidget {
   final String title;
@@ -30,55 +28,83 @@ class StatCard extends StatelessWidget {
     return ZoomTapAnimation(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(AppDimensions.paddingStandard),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: isDark
-              ? color.withValues(alpha: 0.1)
-              : color.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusLarge),
+              ? color.withValues(alpha: 0.08)
+              : color.withValues(alpha: 0.04),
+          borderRadius:
+              BorderRadius.circular(AppDimensions.borderRadiusMedium + 4),
           border: Border.all(
-            color: color.withValues(alpha: 0.2),
+            color: color.withValues(alpha: 0.15),
             width: 1.5,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.05),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.all(AppDimensions.paddingSmall),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.2),
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadiusSmall),
-              ),
-              child: icon is String
-                  ? SvgPicture.asset(
-                      icon,
-                      colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
-                      width: AppDimensions.iconSizeMedium,
-                      height: AppDimensions.iconSizeMedium,
-                    )
-                  : Icon(icon,
-                      color: color, size: AppDimensions.iconSizeMedium),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: icon is String
+                      ? SvgPicture.asset(
+                          icon,
+                          colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+                          width: 20,
+                          height: 20,
+                        )
+                      : Icon(icon, color: color, size: 20),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 10,
+                  color: color.withValues(alpha: 0.3),
+                ),
+              ],
             ),
-            const SizedBox(height: AppDimensions.spacingMedium),
+            const SizedBox(height: 20),
             Text(
-              title,
+              title.toUpperCase(),
               style: GoogleFonts.dmSans(
-                fontSize: AppTypography.fontSizeXSmall,
-                fontWeight: AppTypography.fontWeightBold,
-                color: isDark ? Colors.white70 : Colors.black54,
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+                color: (isDark ? Colors.white : Colors.black)
+                    .withValues(alpha: 0.4),
+                letterSpacing: 1.2,
               ),
             ),
-            const SizedBox(height: AppDimensions.paddingXSmall),
+            const SizedBox(height: 4),
             FittedBox(
               child: Text(
-                '₹${NumberFormat.compactCurrency(symbol: '', decimalDigits: 2).format(amount)}',
+                '₹${NumberFormat.currency(symbol: '', decimalDigits: 0).format(amount)}',
                 style: GoogleFonts.dmSans(
-                  fontSize: AppTypography.fontSizeLarge,
-                  fontWeight: AppTypography.fontWeightBlack,
-                  color: color,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                  color: isDark ? Colors.white : Colors.black,
+                  letterSpacing: -0.5,
                 ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              height: 3,
+              width: 40,
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
           ],

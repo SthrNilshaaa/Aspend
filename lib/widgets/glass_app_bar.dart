@@ -29,7 +29,7 @@ class GlassAppBar extends StatelessWidget {
     return SliverAppBar(
       toolbarHeight: ResponsiveUtils.isMobile(context) ? 70 : 80,
       expandedHeight: ResponsiveUtils.isMobile(context) ? 70 : 80,
-      floating: floating!,
+      floating: floating,
       pinned: true,
       elevation: 0,
       backgroundColor: Colors.transparent,

@@ -1,3 +1,6 @@
+import 'package:aspends_tracker/const/app_colors.dart';
+import 'package:aspends_tracker/const/app_dimensions.dart';
+import 'package:aspends_tracker/const/app_strings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -154,32 +157,66 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                           children: [
                             Row(
                               children: [
-                                Container(
-                                  width: 60,
-                                  height: 60,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: theme.colorScheme.primary
-                                        .withValues(alpha: 0.1),
-                                  ),
-                                  child: person.photoPath != null
-                                      ? ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(30),
-                                          child: Image.file(
-                                            File(person.photoPath!),
-                                            fit: BoxFit.cover,
-                                          ),
-                                        )
-                                      : Icon(
-                                          isPositive
-                                              ? Icons.trending_up
-                                              : Icons.trending_down,
-                                          color: isPositive
-                                              ? Colors.greenAccent.shade700
-                                              : Colors.redAccent,
-                                          size: 30,
+                                Stack(
+                                  children: [
+                                    Container(
+                                      width: 64,
+                                      height: 64,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: theme.colorScheme.primary
+                                            .withValues(alpha: 0.1),
+                                        border: Border.all(
+                                          color: theme.colorScheme.primary
+                                              .withValues(alpha: 0.1),
+                                          width: 1,
                                         ),
+                                      ),
+                                      child: person.photoPath != null
+                                          ? ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(32),
+                                              child: person.photoPath!
+                                                      .startsWith('assets/')
+                                                  ? Image.asset(
+                                                      person.photoPath!,
+                                                      fit: BoxFit.cover)
+                                                  : Image.file(
+                                                      File(person.photoPath!),
+                                                      fit: BoxFit.cover,
+                                                    ),
+                                            )
+                                          : Icon(
+                                              Icons.person_rounded,
+                                              color: theme.colorScheme.primary,
+                                              size: 32,
+                                            ),
+                                    ),
+                                    Positioned(
+                                      right: 0,
+                                      bottom: 0,
+                                      child: Container(
+                                        width: 18,
+                                        height: 18,
+                                        decoration: BoxDecoration(
+                                          color: isPositive
+                                              ? AppColors.accentGreen
+                                              : AppColors.accentRed,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                              color: theme.colorScheme.surface,
+                                              width: 2.5),
+                                        ),
+                                        child: Icon(
+                                          isPositive
+                                              ? Icons.arrow_downward_rounded
+                                              : Icons.arrow_upward_rounded,
+                                          color: Colors.white,
+                                          size: 10,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                                 const SizedBox(width: 20),
                                 Expanded(
@@ -188,21 +225,26 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'Current Balance',
+                                        isPositive
+                                            ? AppStrings.youWillGet
+                                            : AppStrings.youWillGive,
                                         style: GoogleFonts.dmSans(
-                                          fontSize: 14,
+                                          fontSize: 13,
                                           fontWeight: FontWeight.w600,
-                                          color: Colors.grey,
+                                          color: theme.colorScheme.onSurface
+                                              .withValues(alpha: 0.5),
                                         ),
                                       ),
+                                      const SizedBox(height: 2),
                                       Text(
                                         '₹${total.abs().toStringAsFixed(2)}',
                                         style: GoogleFonts.dmSans(
-                                          fontSize: 28,
+                                          fontSize: 32,
                                           fontWeight: FontWeight.w900,
                                           color: isPositive
-                                              ? Colors.greenAccent.shade700
-                                              : Colors.redAccent,
+                                              ? AppColors.accentGreen
+                                              : AppColors.accentRed,
+                                          letterSpacing: -1,
                                         ),
                                       ),
                                     ],
@@ -211,22 +253,29 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                               ],
                             ),
                             if (total != 0) ...[
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 24),
                               ZoomTapAnimation(
                                 onTap: () =>
                                     _settleBalance(context, total, person),
                                 child: Container(
                                   width: double.infinity,
                                   padding:
-                                      const EdgeInsets.symmetric(vertical: 12),
+                                      const EdgeInsets.symmetric(vertical: 14),
                                   decoration: BoxDecoration(
-                                    color: theme.colorScheme.primary,
-                                    borderRadius: BorderRadius.circular(16),
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        theme.colorScheme.primary,
+                                        theme.colorScheme.primary
+                                            .withValues(alpha: 0.8),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(
+                                        AppDimensions.borderRadiusMedium),
                                     boxShadow: [
                                       BoxShadow(
                                         color: theme.colorScheme.primary
                                             .withValues(alpha: 0.3),
-                                        blurRadius: 10,
+                                        blurRadius: 12,
                                         offset: const Offset(0, 4),
                                       ),
                                     ],
@@ -238,6 +287,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                                         color: Colors.white,
                                         fontWeight: FontWeight.w800,
                                         fontSize: 15,
+                                        letterSpacing: 0.5,
                                       ),
                                     ),
                                   ),
@@ -336,151 +386,162 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                                   },
                                   child: Container(
                                     decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: useAdaptive
-                                            ? [
-                                                theme.colorScheme.surface,
-                                                theme.colorScheme.surface
-                                                    .withValues(alpha: 0.8),
-                                              ]
-                                            : [
-                                                theme.colorScheme.surface,
-                                                theme.colorScheme.surface
-                                                    .withValues(alpha: 0.8),
-                                              ],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                      ),
-                                      borderRadius: BorderRadius.circular(16),
+                                      color: theme.colorScheme.surface,
+                                      borderRadius: BorderRadius.circular(
+                                          AppDimensions.borderRadiusMedium),
                                       border: Border.all(
-                                        color: useAdaptive
-                                            ? theme.colorScheme.primary
-                                                .withValues(alpha: 0.3)
-                                            : isDark
-                                                ? Colors.teal.shade900
-                                                    .withValues(alpha: 0.3)
-                                                : Colors.teal
-                                                    .withValues(alpha: 0.3),
+                                        color: theme.dividerColor
+                                            .withValues(alpha: 0.05),
                                         width: 1,
                                       ),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: useAdaptive
-                                              ? theme.colorScheme.shadow
-                                                  .withValues(alpha: 0.1)
-                                              : theme.colorScheme.shadow
-                                                  .withValues(alpha: 0.1),
-                                          blurRadius: 8,
-                                          offset: const Offset(0, 2),
+                                          color: Colors.black
+                                              .withValues(alpha: 0.03),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 4),
                                         ),
                                       ],
                                     ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(16),
+                                    child: IntrinsicHeight(
                                       child: Row(
                                         children: [
                                           Container(
-                                            width: 50,
-                                            height: 50,
+                                            width: 4,
                                             decoration: BoxDecoration(
-                                              gradient: LinearGradient(
-                                                colors: [
-                                                  isPositiveTx
-                                                      ? Colors.green
-                                                      : Colors.red,
-                                                  isPositiveTx
-                                                      ? Colors.green.withValues(
-                                                          alpha: 0.8)
-                                                      : Colors.red.withValues(
-                                                          alpha: 0.8),
+                                              color: isPositiveTx
+                                                  ? AppColors.accentGreen
+                                                  : AppColors.accentRed,
+                                              borderRadius:
+                                                  const BorderRadius.horizontal(
+                                                left: Radius.circular(4),
+                                              ),
+                                            ),
+                                          ),
+                                          Expanded(
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(16),
+                                              child: Row(
+                                                children: [
+                                                  Container(
+                                                    width: 42,
+                                                    height: 42,
+                                                    decoration: BoxDecoration(
+                                                      color: (isPositiveTx
+                                                              ? AppColors
+                                                                  .accentGreen
+                                                              : AppColors
+                                                                  .accentRed)
+                                                          .withValues(
+                                                              alpha: 0.1),
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                    child: Icon(
+                                                      isPositiveTx
+                                                          ? Icons.add_rounded
+                                                          : Icons
+                                                              .remove_rounded,
+                                                      color: isPositiveTx
+                                                          ? AppColors
+                                                              .accentGreen
+                                                          : AppColors.accentRed,
+                                                      size: 20,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 16),
+                                                  Expanded(
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        Text(
+                                                          tx.note.isEmpty
+                                                              ? 'No note provided'
+                                                              : tx.note,
+                                                          style: GoogleFonts
+                                                              .dmSans(
+                                                            fontSize: 15,
+                                                            fontWeight:
+                                                                FontWeight.w700,
+                                                            color: theme
+                                                                .colorScheme
+                                                                .onSurface,
+                                                          ),
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                        ),
+                                                        const SizedBox(
+                                                            height: 4),
+                                                        Text(
+                                                          DateFormat(
+                                                                  'MMM d, yyyy • hh:mm a')
+                                                              .format(tx.date),
+                                                          style: GoogleFonts
+                                                              .dmSans(
+                                                            fontSize: 12,
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                            color: theme
+                                                                .colorScheme
+                                                                .onSurface
+                                                                .withValues(
+                                                                    alpha: 0.4),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                  Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment.end,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Text(
+                                                        '$sign₹${tx.amount.abs().toStringAsFixed(0)}',
+                                                        style:
+                                                            GoogleFonts.dmSans(
+                                                          fontSize: 17,
+                                                          fontWeight:
+                                                              FontWeight.w800,
+                                                          color: isPositiveTx
+                                                              ? AppColors
+                                                                  .accentGreen
+                                                              : AppColors
+                                                                  .accentRed,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 2),
+                                                      Text(
+                                                        isPositiveTx
+                                                            ? 'Credit'
+                                                            : 'Debit',
+                                                        style:
+                                                            GoogleFonts.dmSans(
+                                                          fontSize: 10,
+                                                          fontWeight:
+                                                              FontWeight.w800,
+                                                          color: (isPositiveTx
+                                                                  ? AppColors
+                                                                      .accentGreen
+                                                                  : AppColors
+                                                                      .accentRed)
+                                                              .withValues(
+                                                                  alpha: 0.5),
+                                                          letterSpacing: 0.5,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ],
                                               ),
-                                              borderRadius:
-                                                  BorderRadius.circular(25),
                                             ),
-                                            child: Icon(
-                                              isPositiveTx
-                                                  ? Icons.add
-                                                  : Icons.remove,
-                                              color: Colors.white,
-                                              size: 24,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 16),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  tx.note.isEmpty
-                                                      ? 'No note'
-                                                      : tx.note,
-                                                  style: GoogleFonts.dmSans(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: theme
-                                                        .colorScheme.onSurface,
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 4),
-                                                Text(
-                                                  DateFormat.yMMMd()
-                                                      .add_jm()
-                                                      .format(tx.date),
-                                                  style: GoogleFonts.dmSans(
-                                                    fontSize: 14,
-                                                    color: theme
-                                                        .colorScheme.onSurface
-                                                        .withValues(alpha: 0.7),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.end,
-                                            children: [
-                                              Text(
-                                                '$sign₹${tx.amount.abs().toStringAsFixed(2)}',
-                                                style: GoogleFonts.dmSans(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: isPositiveTx
-                                                      ? Colors.green
-                                                      : Colors.red,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Container(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 6,
-                                                        vertical: 2),
-                                                decoration: BoxDecoration(
-                                                  color: isPositiveTx
-                                                      ? Colors.green.withValues(
-                                                          alpha: 0.1)
-                                                      : Colors.red.withValues(
-                                                          alpha: 0.1),
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
-                                                ),
-                                                child: Text(
-                                                  isPositiveTx
-                                                      ? 'Credit'
-                                                      : 'Debit',
-                                                  style: GoogleFonts.dmSans(
-                                                    fontSize: 10,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: isPositiveTx
-                                                        ? Colors.green
-                                                        : Colors.red,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
                                           ),
                                         ],
                                       ),

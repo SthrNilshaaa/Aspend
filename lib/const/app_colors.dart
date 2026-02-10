@@ -11,8 +11,8 @@ class AppColors {
   // Balance Card Gradients
   static const Color balanceCardDarkStart = Color(0xFF0A1A12);
   static const Color balanceCardDarkEnd = Color(0xFF0F2A1E);
-  static const Color balanceCardLightStart = Color(0xFF0D2D1D);
-  static const Color balanceCardLightEnd = Color(0xFF16422F);
+  static const Color balanceCardLightStart = Color(0xFFB4EABC);
+  static const Color balanceCardLightEnd = Color(0xFFB4EABC);
 
   // Status & Accent Colors
   static const Color accentGreen = Color(0xFF2ECC71);

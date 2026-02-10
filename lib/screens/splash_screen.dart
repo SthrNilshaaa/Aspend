@@ -216,9 +216,10 @@ class _SplashScreenState extends State<SplashScreen>
                                 child: SlideTransition(
                                   position: _entrySlide,
                                   child: SvgPicture.asset(
-                                    isDarkMode
-                                        ? SvgAppIcons.lightLogoIcon
-                                        : SvgAppIcons.darkLogoIcon,
+                                    // isDarkMode
+                                    //     ? 
+                                        SvgAppIcons.lightLogoIcon,
+                                        // : SvgAppIcons.darkLogoIcon,
                                     height:
                                         ResponsiveUtils.getResponsiveIconSize(
                                             context,

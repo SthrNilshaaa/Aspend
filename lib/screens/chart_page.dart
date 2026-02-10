@@ -103,6 +103,27 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
                     .where((t) => !t.isIncome)
                     .fold(0.0, (s, t) => s + t.amount);
 
+                // --- NEW INSIGHT CALCULATIONS ---
+                // 1. Top Category
+                final categoryMap = <String, double>{};
+                for (var tx in filteredTxs.where((t) => !t.isIncome)) {
+                  categoryMap[tx.category] =
+                      (categoryMap[tx.category] ?? 0) + tx.amount;
+                }
+                String? topCategory;
+                double topCategoryAmount = 0;
+                categoryMap.forEach((cat, amt) {
+                  if (amt > topCategoryAmount) {
+                    topCategoryAmount = amt;
+                    topCategory = cat;
+                  }
+                });
+
+                // 2. Average Daily spending
+                final days = _endDate.difference(_startDate).inDays + 1;
+                final avgSpending = totalSpend / (days > 0 ? days : 1);
+                // -------------------------------
+
                 if (filteredTxs.isEmpty) return _buildEmptyState(isDark);
 
                 final isLargeScreen = !ResponsiveUtils.isMobile(context);
@@ -132,6 +153,37 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
                               amount: totalSpend,
                               color: AppColors.accentRed,
                               icon: SvgAppIcons.expenseIcon,
+                              isDark: isDark,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      // Insight Row
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildInsightCard(
+                              context,
+                              title: 'Top Category',
+                              value: topCategory ?? 'N/A',
+                              subtitle: topCategory != null
+                                  ? '₹${topCategoryAmount.toStringAsFixed(0)}'
+                                  : 'No spending',
+                              icon: Icons.category_rounded,
+                              color: Colors.blueAccent,
+                              isDark: isDark,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _buildInsightCard(
+                              context,
+                              title: 'Avg. Daily Spend',
+                              value: '₹${avgSpending.toStringAsFixed(0)}',
+                              subtitle: 'Per day',
+                              icon: Icons.timer_rounded,
+                              color: Colors.orangeAccent,
                               isDark: isDark,
                             ),
                           ),
@@ -257,6 +309,75 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildInsightCard(
+    BuildContext context, {
+    required String title,
+    required String value,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required bool isDark,
+  }) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusMedium),
+        border: Border.all(
+          color: theme.dividerColor.withValues(alpha: 0.05),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 18),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                  ),
+                ),
+                Text(
+                  value,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  subtitle,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                    color: color.withValues(alpha: 0.7),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 

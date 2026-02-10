@@ -1,3 +1,4 @@
+import 'package:aspends_tracker/screens/detection_history_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
@@ -44,6 +45,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   String _selectedRange = 'All'; // Day, Week, Month, Year, All
   DateTime _startDate = DateTime(2000);
   DateTime _endDate = DateTime.now();
+  double _turns = 0.0;
   StreamSubscription<String>? _uiEventSubscription;
 
   @override
@@ -128,27 +130,38 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             centerTitle: false,
             floating: false,
             title: AppStrings.appNameShort,
-            leading: Padding(
-              padding: const EdgeInsets.only(
-                  left:
-                      AppDimensions.paddingSmall + AppDimensions.paddingXSmall),
-              child: Center(
-                child: Container(
-                  width: 42,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: theme.dividerColor.withValues(alpha: 0.1),
-                      width: 1,
-                    ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(3.0),
-                    child: SvgPicture.asset(
-                      themeViewModel.isDarkMode
-                          ? SvgAppIcons.lightLogoIcon
-                          : SvgAppIcons.darkLogoIcon,
+            leading: GestureDetector(
+              onTap: () {
+                setState(() {
+                  _turns += 1;
+                });
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(
+                    left: AppDimensions.paddingSmall +
+                        AppDimensions.paddingXSmall),
+                child: AnimatedRotation(
+                  turns: _turns,
+                  duration: const Duration(seconds: 1),
+                  child: Center(
+                    child: Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: theme.dividerColor.withValues(alpha: 0.1),
+                          width: 1,
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(3.0),
+                        child: SvgPicture.asset(
+                          themeViewModel.isDarkMode
+                              ? SvgAppIcons.lightLogoIcon
+                              : SvgAppIcons.darkLogoIcon,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -157,38 +170,50 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             actions: [
               Padding(
                 padding: const EdgeInsets.only(right: 16.0),
-                child: Stack(
-                  alignment: Alignment.topRight,
-                  children: [
-                    Container(
-                      width: 42,
-                      height: 42,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.surface.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: theme.dividerColor.withValues(alpha: 0.1),
-                          width: 1,
-                        ),
-                      ),
-                      child: const Icon(Icons.notifications_none_rounded,
-                          size: AppDimensions.iconSizeLarge),
-                    ),
-                    Positioned(
-                      top: 4,
-                      right: 4,
-                      child: Container(
-                        width: 10,
-                        height: 10,
+                child: GestureDetector(
+                  //navigate to notification page
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const DetectionHistoryPage()),
+                    );
+                  },
+                  child: Stack(
+                    alignment: Alignment.topRight,
+                    children: [
+                      Container(
+                        width: 42,
+                        height: 42,
                         decoration: BoxDecoration(
-                          color: AppColors.accentGreen,
+                          color:
+                              theme.colorScheme.surface.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                           border: Border.all(
-                              color: theme.colorScheme.surface, width: 2),
+                            color: theme.dividerColor.withValues(alpha: 0.1),
+                            width: 1,
+                          ),
+                        ),
+                        child: const Icon(Icons.notifications_none_rounded,
+                            size: AppDimensions.iconSizeLarge),
+                      ),
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: Container(
+                          width: 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: AppColors.accentGreen,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                                color: theme.colorScheme.surface, width: 2),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],

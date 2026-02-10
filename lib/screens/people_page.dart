@@ -238,42 +238,45 @@ class _PeopleTabState extends State<PeopleTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.dmSans(
-              fontSize: ResponsiveUtils.getResponsiveFontSize(context,
-                  mobile: 13, tablet: 15, desktop: 17),
-              fontWeight: FontWeight.w600,
-              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.9),
-            ),
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 5),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon,
-                  color: color,
-                  size: ResponsiveUtils.getResponsiveIconSize(context,
-                      mobile: 18, tablet: 22, desktop: 26)),
-              const SizedBox(width: 5),
-              Flexible(
-                child: Text(
-                  '₹${amount.toStringAsFixed(2)}',
-                  style: GoogleFonts.dmSans(
-                    fontSize: ResponsiveUtils.getResponsiveFontSize(context,
-                        mobile: AppTypography.fontSizeLarge - 3,
-                        tablet: AppTypography.fontSizeLarge,
-                        desktop: AppTypography.fontSizeXLarge),
-                    fontWeight: AppTypography.fontWeightBold,
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon,
                     color: color,
-                  ),
-                  overflow: TextOverflow.ellipsis,
+                    size: ResponsiveUtils.getResponsiveIconSize(context,
+                        mobile: 14, tablet: 16, desktop: 18)),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: GoogleFonts.dmSans(
+                  fontSize: ResponsiveUtils.getResponsiveFontSize(context,
+                      mobile: 12, tablet: 14, desktop: 16),
+                  fontWeight: FontWeight.w600,
+                  color:
+                      theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '₹${amount.toStringAsFixed(2)}',
+            style: GoogleFonts.dmSans(
+              fontSize: ResponsiveUtils.getResponsiveFontSize(context,
+                  mobile: 20, tablet: 24, desktop: 28),
+              fontWeight: FontWeight.w800,
+              color: color,
+              letterSpacing: -0.5,
+            ),
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -299,12 +302,11 @@ class _PeopleTabState extends State<PeopleTab> {
         slivers: [
           GlassAppBar(title: AppStrings.people, centerTitle: true),
 
-          // NEW: Conditional Sliver for Total Debit and Credit Summary
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
               child: ModernCard(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(24),
                 child: Column(
                   children: [
                     Row(
@@ -317,9 +319,19 @@ class _PeopleTabState extends State<PeopleTab> {
                           icon: Icons.arrow_downward_rounded,
                         ),
                         Container(
-                          height: 40,
-                          width: 1,
-                          color: theme.dividerColor.withValues(alpha: 0.1),
+                          height: 48,
+                          width: 1.5,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                theme.dividerColor.withValues(alpha: 0.0),
+                                theme.dividerColor.withValues(alpha: 0.1),
+                                theme.dividerColor.withValues(alpha: 0.0),
+                              ],
+                            ),
+                          ),
                           margin: const EdgeInsets.symmetric(horizontal: 16),
                         ),
                         _buildSummaryInfo(
@@ -340,22 +352,63 @@ class _PeopleTabState extends State<PeopleTab> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: TextField(
-                onChanged: (val) =>
-                    setState(() => _searchQuery = val.toLowerCase()),
-                decoration: InputDecoration(
-                  hintText: AppStrings.searchPeople,
-                  prefixIcon: const Icon(Icons.search),
-                  filled: true,
-                  fillColor: theme.colorScheme.surface,
-                  border: OutlineInputBorder(
-                    borderRadius:
-                        BorderRadius.circular(AppDimensions.borderRadiusMedium),
-                    borderSide: BorderSide.none,
+              child: Container(
+                height: 54,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface.withValues(alpha: 0.5),
+                  borderRadius:
+                      BorderRadius.circular(AppDimensions.borderRadiusFull),
+                  border: Border.all(
+                    color: theme.dividerColor.withValues(alpha: 0.1),
+                    width: 1,
                   ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                 ),
-                style: GoogleFonts.dmSans(),
+                child: Row(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(6.0),
+                      child: Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          color:
+                              theme.colorScheme.primary.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.search_rounded,
+                          color: theme.colorScheme.primary,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: TextField(
+                        onChanged: (val) =>
+                            setState(() => _searchQuery = val.toLowerCase()),
+                        decoration: InputDecoration(
+                          hintText: AppStrings.searchPeople,
+                          hintStyle: GoogleFonts.dmSans(
+                            fontSize: AppTypography.fontSizeSmall,
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.4),
+                          ),
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          filled: false,
+                          contentPadding:
+                              const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        style: GoogleFonts.dmSans(
+                          fontSize: AppTypography.fontSizeSmall,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -387,6 +440,7 @@ class _PeopleTabState extends State<PeopleTab> {
                     final total =
                         personViewModel.getTotalForPerson(person.name);
                     final isPositive = total >= 0;
+
                     return ZoomTapAnimation(
                       onTap: () {
                         HapticFeedback.selectionClick();
@@ -399,47 +453,69 @@ class _PeopleTabState extends State<PeopleTab> {
                       },
                       child: ModernCard(
                         padding: const EdgeInsets.all(12),
+                        color: theme.colorScheme.surface,
                         child: Row(
                           children: [
-                            Container(
-                              width: ResponsiveUtils.getResponsiveIconSize(
-                                  context,
-                                  mobile: 48,
-                                  tablet: 56,
-                                  desktop: 64),
-                              height: ResponsiveUtils.getResponsiveIconSize(
-                                  context,
-                                  mobile: 48,
-                                  tablet: 56,
-                                  desktop: 64),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: person.photoPath == null
-                                    ? theme.colorScheme.primary
-                                        .withValues(alpha: 0.1)
-                                    : Colors.transparent,
-                                border: Border.all(
-                                  color: theme.colorScheme.primary
-                                      .withValues(alpha: 0.2),
-                                  width: 1,
+                            Stack(
+                              children: [
+                                Container(
+                                  width: ResponsiveUtils.getResponsiveIconSize(
+                                      context,
+                                      mobile: 48,
+                                      tablet: 56,
+                                      desktop: 64),
+                                  height: ResponsiveUtils.getResponsiveIconSize(
+                                      context,
+                                      mobile: 48,
+                                      tablet: 56,
+                                      desktop: 64),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: person.photoPath == null
+                                        ? theme.colorScheme.primary
+                                            .withValues(alpha: 0.1)
+                                        : Colors.transparent,
+                                    border: Border.all(
+                                      color: theme.colorScheme.primary
+                                          .withValues(alpha: 0.1),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: person.photoPath != null
+                                      ? ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                              AppDimensions.borderRadiusFull),
+                                          child: person.photoPath!
+                                                  .startsWith('assets/')
+                                              ? Image.asset(person.photoPath!,
+                                                  fit: BoxFit.cover)
+                                              : Image.file(
+                                                  File(person.photoPath!),
+                                                  fit: BoxFit.cover,
+                                                ),
+                                        )
+                                      : Icon(Icons.person_rounded,
+                                          color: theme.colorScheme.primary,
+                                          size: 24),
                                 ),
-                              ),
-                              child: person.photoPath != null
-                                  ? ClipRRect(
-                                      borderRadius: BorderRadius.circular(
-                                          AppDimensions.borderRadiusXLarge),
-                                      child: person.photoPath!
-                                              .startsWith('assets/')
-                                          ? Image.asset(person.photoPath!,
-                                              fit: BoxFit.cover)
-                                          : Image.file(
-                                              File(person.photoPath!),
-                                              fit: BoxFit.cover,
-                                            ),
-                                    )
-                                  : Icon(Icons.person,
-                                      color: theme.colorScheme.primary,
-                                      size: 24),
+                                Positioned(
+                                  right: 0,
+                                  bottom: 0,
+                                  child: Container(
+                                    width: 14,
+                                    height: 14,
+                                    decoration: BoxDecoration(
+                                      color: isPositive
+                                          ? AppColors.accentGreen
+                                          : AppColors.accentRed,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                          color: theme.colorScheme.surface,
+                                          width: 2),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -450,19 +526,14 @@ class _PeopleTabState extends State<PeopleTab> {
                                   Text(
                                     person.name,
                                     style: GoogleFonts.dmSans(
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w700,
                                       fontSize:
                                           ResponsiveUtils.getResponsiveFontSize(
                                               context,
-                                              mobile:
-                                                  AppTypography.fontSizeSmall +
-                                                      1,
-                                              tablet:
-                                                  AppTypography.fontSizeMedium +
-                                                      1,
-                                              desktop:
-                                                  AppTypography.fontSizeLarge -
-                                                      1),
+                                              mobile: 15,
+                                              tablet: 17,
+                                              desktop: 19),
+                                      color: theme.colorScheme.onSurface,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -473,11 +544,10 @@ class _PeopleTabState extends State<PeopleTab> {
                                         ? AppStrings.youWillGet
                                         : AppStrings.youWillGive,
                                     style: GoogleFonts.dmSans(
-                                      fontSize:
-                                          AppTypography.fontSizeXSmall - 1,
-                                      color: Colors.grey,
-                                      fontWeight:
-                                          AppTypography.fontWeightSemiBold,
+                                      fontSize: 11,
+                                      color: theme.colorScheme.onSurface
+                                          .withValues(alpha: 0.5),
+                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
                                 ],
