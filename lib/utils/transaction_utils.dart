@@ -5,9 +5,8 @@ class TransactionUtils {
   static Map<String, List<Transaction>> groupTransactionsByDate(
       List<Transaction> txns) {
     final Map<String, List<Transaction>> grouped = {};
-    // Sort transactions by date descending before grouping
-    final sortedTxns = List<Transaction>.from(txns)
-      ..sort((a, b) => b.date.compareTo(a.date));
+    // Respect input order (pre-sorted by ViewModel)
+    final sortedTxns = txns;
 
     for (final tx in sortedTxns) {
       final dateKey =

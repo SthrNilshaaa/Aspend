@@ -24,4 +24,6 @@ class AppTypography {
   static const FontWeight fontWeightBlack = FontWeight.w900;
 
   static const String legacyFontFamily = 'NFont';
+
+  static const String bayanFontFamily = 'BayaN';
 }

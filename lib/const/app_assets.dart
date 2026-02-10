@@ -15,9 +15,10 @@ class SvgAppIcons {
   static const String incomeIcon = 'assets/icons/increasegraph.svg';
   static const String expenseIcon = 'assets/icons/down_graph.svg';
   static const String searchIcon = 'assets/icons/seach_icon.svg';
-  static const String filterIcon = 'assets/icons/category_select.svg';
+  static const String filterIcon = 'assets/icons/filter_icon.svg';
   static const String walletIcon = 'assets/icons/Vector.svg';
   static const String lightLogoIcon = 'assets/icons/Light_logo_AppBar.svg';
   static const String darkLogoIcon = 'assets/icons/Dark_logo_AppBar.svg';
-  
+   static const String notificationLogoIcon = 'assets/icons/notification.svg';
+
 }

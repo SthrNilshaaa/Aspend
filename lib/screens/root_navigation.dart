@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:provider/provider.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import '../view_models/theme_view_model.dart';
@@ -146,29 +147,25 @@ class _RootNavigationState extends State<RootNavigation>
                     children: _screens,
                   ),
                   if (!isLargeScreen) ...[
+
                     Positioned(
-                      bottom: 18,
-                      left: 18,
-                      right: 18,
-                      height: 60,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            width: 1,
-                            color: isDark
-                                ? Colors.white.withValues(alpha: 0.1)
-                                : Colors.black.withValues(alpha: 0.1),
-                          ),
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(40),
-                          child: BackdropFilter(
-                            filter: ImageFilter.blur(sigmaY: 8, sigmaX: 8),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: theme.scaffoldBackgroundColor
-                                    .withValues(alpha: 0.1),
+                      bottom: 30,
+                      left: 60,
+                      right: 60,
+                      height: 70,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(40),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                          child: Container(
+
+                            decoration: BoxDecoration(
+                              color: theme.primaryColor
+                                  .withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(40),
+                              border: Border.all(
+                                color: theme.primaryColor.withValues(alpha: 0.5),
+                                width: 0.5,
                               ),
                             ),
                           ),
@@ -176,15 +173,16 @@ class _RootNavigationState extends State<RootNavigation>
                       ),
                     ),
                     Positioned(
-                      bottom: 18,
-                      left: 22,
-                      right: 22,
-                      height: 60,
+                      bottom: 30,
+                      left: 65,
+                      right: 60,
+                      height: 70,
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        // crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          _buildBNBItem(Icons.home_outlined, 0, 'Home'),
+                          _buildBNBItem(Icons.home, 0, 'Home'),
                           _buildBNBItem(Icons.person, 1, 'People'),
                           _buildBNBItem(Icons.auto_graph, 2, 'Charts'),
                           _buildBNBItem(Icons.settings_outlined, 3, 'Settings'),
@@ -200,23 +198,127 @@ class _RootNavigationState extends State<RootNavigation>
       ),
     );
   }
+  // Widget _buildBNBItem(IconData icon, int index, String label) {
+  //   final isSelected = _selectedIndex == index;
+  //   final theme = Theme.of(context);
+  //
+  //   return ZoomTapAnimation(
+  //     onTap: () => _onItemTapped(index),
+  //     child: AnimatedContainer(
+  //       duration: const Duration(milliseconds: 300),
+  //       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+  //       decoration: BoxDecoration(
+  //         borderRadius: BorderRadius.circular(32),
+  //       ),
+  //       child: isSelected
+  //           ? LiquidGlassLayer(
+  //         settings:const LiquidGlassSettings(
+  //           thickness: 50,
+  //           blur: 2,
+  //           lightAngle: 4
+  //         ),
+  //             child: LiquidGlass(
+  //                       shape:const LiquidRoundedSuperellipse(
+  //               borderRadius: 32),
+  //                       child: Container(
+  //             padding:
+  //             const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+  //             decoration: BoxDecoration(
+  //               color:
+  //               theme.colorScheme.primary.withValues(alpha: 0.11),
+  //               // borderRadius: BorderRadius.circular(32),
+  //               // border: Border.all(
+  //               //   color: theme.colorScheme.primary.withValues(alpha: 0.4),
+  //               //   width: 0.6,
+  //               // ),
+  //             ),
+  //             child: Column(
+  //               mainAxisSize: MainAxisSize.min,
+  //               children: [
+  //                 AnimatedSwitcher(
+  //                   duration: const Duration(milliseconds: 300),
+  //                   child: Icon(
+  //                     icon,
+  //                     key: ValueKey(isSelected),
+  //                     color: isSelected
+  //                         ? theme.colorScheme.primary
+  //                         : Colors.grey.shade500,
+  //                     size: isSelected ? 22 : 20,
+  //                   ),
+  //                 ),
+  //                 SizedBox(height: 4),
+  //                 AnimatedDefaultTextStyle(
+  //                   duration: const Duration(milliseconds: 300),
+  //                   style: TextStyle(
+  //                     color: isSelected
+  //                         ? theme.colorScheme.primary
+  //                         : Colors.grey.shade600,
+  //                     fontSize: isSelected
+  //                         ?12
+  //                         :10,
+  //                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+  //                   ),
+  //                   child: Text(label),
+  //                 ),
+  //
+  //               ],
+  //             ),
+  //                       ),
+  //                     ),
+  //           )
+  //           : Column(
+  //         mainAxisSize: MainAxisSize.min,
+  //         children: [
+  //           AnimatedSwitcher(
+  //             duration: const Duration(milliseconds: 400),
+  //             child: Icon(
+  //               icon,
+  //               key: ValueKey(isSelected),
+  //               color: isSelected
+  //                   ? theme.colorScheme.primary
+  //                   : Colors.grey.shade500,
+  //               size: isSelected ? 22 : 20,
+  //             ),
+  //           ),
+  //           SizedBox(height: 4),
+  //           AnimatedDefaultTextStyle(
+  //             duration: const Duration(milliseconds: 400),
+  //             style: TextStyle(
+  //               color: isSelected
+  //                   ? theme.colorScheme.primary
+  //                   : Colors.grey.shade600,
+  //               fontSize: isSelected
+  //                   ?12
+  //                   :10,
+  //               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+  //             ),
+  //             child: Text(label),
+  //           ),
+  //
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
+//
   Widget _buildBNBItem(IconData icon, int index, String label) {
     final isSelected = _selectedIndex == index;
     final theme = Theme.of(context);
     return AnimatedContainer(
       alignment: Alignment.center,
       padding:
-          EdgeInsets.symmetric(vertical: 8, horizontal: isSelected ? 10 : 15),
-      duration: const Duration(milliseconds: 200),
+          EdgeInsets.symmetric(vertical: 6, horizontal:2),
+      duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
       child: ZoomTapAnimation(
         onTap: () => _onItemTapped(index),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 0),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
+             borderRadius: BorderRadius.circular(36),
+            // shape: BoxShape.circle,
             color: isSelected
                 ? theme.colorScheme.primary.withValues(alpha: 0.2)
                 : Colors.transparent,
@@ -236,38 +338,39 @@ class _RootNavigationState extends State<RootNavigation>
                   ]
                 : null,
           ),
-          child: Row(
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
+                duration: const Duration(milliseconds: 300),
                 child: Icon(
                   icon,
                   key: ValueKey(isSelected),
                   color: isSelected
                       ? theme.colorScheme.primary
-                      : Colors.grey.shade600,
-                  size: isSelected ? 22 : 20,
+                      : Colors.grey.shade500,
+                  size: isSelected ? 22 : 22,
                 ),
               ),
-              if (isSelected) ...[
-                const SizedBox(width: 6),
+                SizedBox(height: 4),
                 AnimatedDefaultTextStyle(
-                  duration: const Duration(milliseconds: 200),
+                  duration: const Duration(milliseconds: 400),
                   style: TextStyle(
                     color: isSelected
                         ? theme.colorScheme.primary
                         : Colors.grey.shade600,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
+                    fontSize: isSelected
+                    ?12
+                    :12,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                   ),
                   child: Text(label),
                 ),
-              ],
+
             ],
           ),
-        ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

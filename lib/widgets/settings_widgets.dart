@@ -88,7 +88,7 @@ class SettingTile extends StatelessWidget {
       elevation: 0,
       color: primaryColor.withValues(alpha: 0.05),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusMedium),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusLarge),
         side: BorderSide(
           color: primaryColor.withValues(alpha: 0.1),
           width: 1,

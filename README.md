@@ -34,8 +34,6 @@ flutter pub get
 flutter run
 ````
 
----
-
 ## 📚 Flutter Resources
 
 If you're new to Flutter, here are some helpful links:

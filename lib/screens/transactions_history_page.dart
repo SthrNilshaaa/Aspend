@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import '../view_models/transaction_view_model.dart';
 import '../view_models/theme_view_model.dart';
+import '../widgets/range_selector.dart';
 import '../widgets/transaction_tile.dart';
 import '../widgets/glass_app_bar.dart';
 import '../utils/transaction_utils.dart';
@@ -13,7 +14,6 @@ import '../const/app_dimensions.dart';
 import '../const/app_typography.dart';
 import '../const/app_assets.dart';
 import '../const/app_strings.dart';
-import '../models/transaction.dart';
 
 class TransactionsHistoryPage extends StatefulWidget {
   const TransactionsHistoryPage({super.key});
@@ -25,15 +25,52 @@ class TransactionsHistoryPage extends StatefulWidget {
 
 class _TransactionsHistoryPageState extends State<TransactionsHistoryPage> {
   String? _searchQuery;
-  List<Transaction>? _filteredTransactions;
+  // String? _searchQuery; // Handled by state
+  // List<Transaction>? _filteredTransactions; // Removing to ensure reactivity
+  String _selectedRange = 'All';
+
+  void _updateDateRange() {
+    // This now just triggers a rebuild
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final transactionViewModel = context.watch<TransactionViewModel>();
+    final allSorted = transactionViewModel.sortedTransactions;
 
-    final rawTxns =
-        _filteredTransactions ?? transactionViewModel.sortedTransactions;
+    DateTime? startDate;
+    final now = DateTime.now();
+
+    switch (_selectedRange) {
+      case 'Day':
+        startDate = DateTime(now.year, now.month, now.day);
+        break;
+      case 'Week':
+        startDate = now.subtract(Duration(days: now.weekday - 1));
+        startDate = DateTime(startDate.year, startDate.month, startDate.day);
+        break;
+      case 'Month':
+        startDate = DateTime(now.year, now.month, 1);
+        break;
+      case 'Year':
+        startDate = DateTime(now.year, 1, 1);
+        break;
+      case 'All':
+      default:
+        startDate = null;
+    }
+
+    final rawTxns = allSorted.where((t) {
+      final matchesRange = startDate == null ||
+          t.date.isAfter(startDate!.subtract(const Duration(seconds: 1)));
+      final matchesSearch = _searchQuery == null ||
+          t.note.toLowerCase().contains(_searchQuery!.toLowerCase()) ||
+          t.category.toLowerCase().contains(_searchQuery!.toLowerCase());
+      return matchesRange && matchesSearch;
+    }).toList();
+
     final grouped = TransactionUtils.groupTransactionsByDate(rawTxns);
 
     return Scaffold(
@@ -45,6 +82,9 @@ class _TransactionsHistoryPageState extends State<TransactionsHistoryPage> {
           ),
           SliverToBoxAdapter(
             child: _buildSearchSection(context),
+          ),
+          SliverToBoxAdapter(
+            child: _buildRangeSelector(context),
           ),
           if (rawTxns.isEmpty)
             const SliverFillRemaining(
@@ -94,6 +134,19 @@ class _TransactionsHistoryPageState extends State<TransactionsHistoryPage> {
             ),
         ],
       ),
+    );
+  }
+
+  Widget _buildRangeSelector(BuildContext context) {
+    return RangeSelector(
+      ranges: const ['All', 'Day', 'Week', 'Month', 'Year'],
+      selectedRange: _selectedRange,
+      onRangeSelected: (range) {
+        setState(() {
+          _selectedRange = range;
+          _updateDateRange();
+        });
+      },
     );
   }
 
@@ -154,16 +207,11 @@ class _TransactionsHistoryPageState extends State<TransactionsHistoryPage> {
                   Expanded(
                     child: TextField(
                       onChanged: (val) {
-                        final query = val.toLowerCase();
                         setState(() {
-                          _searchQuery = query.isEmpty ? null : query;
-                          _filteredTransactions = query.isEmpty
+                          _searchQuery = val.toLowerCase().isEmpty
                               ? null
-                              : transactionViewModel.transactions
-                                  .where((t) =>
-                                      t.note.toLowerCase().contains(query) ||
-                                      t.category.toLowerCase().contains(query))
-                                  .toList();
+                              : val.toLowerCase();
+                          _updateDateRange();
                         });
                       },
                       decoration: InputDecoration(
@@ -186,7 +234,7 @@ class _TransactionsHistoryPageState extends State<TransactionsHistoryPage> {
                                 onPressed: () {
                                   setState(() {
                                     _searchQuery = null;
-                                    _filteredTransactions = null;
+                                    _updateDateRange();
                                   });
                                 },
                               )

@@ -35,12 +35,14 @@ class GlassAppBar extends StatelessWidget {
       backgroundColor: Colors.transparent,
       actions: actions,
       leading: leading,
+      leadingWidth: 70,
+      titleSpacing: 4,
       centerTitle: centerTitle,
       title: Text(
         title,
         style: GoogleFonts.dmSans(
           fontSize: ResponsiveUtils.getResponsiveFontSize(context,
-              mobile: 24, tablet: 24, desktop: 28),
+              mobile: 32, tablet: 24, desktop: 28),
           fontWeight: FontWeight.bold,
           color: theme.colorScheme.onSurface,
         ),

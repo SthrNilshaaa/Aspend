@@ -71,7 +71,7 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
-          GlassAppBar(
+          const GlassAppBar(
             title: AppStrings.analytics,
             centerTitle: true,
           ),
@@ -79,7 +79,7 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
               child: SizedBox(height: AppDimensions.paddingLarge)),
           SliverToBoxAdapter(
             child: RangeSelector(
-              ranges: const ['Day', 'Week', 'Month', 'Year'],
+              ranges: const ['All','Day', 'Week', 'Month', 'Year'],
               selectedRange: _selectedRange,
               onRangeSelected: (range) {
                 setState(() {

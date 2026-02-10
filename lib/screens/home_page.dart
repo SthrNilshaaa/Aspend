@@ -1,7 +1,11 @@
+import 'dart:ui';
+
 import 'package:aspends_tracker/screens/detection_history_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
@@ -13,7 +17,6 @@ import '../widgets/transaction_tile.dart';
 import '../widgets/balance_card.dart';
 import '../widgets/add_transaction_dialog.dart';
 import '../widgets/glass_app_bar.dart';
-import '../widgets/range_selector.dart';
 import '../widgets/empty_state_view.dart';
 import '../widgets/glass_action_button.dart';
 import '../utils/responsive_utils.dart';
@@ -41,7 +44,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late ScrollController _scrollController;
   bool _showFab = true;
   String? _searchQuery;
-  List<Transaction>? _filteredTransactions;
   String _selectedRange = 'All'; // Day, Week, Month, Year, All
   DateTime _startDate = DateTime(2000);
   DateTime _endDate = DateTime.now();
@@ -54,11 +56,37 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     _scrollController = ScrollController();
     _scrollController.addListener(() {
       if (!_scrollController.hasClients) return;
-      final atTop = _scrollController.position.pixels <= 0;
-      final shouldShowFab =
-          atTop || context.read<TransactionViewModel>().transactions.isEmpty;
-      if (shouldShowFab != _showFab) {
-        setState(() => _showFab = shouldShowFab);
+
+      final position = _scrollController.position;
+      final atTop = position.pixels <= 0;
+
+      // Pull to rotate leading icon proportionally
+      if (position.pixels < 0) {
+        setState(() {
+          _turns = -position.pixels / 100; // Direct mapping instead of -=
+        });
+      } else if (_turns != 0) {
+        setState(() {
+          _turns = 0;
+        });
+      }
+
+      final scrollingUp =
+          position.userScrollDirection == ScrollDirection.forward;
+      final scrollingDown =
+          position.userScrollDirection == ScrollDirection.reverse;
+      final isEmpty = context.read<TransactionViewModel>().transactions.isEmpty;
+
+      bool nextShowFab = _showFab;
+
+      if (isEmpty || atTop || scrollingUp) {
+        nextShowFab = true;
+      } else if (scrollingDown) {
+        nextShowFab = false;
+      }
+
+      if (nextShowFab != _showFab) {
+        setState(() => _showFab = nextShowFab);
       }
     });
 
@@ -96,6 +124,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  void _restorePosistion() {}
+
   void _showAddTransactionDialog({required bool isIncome}) {
     showModalBottomSheet(
       context: context,
@@ -111,12 +141,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     final themeViewModel = context.watch<ThemeViewModel>();
     final transactionViewModel = context.watch<TransactionViewModel>();
 
-    final rawTxns =
-        _filteredTransactions ?? transactionViewModel.sortedTransactions;
-
-    final txns = _selectedRange == 'All'
-        ? rawTxns
-        : transactionViewModel.getTransactionsInRange(_startDate, _endDate);
+    final txns = transactionViewModel.sortedTransactions.where((t) {
+      final matchesSearch = _searchQuery == null ||
+          t.note.toLowerCase().contains(_searchQuery!) ||
+          t.category.toLowerCase().contains(_searchQuery!);
+      final matchesRange = _selectedRange == 'All' ||
+          (t.date.isAfter(_startDate.subtract(const Duration(seconds: 1))) &&
+              t.date.isBefore(_endDate.add(const Duration(days: 1))));
+      return matchesSearch && matchesRange;
+    }).toList();
 
     final grouped = TransactionUtils.groupTransactionsByDate(txns);
 
@@ -139,14 +172,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               child: Padding(
                 padding: const EdgeInsets.only(
                     left: AppDimensions.paddingSmall +
-                        AppDimensions.paddingXSmall),
+                        AppDimensions.paddingSmall),
                 child: AnimatedRotation(
                   turns: _turns,
+                  onEnd: _restorePosistion,
                   duration: const Duration(seconds: 1),
                   child: Center(
                     child: Container(
-                      width: 42,
-                      height: 42,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
@@ -155,7 +187,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         ),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.all(3.0),
+                        padding: const EdgeInsets.all(4.0),
                         child: SvgPicture.asset(
                           themeViewModel.isDarkMode
                               ? SvgAppIcons.lightLogoIcon
@@ -184,8 +216,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     alignment: Alignment.topRight,
                     children: [
                       Container(
-                        width: 42,
-                        height: 42,
+                        width: 50,
+                        height: 50,
                         decoration: BoxDecoration(
                           color:
                               theme.colorScheme.surface.withValues(alpha: 0.1),
@@ -195,23 +227,29 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             width: 1,
                           ),
                         ),
-                        child: const Icon(Icons.notifications_none_rounded,
-                            size: AppDimensions.iconSizeLarge),
-                      ),
-                      Positioned(
-                        top: 4,
-                        right: 4,
-                        child: Container(
-                          width: 10,
-                          height: 10,
-                          decoration: BoxDecoration(
-                            color: AppColors.accentGreen,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                                color: theme.colorScheme.surface, width: 2),
+                        child: Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: SvgPicture.asset(
+                             SvgAppIcons.notificationLogoIcon,
+                            colorFilter: ColorFilter.mode(
+                                theme.colorScheme.onSurface, BlendMode.srcIn),
                           ),
                         ),
                       ),
+                      // Positioned(
+                      //   top: 4,
+                      //   right: 4,
+                      //   child: Container(
+                      //     width: 12,
+                      //     height: 12,
+                      //     decoration: BoxDecoration(
+                      //       color: AppColors.accentGreen,
+                      //       shape: BoxShape.circle,
+                      //       border: Border.all(
+                      //           color: theme.colorScheme.surface, width: 2),
+                      //     ),
+                      //   ),
+                      // ),
                     ],
                   ),
                 ),
@@ -233,14 +271,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       AppDimensions.paddingXLarge * 2.5)),
         ],
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: _showFab ? _buildDualFab(theme) : null,
     );
-  }
-
-  void _updateDateRange() {
-    final range = TransactionUtils.getDateRange(_selectedRange);
-    _startDate = range.$1;
-    _endDate = range.$2;
   }
 
   Widget _buildBalanceSection(
@@ -291,7 +324,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           const SizedBox(height: AppDimensions.paddingXSmall),
           _buildSearchSection(context),
           //
-          const SizedBox(height: AppDimensions.paddingStandard),
+          const SizedBox(height: AppDimensions.paddingXSmall),
           Padding(
             padding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.paddingStandard,
@@ -345,10 +378,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ],
             ),
           ),
-
-          const SizedBox(height: AppDimensions.paddingXSmall),
-          _buildRangeSelector(context),
-          const SizedBox(height: AppDimensions.paddingStandard),
         ],
       ),
     );
@@ -356,7 +385,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Widget _buildSearchSection(BuildContext context) {
     final theme = Theme.of(context);
-    final transactionViewModel = context.watch<TransactionViewModel>();
     final isDark = context.watch<ThemeViewModel>().isDarkMode;
 
     return Padding(
@@ -371,7 +399,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               decoration: BoxDecoration(
                 color: isDark
                     ? Colors.white.withValues(alpha: 0.05)
-                    : Colors.black.withValues(alpha: 0.05),
+                    // : Colors.black.withValues(alpha: 0.05),
+                    : Colors.white.withValues(alpha: 0.2),
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadiusFull),
                 border: Border.all(
@@ -411,16 +440,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   Expanded(
                     child: TextField(
                       onChanged: (val) {
-                        final query = val.toLowerCase();
                         setState(() {
-                          _searchQuery = query.isEmpty ? null : query;
-                          _filteredTransactions = query.isEmpty
+                          _searchQuery = val.trim().isEmpty
                               ? null
-                              : transactionViewModel.transactions
-                                  .where((t) =>
-                                      t.note.toLowerCase().contains(query) ||
-                                      t.category.toLowerCase().contains(query))
-                                  .toList();
+                              : val.trim().toLowerCase();
                         });
                       },
                       //transaparnt search bar
@@ -444,7 +467,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 onPressed: () {
                                   setState(() {
                                     _searchQuery = null;
-                                    _filteredTransactions = null;
                                   });
                                 },
                               )
@@ -472,7 +494,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               decoration: BoxDecoration(
                 color: isDark
                     ? Colors.white.withValues(alpha: 0.05)
-                    : Colors.black.withValues(alpha: 0.05),
+                    : Colors.white.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: theme.dividerColor.withValues(alpha: 0.1),
@@ -480,12 +502,22 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 ),
               ),
               child: Center(
-                child: SvgPicture.asset(
-                  SvgAppIcons.filterIcon,
-                  colorFilter: ColorFilter.mode(
-                      theme.colorScheme.primary, BlendMode.srcIn),
-                  width: 20,
-                  height: 20,
+                child: Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: SvgPicture.asset(
+                      SvgAppIcons.filterIcon,
+                      colorFilter: ColorFilter.mode(
+                          theme.colorScheme.primary, BlendMode.srcIn),
+                      width: 16,
+                      height: 16,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -574,19 +606,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildRangeSelector(BuildContext context) {
-    return RangeSelector(
-      ranges: const ['All', 'Day', 'Week', 'Month', 'Year'],
-      selectedRange: _selectedRange,
-      onRangeSelected: (range) {
-        setState(() {
-          _selectedRange = range;
-          _updateDateRange();
-        });
-      },
-    );
-  }
-
   Widget _buildTransactionList(Map<String, List<Transaction>> grouped,
       ThemeData theme, bool useAdaptive) {
     return SliverPadding(
@@ -601,7 +620,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
             return Padding(
               padding:
-                  const EdgeInsets.only(bottom: AppDimensions.paddingLarge),
+                  const EdgeInsets.only(bottom: AppDimensions.paddingXLarge),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -622,14 +641,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ),
                     ),
                   ),
-                  ...dayTxs.asMap().entries.map((entry) => Padding(
-                        padding: const EdgeInsets.only(
-                            bottom: AppDimensions.paddingSmall),
-                        child: TransactionTile(
+                  ...dayTxs.asMap().entries.map(
+                        (entry) => TransactionTile(
                           transaction: entry.value,
                           index: entry.key,
                         ),
-                      )),
+                      ),
                 ],
               ),
             );
@@ -717,17 +734,22 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Widget _buildDualFab(ThemeData theme) {
     return GlassFab(
+      marginBottom: 75,
       children: [
-        GlassActionButton(
-          icon: SvgAppIcons.incomeIcon,
-          color: AppColors.accentGreen,
-          onTap: () => _showAddTransactionDialog(isIncome: true),
+        ClipOval(
+          child: GlassActionButton(
+            icon: SvgAppIcons.incomeIcon,
+            color: AppColors.accentGreen,
+            onTap: () => _showAddTransactionDialog(isIncome: true),
+          ),
         ),
         const SizedBox(width: 8),
-        GlassActionButton(
-          icon: SvgAppIcons.expenseIcon,
-          color: AppColors.accentRed,
-          onTap: () => _showAddTransactionDialog(isIncome: false),
+        ClipOval(
+          child: GlassActionButton(
+            icon: SvgAppIcons.expenseIcon,
+            color: AppColors.accentRed,
+            onTap: () => _showAddTransactionDialog(isIncome: false),
+          ),
         ),
       ],
     );

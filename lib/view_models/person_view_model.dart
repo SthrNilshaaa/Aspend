@@ -3,11 +3,19 @@ import '../models/person.dart';
 import '../models/person_transaction.dart';
 import '../repositories/person_repository.dart';
 
+enum PersonSortOption {
+  nameAZ,
+  nameZA,
+  balanceHighest,
+  balanceLowest,
+}
+
 class PersonViewModel with ChangeNotifier {
   final PersonRepository _repository;
 
   List<Person> _people = [];
   List<PersonTransaction> _transactions = [];
+  PersonSortOption _sortOption = PersonSortOption.nameAZ;
 
   // Memoization
   Map<String, List<PersonTransaction>>? _cachedGroupedByPerson;
@@ -20,6 +28,36 @@ class PersonViewModel with ChangeNotifier {
   }
 
   List<Person> get people => _people;
+
+  PersonSortOption get currentSortOption => _sortOption;
+
+  void setSortOption(PersonSortOption option) {
+    _sortOption = option;
+    notifyListeners();
+  }
+
+  List<Person> get sortedPeople {
+    final list = List<Person>.from(_people);
+    switch (_sortOption) {
+      case PersonSortOption.nameAZ:
+        list.sort(
+            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+        break;
+      case PersonSortOption.nameZA:
+        list.sort(
+            (a, b) => b.name.toLowerCase().compareTo(a.name.toLowerCase()));
+        break;
+      case PersonSortOption.balanceHighest:
+        list.sort((a, b) =>
+            getTotalForPerson(b.name).compareTo(getTotalForPerson(a.name)));
+        break;
+      case PersonSortOption.balanceLowest:
+        list.sort((a, b) =>
+            getTotalForPerson(a.name).compareTo(getTotalForPerson(b.name)));
+        break;
+    }
+    return list;
+  }
 
   List<PersonTransaction> get allTransactions {
     if (_isDirty) {

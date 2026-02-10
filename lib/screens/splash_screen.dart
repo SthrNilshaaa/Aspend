@@ -175,10 +175,7 @@ class _SplashScreenState extends State<SplashScreen>
           AnimatedBuilder(
             animation: Listenable.merge([_entryController, _exitController]),
             builder: (context, child) {
-              double currentScale =
-                  _showExitAnimation ? _exitScale.value : _entryScale.value;
-              double currentRotation =
-                  _showExitAnimation ? _exitRotation.value : 0;
+
               double currentFade =
                   _showExitAnimation ? _exitFade.value : _entryFade.value;
 
@@ -209,37 +206,31 @@ class _SplashScreenState extends State<SplashScreen>
                         children: [
                           // Icon perfectly centered
                           Center(
-                            child: Transform.scale(
-                              scale: currentScale,
-                              child: Transform.rotate(
-                                angle: currentRotation * 3.14159,
-                                child: SlideTransition(
-                                  position: _entrySlide,
-                                  child: SvgPicture.asset(
-                                    // isDarkMode
-                                    //     ? 
-                                        SvgAppIcons.lightLogoIcon,
-                                        // : SvgAppIcons.darkLogoIcon,
-                                    height:
-                                        ResponsiveUtils.getResponsiveIconSize(
-                                            context,
-                                            mobile:
-                                                AppDimensions.splashLogoMobile,
-                                            tablet:
-                                                AppDimensions.splashLogoTablet,
-                                            desktop: AppDimensions
-                                                .splashLogoDesktop),
-                                    width:
-                                        ResponsiveUtils.getResponsiveIconSize(
-                                            context,
-                                            mobile:
-                                                AppDimensions.splashLogoMobile,
-                                            tablet:
-                                                AppDimensions.splashLogoTablet,
-                                            desktop: AppDimensions
-                                                .splashLogoDesktop),
-                                  ),
-                                ),
+                            child: SlideTransition(
+                              position: _entrySlide,
+                              child: SvgPicture.asset(
+                                // isDarkMode
+                                //     ?
+                                    SvgAppIcons.lightLogoIcon,
+                                    // : SvgAppIcons.darkLogoIcon,
+                                height:
+                                    ResponsiveUtils.getResponsiveIconSize(
+                                        context,
+                                        mobile:
+                                            AppDimensions.splashLogoMobile,
+                                        tablet:
+                                            AppDimensions.splashLogoTablet,
+                                        desktop: AppDimensions
+                                            .splashLogoDesktop),
+                                width:
+                                    ResponsiveUtils.getResponsiveIconSize(
+                                        context,
+                                        mobile:
+                                            AppDimensions.splashLogoMobile,
+                                        tablet:
+                                            AppDimensions.splashLogoTablet,
+                                        desktop: AppDimensions
+                                            .splashLogoDesktop),
                               ),
                             ),
                           ),

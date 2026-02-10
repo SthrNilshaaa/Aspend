@@ -19,6 +19,7 @@ class AppDimensions {
   static const double paddingXXLarge = 48.0;
 
   static const double iconSizeSmall = 18.0;
+  static const double iconSizeXSmall = 14.0;
   static const double iconSizeMedium = 20.0;
   static const double iconSizeLarge = 24.0;
   static const double iconSizeXLarge = 28.0;

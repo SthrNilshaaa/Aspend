@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
-//import 'package:flutter/rendering.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:ui';
 import 'dart:io';
+import '../const/app_assets.dart';
 import '../models/person.dart';
 import '../view_models/person_view_model.dart';
+import '../view_models/theme_view_model.dart';
 import '../person/person_details_page.dart';
 import '../utils/responsive_utils.dart';
 import '../widgets/modern_card.dart';
@@ -29,7 +32,7 @@ class PeopleTab extends StatefulWidget {
 class _PeopleTabState extends State<PeopleTab> {
   late ScrollController _scrollController;
   bool _showFab = true;
-  String _searchQuery = '';
+  String? _searchQuery;
 
   @override
   void initState() {
@@ -39,14 +42,26 @@ class _PeopleTabState extends State<PeopleTab> {
     _scrollController.addListener(() {
       if (!_scrollController.hasClients) return;
 
-      final atTop = _scrollController.position.pixels <= 0;
+      final position = _scrollController.position;
+      final atTop = position.pixels <= 0;
       final people = context.read<PersonViewModel>().people;
       final isEmpty = people.isEmpty;
-      final shouldShowFab = atTop || isEmpty;
 
-      // Only update state if there's an actual change
-      if (shouldShowFab != _showFab) {
-        setState(() => _showFab = shouldShowFab);
+      final scrollingUp =
+          position.userScrollDirection == ScrollDirection.forward;
+      final scrollingDown =
+          position.userScrollDirection == ScrollDirection.reverse;
+
+      bool nextShowFab = _showFab;
+
+      if (isEmpty || atTop || scrollingUp) {
+        nextShowFab = true;
+      } else if (scrollingDown) {
+        nextShowFab = false;
+      }
+
+      if (nextShowFab != _showFab) {
+        setState(() => _showFab = nextShowFab);
       }
     });
   }
@@ -286,9 +301,11 @@ class _PeopleTabState extends State<PeopleTab> {
   @override
   Widget build(BuildContext context) {
     final personViewModel = context.watch<PersonViewModel>();
-    final allPeople = personViewModel.people;
-    final people = allPeople
-        .where((p) => p.name.toLowerCase().contains(_searchQuery))
+    final allSortedPeople = personViewModel.sortedPeople;
+    final people = allSortedPeople
+        .where((p) =>
+            _searchQuery == null ||
+            p.name.toLowerCase().contains(_searchQuery!.toLowerCase()))
         .toList();
     final theme = Theme.of(context);
     final double totalYouGet = personViewModel.overallTotalRent;
@@ -300,7 +317,12 @@ class _PeopleTabState extends State<PeopleTab> {
         controller: _scrollController,
         physics: const BouncingScrollPhysics(),
         slivers: [
-          GlassAppBar(title: AppStrings.people, centerTitle: true),
+          GlassAppBar(
+            title: AppStrings.people,
+
+            centerTitle: true,
+
+          ),
 
           SliverToBoxAdapter(
             child: Padding(
@@ -350,67 +372,7 @@ class _PeopleTabState extends State<PeopleTab> {
           ),
 
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Container(
-                height: 54,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surface.withValues(alpha: 0.5),
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusFull),
-                  border: Border.all(
-                    color: theme.dividerColor.withValues(alpha: 0.1),
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(6.0),
-                      child: Container(
-                        width: 42,
-                        height: 42,
-                        decoration: BoxDecoration(
-                          color:
-                              theme.colorScheme.primary.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.search_rounded,
-                          color: theme.colorScheme.primary,
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: TextField(
-                        onChanged: (val) =>
-                            setState(() => _searchQuery = val.toLowerCase()),
-                        decoration: InputDecoration(
-                          hintText: AppStrings.searchPeople,
-                          hintStyle: GoogleFonts.dmSans(
-                            fontSize: AppTypography.fontSizeSmall,
-                            color: theme.colorScheme.onSurface
-                                .withValues(alpha: 0.4),
-                          ),
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          filled: false,
-                          contentPadding:
-                              const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        style: GoogleFonts.dmSans(
-                          fontSize: AppTypography.fontSizeSmall,
-                          color: theme.colorScheme.onSurface,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            child: _buildSearchSection(context),
           ),
 
           if (people.isEmpty)
@@ -588,15 +550,226 @@ class _PeopleTabState extends State<PeopleTab> {
               child: SizedBox(height: 80)), // Your existing SizedBox
         ],
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: people.isEmpty
           ? _buildAddPersonFab(context)
           : (_showFab ? _buildAddPersonFab(context) : null),
-      // floatingActionButtonLocation is not specified in your code, so FAB will use default.
-      // If you had it before (e.g. FloatingActionButtonLocation.centerFloat), you can add it back.
     );
   }
 
-  // This method is PRESERVED EXACTLY AS YOU PROVIDED IT
+  Widget _buildSearchSection(BuildContext context) {
+    final theme = Theme.of(context);
+    final themeViewModel = context.watch<ThemeViewModel>();
+    final isDark = themeViewModel.isDarkMode;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppDimensions.paddingStandard,
+          vertical: AppDimensions.paddingSmall),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              height: 54,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface.withValues(alpha: 0.5),
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadiusFull),
+                border: Border.all(
+                  color: theme.dividerColor.withValues(alpha: 0.1),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(6.0),
+                    child: Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: SvgPicture.asset(
+                          SvgAppIcons.searchIcon,
+                          colorFilter: ColorFilter.mode(
+                              theme.colorScheme.primary, BlendMode.srcIn),
+                          width: 25,
+                          height: 25,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Container(
+                    width: 1,
+                    height: 24,
+                    color: theme.dividerColor.withValues(alpha: 0.2),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextField(
+                      onChanged: (val) {
+                        setState(() {
+                          _searchQuery = val.trim().isEmpty ? null : val.trim();
+                        });
+                      },
+                      decoration: InputDecoration(
+                        hintText: AppStrings.searchPeople,
+                        hintStyle: GoogleFonts.dmSans(
+                          fontSize: AppTypography.fontSizeSmall,
+                          color:
+                              theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                        ),
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        filled: false,
+                        contentPadding:
+                            const EdgeInsets.symmetric(vertical: 12),
+                        suffixIcon: _searchQuery != null
+                            ? IconButton(
+                                icon: const Icon(Icons.clear, size: 18),
+                                onPressed: () {
+                                  setState(() {
+                                    _searchQuery = null;
+                                  });
+                                },
+                              )
+                            : null,
+                      ),
+                      style: GoogleFonts.dmSans(
+                        fontSize: AppTypography.fontSizeSmall,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          ZoomTapAnimation(
+            onTap: () {
+              HapticFeedback.mediumImpact();
+              _showSortDialog(context);
+            },
+            child: Container(
+              width: 54,
+              height: 54,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : Colors.white.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: theme.dividerColor.withValues(alpha: 0.1),
+                  width: 1,
+                ),
+              ),
+              child: Center(
+                child: Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: SvgPicture.asset(
+                      SvgAppIcons.filterIcon,
+                      colorFilter: ColorFilter.mode(
+                          theme.colorScheme.primary, BlendMode.srcIn),
+                      width: 16,
+                      height: 16,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSortDialog(BuildContext context) {
+    final theme = Theme.of(context);
+    final vm = context.read<PersonViewModel>();
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(AppDimensions.borderRadiusXLarge)),
+        ),
+        padding: const EdgeInsets.all(AppDimensions.paddingLarge),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: theme.dividerColor.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Sort By',
+              style: GoogleFonts.dmSans(
+                fontSize: AppTypography.fontSizeLarge,
+                fontWeight: AppTypography.fontWeightBold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildSortOption(context, 'Name (A-Z)', PersonSortOption.nameAZ, vm),
+            _buildSortOption(context, 'Name (Z-A)', PersonSortOption.nameZA, vm),
+            _buildSortOption(context, 'Balance (Highest)',
+                PersonSortOption.balanceHighest, vm),
+            _buildSortOption(context, 'Balance (Lowest)',
+                PersonSortOption.balanceLowest, vm),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSortOption(BuildContext context, String title,
+      PersonSortOption option, PersonViewModel vm) {
+    final theme = Theme.of(context);
+    final isSelected = vm.currentSortOption == option;
+
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      title: Text(
+        title,
+        style: GoogleFonts.dmSans(
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          color: isSelected
+              ? theme.colorScheme.primary
+              : theme.colorScheme.onSurface,
+        ),
+      ),
+      trailing: isSelected
+          ? Icon(Icons.check_circle_rounded, color: theme.colorScheme.primary)
+          : null,
+      onTap: () {
+        vm.setSortOption(option);
+        Navigator.pop(context);
+      },
+    );
+  }
+
   Widget _buildAddPersonFab(BuildContext context) {
     final theme = Theme.of(context);
     return ZoomTapAnimation(
@@ -605,7 +778,7 @@ class _PeopleTabState extends State<PeopleTab> {
         HapticFeedback.lightImpact();
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 60),
+        margin: const EdgeInsets.only(bottom: 80),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(28),
           child: BackdropFilter(
