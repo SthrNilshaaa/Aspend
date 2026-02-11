@@ -228,7 +228,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           ),
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.all(10.0),
+                          padding: const EdgeInsets.all(13.0),
                           child: SvgPicture.asset(
                              SvgAppIcons.notificationLogoIcon,
                             colorFilter: ColorFilter.mode(
@@ -257,6 +257,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ],
           ),
           _buildBalanceSection(context, transactionViewModel),
+          SliverPersistentHeader(
+
+            pinned: true,
+            delegate: HomeHeaderDelegate(
+              // minHeight: 150,
+              // maxHeight: 150,
+              height: 160,
+              child: _buildPinnedHeader(context),
+            ),
+          ),
           if (txns.isNotEmpty)
             _buildTransactionList(
                 grouped, theme, themeViewModel.useAdaptiveColor)
@@ -276,10 +286,72 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildBalanceSection(
-      BuildContext context, TransactionViewModel viewModel) {
-    final isLargeScreen = !ResponsiveUtils.isMobile(context);
+  Widget _buildPinnedHeader(BuildContext context) {
+    final theme = Theme.of(context);
+    return ClipRRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+        child: Container(
+          decoration: BoxDecoration(
+            // gradient: LinearGradient(
+            //   begin: Alignment.topCenter,
+            //   end: Alignment.bottomCenter,
+            //   colors: [
+            //     theme.colorScheme.primary.withValues(alpha: 0.15),
+            //     theme.colorScheme.surface.withValues(alpha: 0.15),
+            //   ],
+            // ),
+            color: theme.colorScheme.surface.withValues(alpha: 0.15),
+        ),
+          child: Column(
+            children: [
+              const SizedBox(height: 10),
+              _buildDragHandle(context),
+              const SizedBox(height: AppDimensions.paddingXSmall),
+              _buildSearchSection(context),
+              const SizedBox(height: AppDimensions.paddingXSmall),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppDimensions.paddingStandard,
+                  vertical: AppDimensions.paddingSmall,
+                ),
+                child: _buildTransactionHeaderRow(context),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+  Widget _buildTransactionHeaderRow(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          AppStrings.transactionsTitle,
+          style: GoogleFonts.dmSans(
+            fontSize: AppTypography.fontSizeSubHeader,
+            fontWeight: AppTypography.fontWeightBold,
+          ),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const TransactionsHistoryPage(),
+              ),
+            );
+          },
+          child: const Text(AppStrings.viewAllLabel),
+        ),
+      ],
+    );
+  }
 
+
+  Widget _buildBalanceSection(BuildContext context, TransactionViewModel viewModel) {
+    final isLargeScreen = !ResponsiveUtils.isMobile(context);
     return SliverToBoxAdapter(
       child: Column(
         children: [
@@ -317,66 +389,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       _buildBudgetProgress(context, viewModel),
                     ],
                   ),
-          ),
-
-          _buildDragHandle(context),
-
-          const SizedBox(height: AppDimensions.paddingXSmall),
-          _buildSearchSection(context),
-          //
-          const SizedBox(height: AppDimensions.paddingXSmall),
-          Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.paddingStandard,
-                vertical: AppDimensions.paddingSmall),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  AppStrings.transactionsTitle,
-                  style: GoogleFonts.dmSans(
-                    fontSize: AppTypography.fontSizeSubHeader,
-                    fontWeight: AppTypography.fontWeightBold,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
-                TextButton(
-                  onPressed: () {
-                    HapticFeedback.lightImpact();
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              const TransactionsHistoryPage()),
-                    );
-                  },
-                  child: Row(
-                    children: [
-                      Text(
-                        AppStrings.viewAllLabel,
-                        style: GoogleFonts.dmSans(
-                          fontSize: AppTypography.fontSizeSmall,
-                          fontWeight: AppTypography.fontWeightMedium,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withValues(alpha: 0.7),
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Icon(
-                        Icons.arrow_forward_rounded,
-                        size: AppDimensions.iconSizeMedium,
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withValues(alpha: 0.7),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
           ),
         ],
       ),
@@ -853,5 +865,86 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ),
       ),
     );
+  }
+}
+// class HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
+//   final double minHeight;
+//   final double maxHeight;
+//   final Widget child;
+//
+//   HomeHeaderDelegate({
+//     required this.minHeight,
+//     required this.maxHeight,
+//     required this.child,
+//   });
+//
+//   @override
+//   double get minExtent => minHeight;
+//
+//   @override
+//   double get maxExtent => maxHeight;
+//
+//   @override
+//   Widget build(
+//       BuildContext context, double shrinkOffset, bool overlapsContent) {
+//     return SizedBox.expand(child: child);
+//   }
+//
+//   @override
+//   bool shouldRebuild(HomeHeaderDelegate oldDelegate) {
+//     return maxHeight != oldDelegate.maxHeight ||
+//         minHeight != oldDelegate.minHeight ||
+//         child != oldDelegate.child;
+//   }
+// }
+
+class HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final double height;
+  final Widget child;
+
+  HomeHeaderDelegate({
+    required this.height,
+    required this.child,
+  });
+
+  @override
+  double get minExtent => height;
+
+  @override
+  double get maxExtent => height;
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    final theme = Theme.of(context);
+
+    return Column(
+
+      children: [
+        /// 👇 Show blur ONLY when overlapping (scroll started)
+        if (overlapsContent)
+            Container(
+            decoration: BoxDecoration(
+              // gradient: LinearGradient(
+              //   begin: Alignment.topCenter,
+              //   end: Alignment.bottomCenter,
+              //   colors: [
+              //     theme.colorScheme.primary.withValues(alpha: 0.15),
+              //     theme.colorScheme.surface.withValues(alpha: 0.15),
+              //   ],
+              // ),
+              color: theme.colorScheme.surface.withValues(alpha: 0.15),
+            ),
+          ),
+
+        /// Always show header content
+        child,
+      ],
+    );
+  }
+
+  @override
+  bool shouldRebuild(HomeHeaderDelegate oldDelegate) {
+    return height != oldDelegate.height || child != oldDelegate.child;
   }
 }

@@ -118,8 +118,8 @@ class _RootNavigationState extends State<RootNavigation>
                   label: Text('Home'),
                 ),
                 NavigationRailDestination(
-                  icon: Icon(Icons.person_outline),
-                  selectedIcon: Icon(Icons.person),
+                  icon: Icon(Icons.group_outlined),
+                  selectedIcon: Icon(Icons.group),
                   label: Text('People'),
                 ),
                 NavigationRailDestination(
@@ -165,7 +165,7 @@ class _RootNavigationState extends State<RootNavigation>
                               borderRadius: BorderRadius.circular(40),
                               border: Border.all(
                                 color: theme.primaryColor.withValues(alpha: 0.5),
-                                width: 0.5,
+                                width: 1,
                               ),
                             ),
                           ),
@@ -183,7 +183,7 @@ class _RootNavigationState extends State<RootNavigation>
                         // crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           _buildBNBItem(Icons.home, 0, 'Home'),
-                          _buildBNBItem(Icons.person, 1, 'People'),
+                          _buildBNBItem(Icons.group, 1, 'People'),
                           _buildBNBItem(Icons.auto_graph, 2, 'Charts'),
                           _buildBNBItem(Icons.settings_outlined, 3, 'Settings'),
                         ],
@@ -320,7 +320,7 @@ class _RootNavigationState extends State<RootNavigation>
              borderRadius: BorderRadius.circular(36),
             // shape: BoxShape.circle,
             color: isSelected
-                ? theme.colorScheme.primary.withValues(alpha: 0.2)
+                ? theme.colorScheme.primary.withValues(alpha: 0.4)
                 : Colors.transparent,
             border: isSelected
                 ? Border.all(
@@ -331,7 +331,7 @@ class _RootNavigationState extends State<RootNavigation>
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                      color: theme.colorScheme.surface.withValues(alpha: 0.5),
                       blurRadius: 8,
                       offset: const Offset(0, 5),
                     ),
@@ -348,8 +348,9 @@ class _RootNavigationState extends State<RootNavigation>
                   key: ValueKey(isSelected),
                   color: isSelected
                       ? theme.colorScheme.primary
-                      : Colors.grey.shade500,
-                  size: isSelected ? 22 : 22,
+                      : Colors.grey.shade700,
+                  //size: isSelected ? 22 : 22,
+                  size: 22,
                 ),
               ),
                 SizedBox(height: 4),
@@ -359,9 +360,10 @@ class _RootNavigationState extends State<RootNavigation>
                     color: isSelected
                         ? theme.colorScheme.primary
                         : Colors.grey.shade600,
-                    fontSize: isSelected
-                    ?12
-                    :12,
+                    // fontSize: isSelected
+                    // ?12
+                    // :12,
+                    fontSize: 12,
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                   ),
                   child: Text(label),

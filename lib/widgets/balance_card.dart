@@ -194,8 +194,8 @@ class _BalanceCardState extends State<BalanceCard>
                                           : const ColorFilter.mode(
                                               AppColors.accentGreen,
                                               BlendMode.srcIn),
-                                      width: AppDimensions.iconSizeLarge,
-                                      height: AppDimensions.iconSizeLarge,
+                                      width: AppDimensions.iconSizeMedium,
+                                      height: AppDimensions.iconSizeMedium,
                                     ),
                                   ),
                                 ),
