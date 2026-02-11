@@ -13,6 +13,7 @@ import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import '../models/transaction.dart';
 import '../view_models/theme_view_model.dart';
 import '../view_models/transaction_view_model.dart';
+import '../widgets/header_delegate.dart';
 import '../widgets/transaction_tile.dart';
 import '../widgets/balance_card.dart';
 import '../widgets/add_transaction_dialog.dart';
@@ -897,54 +898,3 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 //         child != oldDelegate.child;
 //   }
 // }
-
-class HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
-  final double height;
-  final Widget child;
-
-  HomeHeaderDelegate({
-    required this.height,
-    required this.child,
-  });
-
-  @override
-  double get minExtent => height;
-
-  @override
-  double get maxExtent => height;
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    final theme = Theme.of(context);
-
-    return Column(
-
-      children: [
-        /// 👇 Show blur ONLY when overlapping (scroll started)
-        if (overlapsContent)
-            Container(
-            decoration: BoxDecoration(
-              // gradient: LinearGradient(
-              //   begin: Alignment.topCenter,
-              //   end: Alignment.bottomCenter,
-              //   colors: [
-              //     theme.colorScheme.primary.withValues(alpha: 0.15),
-              //     theme.colorScheme.surface.withValues(alpha: 0.15),
-              //   ],
-              // ),
-              color: theme.colorScheme.surface.withValues(alpha: 0.15),
-            ),
-          ),
-
-        /// Always show header content
-        child,
-      ],
-    );
-  }
-
-  @override
-  bool shouldRebuild(HomeHeaderDelegate oldDelegate) {
-    return height != oldDelegate.height || child != oldDelegate.child;
-  }
-}

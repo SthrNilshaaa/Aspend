@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppDimensions {
   static const double borderRadiusLarge = 24.0;
+  static const double borderRadiusMinLarge = 22.0;
   static const double borderRadiusMedium = 16.0;
   static const double borderRadiusRegular = 18.0;
   static const double borderRadiusSmall = 12.0;

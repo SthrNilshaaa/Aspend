@@ -20,5 +20,6 @@ class SvgAppIcons {
   static const String lightLogoIcon = 'assets/icons/Light_logo_AppBar.svg';
   static const String darkLogoIcon = 'assets/icons/Dark_logo_AppBar.svg';
    static const String notificationLogoIcon = 'assets/icons/notification.svg';
+ static const String backButtonIcon = 'assets/icons/back_button.svg';
 
 }

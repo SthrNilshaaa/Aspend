@@ -28,10 +28,10 @@ class AppStrings {
   static const String editPerson = 'Edit Person';
   static const String addPhoto = 'Add Photo';
   static const String personName = 'Person Name';
-  static const String youGet = 'You Get';
-  static const String youGive = 'You Give';
-  static const String youWillGet = 'You will get';
-  static const String youWillGive = 'You will give';
+  static const String youGet = 'You Own';
+  static const String youGive = 'You Borrow';
+  static const String youWillGet = 'You will Own';
+  static const String youWillGive = 'You will Borrow';
   static const String noPeopleYet = 'No people added yet';
   static const String searchPeople = 'Search people...';
   static const String enterNameHint =

@@ -124,178 +124,184 @@ class _BalanceCardState extends State<BalanceCard>
         child: FadeTransition(
           opacity: _fadeAnimation,
           child: ClipRRect(
-            child: Stack(children: [
-              Container(
-                margin: const EdgeInsets.symmetric(
-                    vertical: AppDimensions.paddingSmall),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color:borderColor,
-                    width: 1.4,
-                    style: BorderStyle.solid,
-                  ),
-                  borderRadius:
-                      BorderRadius.circular(AppDimensions.borderRadiusXLarge),
-                  color: backgroundColor,
+            child: Stack(
+                children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: AppDimensions.paddingTiny,
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.paddingLarge,
-                    vertical: AppDimensions.paddingLarge - 5,
+                child: Container(
+                  margin: const EdgeInsets.symmetric(
+                      vertical: AppDimensions.paddingSmall),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color:borderColor,
+                      width: 1.4,
+                      style: BorderStyle.solid,
+                    ),
+                    borderRadius:
+                        BorderRadius.circular(AppDimensions.borderRadiusXLarge),
+                    color: backgroundColor,
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        // spacing: -15,
-                        children: [
-                          Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppDimensions.paddingLarge,
+                      vertical: AppDimensions.paddingSmall,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          // spacing: -15,
+                          children: [
+                            Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    AppStrings.totalBalanceLabel,
+                                    style: GoogleFonts.dmSans(
+                                      fontSize: AppTypography.fontSizeLarge,
+                                      fontWeight: AppTypography.fontWeightMedium,
+                                      color: isDark
+                                          ? Colors.white.withValues(alpha: 0.9)
+                                          : Colors.black.withValues(alpha: 0.9),
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      HapticFeedback.lightImpact();
+                                      _showEditBalanceDialog(context, isDark);
+                                    },
+                                    child: Container(
+                                      width: AppDimensions.avatarSizeStandard,
+                                      height: AppDimensions.avatarSizeStandard,
+                                      padding: const EdgeInsets.all(
+                                          AppDimensions.paddingSmall),
+                                      decoration: BoxDecoration(
+                                        color: backgroundColor.withValues(
+                                            alpha: 0.4),
+                                        borderRadius: BorderRadius.circular(
+                                            AppDimensions.borderRadiusFull),
+                                        border: Border.all(
+                                          color: isNegative
+                                              ? AppColors.accentRed
+                                              : AppColors.accentGreen,
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: SvgPicture.asset(
+                                        SvgAppIcons.editIcon,
+                                        colorFilter: isNegative
+                                            ? const ColorFilter.mode(
+                                                AppColors.accentRed,
+                                                BlendMode.srcIn)
+                                            : const ColorFilter.mode(
+                                                AppColors.accentGreen,
+                                                BlendMode.srcIn),
+                                        width: AppDimensions.iconSizeMedium,
+                                        height: AppDimensions.iconSizeMedium,
+                                      ),
+                                    ),
+                                  ),
+                                ]),
+                            // const SizedBox(
+                            //     height: AppDimensions.paddingXSmall),
+                            Row(
                               children: [
-                                Text(
-                                  AppStrings.totalBalanceLabel,
-                                  style: GoogleFonts.dmSans(
-                                    fontSize: AppTypography.fontSizeLarge,
-                                    fontWeight: AppTypography.fontWeightMedium,
-                                    color: isDark
-                                        ? Colors.white.withValues(alpha: 0.9)
-                                        : Colors.black.withValues(alpha: 0.9),
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () {
-                                    HapticFeedback.lightImpact();
-                                    _showEditBalanceDialog(context, isDark);
-                                  },
-                                  child: Container(
-                                    width: AppDimensions.avatarSizeStandard,
-                                    height: AppDimensions.avatarSizeStandard,
-                                    padding: const EdgeInsets.all(
-                                        AppDimensions.paddingSmall),
-                                    decoration: BoxDecoration(
-                                      color: backgroundColor.withValues(
-                                          alpha: 0.4),
-                                      borderRadius: BorderRadius.circular(
-                                          AppDimensions.borderRadiusFull),
-                                      border: Border.all(
-                                        color: isNegative
-                                            ? AppColors.accentRed
-                                            : AppColors.accentGreen,
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: SvgPicture.asset(
-                                      SvgAppIcons.editIcon,
-                                      colorFilter: isNegative
-                                          ? const ColorFilter.mode(
-                                              AppColors.accentRed,
-                                              BlendMode.srcIn)
-                                          : const ColorFilter.mode(
-                                              AppColors.accentGreen,
-                                              BlendMode.srcIn),
-                                      width: AppDimensions.iconSizeMedium,
-                                      height: AppDimensions.iconSizeMedium,
-                                    ),
-                                  ),
-                                ),
-                              ]),
-                          // const SizedBox(
-                          //     height: AppDimensions.paddingXSmall),
-                          Row(
-                            children: [
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: '₹',
-                                      style: GoogleFonts.dmSans(
-                                        fontSize: 35,
-                                        fontWeight:
-                                            AppTypography.fontWeightBlack,
-                                        color: isDark
-                                            ? Colors.white
-                                                .withValues(alpha: 0.9)
-                                            : Colors.black
-                                                .withValues(alpha: 0.9),
-                                      ),
-                                    ),
-                                    const TextSpan(text: '  '),
-                                    TextSpan(
-                                      children: [
-                                        // Integer part (55)
-                                        TextSpan(
-                                          text: integerPart,
-                                          style: GoogleFonts.bayon(
-                                            fontSize: 55,
-                                            fontWeight:
-                                                AppTypography.fontWeightBold,
-                                            color: isNegative
-                                                ? AppColors.accentRed
-                                                : AppColors.accentGreen,
-                                            letterSpacing: 1,
-                                          ),
+                                RichText(
+                                  text: TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: '₹',
+                                        style: GoogleFonts.dmSans(
+                                          fontSize: 35,
+                                          fontWeight:
+                                              AppTypography.fontWeightBlack,
+                                          color: isDark
+                                              ? Colors.white
+                                                  .withValues(alpha: 0.9)
+                                              : Colors.black
+                                                  .withValues(alpha: 0.9),
                                         ),
+                                      ),
+                                      const TextSpan(text: '  '),
+                                      TextSpan(
+                                        children: [
+                                          // Integer part (55)
+                                          TextSpan(
+                                            text: integerPart,
+                                            style: GoogleFonts.bayon(
+                                              fontSize: 55,
+                                              fontWeight:
+                                                  AppTypography.fontWeightBold,
+                                              color: isNegative
+                                                  ? AppColors.accentRed
+                                                  : AppColors.accentGreen,
+                                              letterSpacing: 1,
+                                            ),
+                                          ),
 
-                                        // Decimal point + decimals (35)
-                                        TextSpan(
-                                          text: '.$decimalPart',
-                                          style: GoogleFonts.bayon(
-                                            fontSize: 35,
-                                            fontWeight:
-                                                AppTypography.fontWeightBold,
-                                            color: isNegative
-                                                ? AppColors.accentRed
-                                                : AppColors.accentGreen,
-                                            letterSpacing: 1,
+                                          // Decimal point + decimals (35)
+                                          TextSpan(
+                                            text: '.$decimalPart',
+                                            style: GoogleFonts.bayon(
+                                              fontSize: 35,
+                                              fontWeight:
+                                                  AppTypography.fontWeightBold,
+                                              color: isNegative
+                                                  ? AppColors.accentRed
+                                                  : AppColors.accentGreen,
+                                              letterSpacing: 1,
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        // const SizedBox(height: AppDimensions.paddingSmall),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildModernStatItem(
+                                AppStrings.incomeLabel,
+                                totalIncome,
+                                SvgAppIcons.incomeIcon,
+                                AppColors.accentGreen,
+                                isDark,
                               ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      // const SizedBox(height: AppDimensions.paddingSmall),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildModernStatItem(
-                              AppStrings.incomeLabel,
-                              totalIncome,
-                              SvgAppIcons.incomeIcon,
-                              AppColors.accentGreen,
-                              isDark,
                             ),
-                          ),
-                          Container(
-                            height: AppDimensions.avatarSizeStandard,
-                            width: 1,
-                            color: Colors.white.withValues(alpha: 0.2),
-                            margin: const EdgeInsets.symmetric(
-                                horizontal: AppDimensions.paddingStandard),
-                          ),
-                          Expanded(
-                            child: _buildModernStatItem(
-                              AppStrings.expenseLabel,
-                              totalExpenses,
-                              SvgAppIcons.expenseIcon,
-                              AppColors.accentRed,
-                              isDark,
+                            Container(
+                              height: AppDimensions.avatarSizeStandard,
+                              width: 1,
+                              color: Colors.white.withValues(alpha: 0.2),
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: AppDimensions.paddingStandard),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                            Expanded(
+                              child: _buildModernStatItem(
+                                AppStrings.expenseLabel,
+                                totalExpenses,
+                                SvgAppIcons.expenseIcon,
+                                AppColors.accentRed,
+                                isDark,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
               // Thin decorative line at the bottom
               Positioned(
-                bottom: 4,
+                bottom: 0,
                 left: 35,
                 right: 35,
                 child: Container(
@@ -315,7 +321,7 @@ class _BalanceCardState extends State<BalanceCard>
               Positioned(
                 left: 35,
                 right: 35,
-                top: 4,
+                top: 0,
                 child: Container(
                   height: 4,
                   decoration: BoxDecoration(

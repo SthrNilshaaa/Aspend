@@ -31,6 +31,7 @@ class GlassAppBar extends StatelessWidget {
       expandedHeight: ResponsiveUtils.isMobile(context) ? 70 : 80,
       floating: floating,
       pinned: true,
+      scrolledUnderElevation: 0.0,
       elevation: 0,
       backgroundColor: Colors.transparent,
       actions: actions,
