@@ -21,6 +21,15 @@ class TransactionViewModel with ChangeNotifier {
   double _bal = 0;
   SortOption _sort = SortOption.dateNewest;
   bool _joinPrev = true;
+
+  // Filtering state
+  String? _searchQuery;
+  String _selectedRange = 'All';
+
+  // Memoization
+  List<Transaction>? _cachedFilteredTransactions;
+  Map<DateTime, List<Transaction>>? _cachedGroupedTransactions;
+
   StreamSubscription? _sub, _balSub, _setSub;
 
   TransactionViewModel(this._repository, this._settings) {
@@ -45,6 +54,7 @@ class TransactionViewModel with ChangeNotifier {
   void _load() {
     _txs = _repository.getAllTransactions();
     _bal = _repository.getCurrentBalance();
+    _markDirty();
     notifyListeners();
     _updateHW();
   }
@@ -53,6 +63,25 @@ class TransactionViewModel with ChangeNotifier {
     _joinPrev = _settings.getJoinPreviousMonthBalance();
     notifyListeners();
     _updateHW();
+  }
+
+  // Filtering Getters & Setters
+  String? get searchQuery => _searchQuery;
+  String get selectedRange => _selectedRange;
+
+  void setSearchQuery(String? query) {
+    final newQuery = query?.toLowerCase().trim();
+    if (_searchQuery == newQuery) return;
+    _searchQuery = newQuery?.isEmpty == true ? null : newQuery;
+    _markDirty();
+    notifyListeners();
+  }
+
+  void setSelectedRange(String range) {
+    if (_selectedRange == range) return;
+    _selectedRange = range;
+    _markDirty();
+    notifyListeners();
   }
 
   double get totalBalance {
@@ -68,7 +97,9 @@ class TransactionViewModel with ChangeNotifier {
   SortOption get currentSortOption => _sort;
 
   void setSortOption(SortOption o) {
+    if (_sort == o) return;
     _sort = o;
+    _markDirty();
     notifyListeners();
   }
 
@@ -76,17 +107,20 @@ class TransactionViewModel with ChangeNotifier {
     _sort = (_sort == SortOption.dateNewest)
         ? SortOption.dateOldest
         : SortOption.dateNewest;
+    _markDirty();
     notifyListeners();
   }
 
   Future<void> addTransaction(Transaction t) async {
     await _repository.addTransaction(t);
     await _updateBal(t.amount, t.isIncome);
+    _load();
   }
 
   Future<void> deleteTransaction(Transaction t) async {
     await _updateBal(-t.amount, t.isIncome);
     await _repository.deleteTransaction(t.key);
+    _load();
   }
 
   Future<void> updateTransaction(Transaction old, Transaction next) async {
@@ -94,6 +128,7 @@ class TransactionViewModel with ChangeNotifier {
         (old.isIncome ? old.amount : -old.amount);
     await updateBalance(_bal + d);
     await _repository.updateTransaction(old.key, next);
+    _load();
   }
 
   Future<void> updateBalance(double nb) async {
@@ -112,8 +147,64 @@ class TransactionViewModel with ChangeNotifier {
     await _repository.clearAllData();
     _txs.clear();
     _bal = 0;
+    _markDirty();
     notifyListeners();
     _updateHW();
+  }
+
+  List<Transaction> get filteredTransactions {
+    if (_cachedFilteredTransactions != null)
+      return _cachedFilteredTransactions!;
+
+    final allSorted = sortedTransactions;
+    DateTime? startDate;
+    final now = DateTime.now();
+
+    switch (_selectedRange) {
+      case 'Day':
+        startDate = DateTime(now.year, now.month, now.day);
+        break;
+      case 'Week':
+        startDate = now.subtract(Duration(days: now.weekday - 1));
+        startDate = DateTime(startDate.year, startDate.month, startDate.day);
+        break;
+      case 'Month':
+        startDate = DateTime(now.year, now.month, 1);
+        break;
+      case 'Year':
+        startDate = DateTime(now.year, 1, 1);
+        break;
+      case 'All':
+      default:
+        startDate = null;
+    }
+
+    _cachedFilteredTransactions = allSorted.where((t) {
+      final matchesRange = startDate == null ||
+          t.date.isAfter(startDate.subtract(const Duration(seconds: 1)));
+      final matchesSearch = _searchQuery == null ||
+          t.note.toLowerCase().contains(_searchQuery!) ||
+          t.category.toLowerCase().contains(_searchQuery!);
+      return matchesRange && matchesSearch;
+    }).toList();
+
+    return _cachedFilteredTransactions!;
+  }
+
+  Map<DateTime, List<Transaction>> get groupedFilteredTransactions {
+    if (_cachedGroupedTransactions != null) return _cachedGroupedTransactions!;
+
+    final txs = filteredTransactions;
+    final grouped = <DateTime, List<Transaction>>{};
+    for (var tx in txs) {
+      final date = DateTime(tx.date.year, tx.date.month, tx.date.day);
+      if (!grouped.containsKey(date)) {
+        grouped[date] = [];
+      }
+      grouped[date]!.add(tx);
+    }
+    _cachedGroupedTransactions = grouped;
+    return _cachedGroupedTransactions!;
   }
 
   List<Transaction> get sortedTransactions {
@@ -163,6 +254,11 @@ class TransactionViewModel with ChangeNotifier {
         'transaction_count', _txs.length.toString());
     await HomeWidget.updateWidget(
         androidName: 'HomeWidgetProvider', iOSName: 'HomeWidget');
+  }
+
+  void _markDirty() {
+    _cachedFilteredTransactions = null;
+    _cachedGroupedTransactions = null;
   }
 
   @override

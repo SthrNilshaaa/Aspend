@@ -61,51 +61,40 @@ class _BalanceCardState extends State<BalanceCard>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = context.watch<ThemeViewModel>().isDarkMode;
-    final transactionViewModel = context.watch<TransactionViewModel>();
-    final totalIncome = transactionViewModel.totalIncome;
-    final totalExpenses = transactionViewModel.totalSpend;
+    // Optimized rebuilds with select
+    final isDark = context.select<ThemeViewModel, bool>((vm) => vm.isDarkMode);
+    final totalIncome =
+        context.select<TransactionViewModel, double>((vm) => vm.totalIncome);
+    final totalExpenses =
+        context.select<TransactionViewModel, double>((vm) => vm.totalSpend);
+
     final isNegative = totalIncome < totalExpenses;
 
-    Color backgroundColor;
-    Color lineColor;
-    Color borderColor;
+    final Color backgroundColor;
+    final Color lineColor;
+    final Color borderColor;
 
-    if (isNegative && isDark) {
-      backgroundColor =
-          AppColors.balanceCardDarkModeNegative; // dark + negative
-      lineColor = AppColors.balanceCardLineDarkModeNegative; // dark + negative
-      borderColor =
-          AppColors.balanceCardBorderDarkModeNegative; // dark + negative
-    } else if (isNegative) {
-      backgroundColor =
-          AppColors.balanceCardLightModeNegative; // light + negative
-      lineColor =
-          AppColors.balanceCardLineLightModeNegative; // light + negative
-      borderColor =
-          AppColors.balanceCardBorderLightModeNegative; // light + negative
-    } else if (isDark) {
-      backgroundColor =
-          AppColors.balanceCardDarkModePositive; // dark + positive
-      lineColor = AppColors.balanceCardLineDarkModePositive; // dark + positive
-      borderColor =
-          AppColors.balanceCardBorderDarkModePositive; // dark + positive
+    if (isNegative) {
+      backgroundColor = isDark
+          ? AppColors.balanceCardDarkModeNegative
+          : AppColors.balanceCardLightModeNegative;
+      lineColor = isDark
+          ? AppColors.balanceCardLineDarkModeNegative
+          : AppColors.balanceCardLineLightModeNegative;
+      borderColor = isDark
+          ? AppColors.balanceCardBorderDarkModeNegative
+          : AppColors.balanceCardBorderLightModeNegative;
     } else {
-      backgroundColor =
-          AppColors.balanceCardLightModePositive; // light + positive
-      lineColor =
-          AppColors.balanceCardLineLightModePositive; // light + positive
-      borderColor =
-          AppColors.balanceCardBorderLightModePositive; // light + positive
+      backgroundColor = isDark
+          ? AppColors.balanceCardDarkModePositive
+          : AppColors.balanceCardLightModePositive;
+      lineColor = isDark
+          ? AppColors.balanceCardLineDarkModePositive
+          : AppColors.balanceCardLineLightModePositive;
+      borderColor = isDark
+          ? AppColors.balanceCardBorderDarkModePositive
+          : AppColors.balanceCardBorderLightModePositive;
     }
-    final formatted = NumberFormat.currency(
-      symbol: '',
-      decimalDigits: 2,
-    ).format(widget.balance);
-
-    final parts = formatted.split('.');
-    final integerPart = parts[0];
-    final decimalPart = parts.length > 1 ? parts[1] : '00';
 
     return GestureDetector(
       onLongPress: () {
@@ -147,153 +136,93 @@ class _BalanceCardState extends State<BalanceCard>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    AppStrings.totalBalanceLabel,
-                                    style: GoogleFonts.dmSans(
-                                      fontSize: AppTypography.fontSizeLarge,
-                                      fontWeight:
-                                          AppTypography.fontWeightMedium,
-                                      color: isDark
-                                          ? Colors.white.withValues(alpha: 0.9)
-                                          : Colors.black.withValues(alpha: 0.9),
-                                      letterSpacing: -0.4,
-                                    ),
+                            Text(
+                              AppStrings.totalBalanceLabel,
+                              style: GoogleFonts.dmSans(
+                                fontSize: AppTypography.fontSizeLarge,
+                                fontWeight: AppTypography.fontWeightMedium,
+                                color: isDark
+                                    ? Colors.white.withValues(alpha: 0.9)
+                                    : Colors.black.withValues(alpha: 0.9),
+                                letterSpacing: -0.4,
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                HapticFeedback.lightImpact();
+                                _showEditBalanceDialog(context, isDark);
+                              },
+                              child: Container(
+                                width: AppDimensions.avatarSizeStandard,
+                                height: AppDimensions.avatarSizeStandard,
+                                padding: const EdgeInsets.all(
+                                    AppDimensions.paddingSmall),
+                                decoration: BoxDecoration(
+                                  color: backgroundColor.withValues(alpha: 0.4),
+                                  borderRadius: BorderRadius.circular(
+                                      AppDimensions.borderRadiusFull),
+                                  border: Border.all(
+                                    color: isNegative
+                                        ? AppColors.accentRed
+                                        : AppColors.accentGreen,
+                                    width: 1,
                                   ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      HapticFeedback.lightImpact();
-                                      _showEditBalanceDialog(context, isDark);
-                                    },
-                                    child: Container(
-                                      width: AppDimensions.avatarSizeStandard,
-                                      height: AppDimensions.avatarSizeStandard,
-                                      padding: const EdgeInsets.all(
-                                          AppDimensions.paddingSmall),
-                                      decoration: BoxDecoration(
-                                        color: backgroundColor.withValues(
-                                            alpha: 0.4),
-                                        borderRadius: BorderRadius.circular(
-                                            AppDimensions.borderRadiusFull),
-                                        border: Border.all(
-                                          color: isNegative
-                                              ? AppColors.accentRed
-                                              : AppColors.accentGreen,
-                                          width: 1,
-                                        ),
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(2.0),
-                                        child: SvgPicture.asset(
-                                          SvgAppIcons.editIcon,
-                                          colorFilter: isNegative
-                                              ? const ColorFilter.mode(
-                                                  AppColors.accentRed,
-                                                  BlendMode.srcIn)
-                                              : const ColorFilter.mode(
-                                                  AppColors.accentGreen,
-                                                  BlendMode.srcIn),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ]),
-                            const SizedBox(height: AppDimensions.paddingSmall),
-                            Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    RichText(
-                                      text: TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: '₹',
-                                            style: GoogleFonts.dmSans(
-                                              fontSize: 35,
-                                              fontWeight:
-                                                  AppTypography.fontWeightBlack,
-                                              color: isDark
-                                                  ? Colors.white
-                                                      .withValues(alpha: 0.9)
-                                                  : Colors.black
-                                                      .withValues(alpha: 0.9),
-                                            ),
-                                          ),
-                                          const TextSpan(text: '  '),
-                                          TextSpan(
-                                            children: [
-                                              // Integer part (55)
-                                              TextSpan(
-                                                text: integerPart,
-                                                style: GoogleFonts.bayon(
-                                                  fontSize: 55,
-                                                  height: 1,
-                                                  fontWeight: AppTypography
-                                                      .fontWeightMedium,
-                                                  color: isNegative
-                                                      ? AppColors.accentRed
-                                                      : AppColors.accentGreen,
-                                                  letterSpacing: 1,
-                                                ),
-                                              ),
-
-                                              // Decimal point + decimals (35)
-                                              TextSpan(
-                                                text: '.$decimalPart',
-                                                style: GoogleFonts.bayon(
-                                                  fontSize: 35,
-                                                  fontWeight: AppTypography
-                                                      .fontWeightMedium,
-                                                  color: isNegative
-                                                      ? AppColors.accentRed
-                                                      : AppColors.accentGreen,
-                                                  letterSpacing: 1,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
                                 ),
-                              ],
+                                child: Padding(
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: SvgPicture.asset(
+                                    SvgAppIcons.editIcon,
+                                    colorFilter: ColorFilter.mode(
+                                      isNegative
+                                          ? AppColors.accentRed
+                                          : AppColors.accentGreen,
+                                      BlendMode.srcIn,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
                           ],
+                        ),
+                        const SizedBox(height: AppDimensions.paddingSmall),
+                        CurrencyText(
+                          amount: widget.balance,
+                          isNegative: isNegative,
+                          isDark: isDark,
+                          integerSize: 55,
                         ),
                         const SizedBox(height: AppDimensions.paddingSmall),
                         Row(
                           children: [
                             Expanded(
-                              child: _buildModernStatItem(
-                                AppStrings.incomeLabel,
-                                totalIncome,
-                                SvgAppIcons.incomeIcon,
-                                AppColors.accentGreen,
-                                isDark,
+                              child: StatItem(
+                                label: AppStrings.incomeLabel,
+                                amount: totalIncome,
+                                icon: SvgAppIcons.incomeIcon,
+                                color: AppColors.accentGreen,
+                                isDark: isDark,
                               ),
                             ),
                             Container(
                               height: AppDimensions.avatar2SizeStandard,
                               width: 1,
-                              color: Colors.white.withValues(alpha: 0.5),
+                              color: isDark
+                                  ? Colors.white.withValues(alpha: 0.2)
+                                  : Colors.black.withValues(alpha: 0.1),
                               margin: const EdgeInsets.symmetric(
                                   horizontal: AppDimensions.paddingStandard),
                             ),
                             Expanded(
-                              child: _buildModernStatItem(
-                                AppStrings.expenseLabel,
-                                totalExpenses,
-                                SvgAppIcons.expenseIcon,
-                                AppColors.accentRed,
-                                isDark,
+                              child: StatItem(
+                                label: AppStrings.expenseLabel,
+                                amount: totalExpenses,
+                                icon: SvgAppIcons.expenseIcon,
+                                color: AppColors.accentRed,
+                                isDark: isDark,
                               ),
                             ),
                           ],
@@ -303,130 +232,25 @@ class _BalanceCardState extends State<BalanceCard>
                   ),
                 ),
               ),
-              // Thin decorative line at the bottom
+              // Thin decorative lines
               Positioned(
                 bottom: 3,
                 left: 50,
                 right: 50,
-                child: Container(
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: lineColor,
-                    // rounded corners only on the top
-                    borderRadius: const BorderRadius.only(
-                      bottomLeft:
-                          Radius.circular(AppDimensions.borderRadiusFull),
-                      bottomRight:
-                          Radius.circular(AppDimensions.borderRadiusFull),
-                    ),
-                  ),
-                ),
+                child: DecorativeLine(
+                    color: lineColor, position: LinePosition.bottom),
               ),
               Positioned(
                 left: 50,
                 right: 50,
                 top: 3,
-                child: Container(
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: lineColor,
-                    // rounded corners only on the top
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(AppDimensions.borderRadiusFull),
-                      topRight: Radius.circular(AppDimensions.borderRadiusFull),
-                    ),
-                  ),
-                ),
+                child: DecorativeLine(
+                    color: lineColor, position: LinePosition.top),
               ),
             ]),
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildModernStatItem(
-      String label, double amount, dynamic icon, Color color, bool isDark) {
-    final formatted = NumberFormat.currency(
-      symbol: '',
-      decimalDigits: 2,
-    ).format(amount);
-
-    final parts = formatted.split('.');
-    final integerPart = parts[0];
-    final decimalPart = parts.length > 1 ? parts[1] : '00';
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            icon is String
-                ? SvgPicture.asset(
-                    icon,
-                    colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
-                    width: AppDimensions.iconSizeXSmall,
-                    height: AppDimensions.iconSizeXSmall,
-                  )
-                : Icon(icon, color: color, size: AppDimensions.iconSizeSmall),
-            const SizedBox(width: AppDimensions.paddingSmall),
-            Text(
-              label,
-              style: GoogleFonts.dmSans(
-                fontSize: AppTypography.fontSizeMedium,
-                fontWeight: AppTypography.fontWeightMedium,
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.9)
-                    : Colors.black.withValues(alpha: 0.9),
-              ),
-            ),
-          ],
-        ),
-        RichText(
-          text: TextSpan(
-            children: [
-              TextSpan(
-                text: '₹',
-                style: GoogleFonts.dmSans(
-                  fontSize: AppTypography.fontSizeLarge,
-                  fontWeight: AppTypography.fontWeightMedium,
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.9)
-                      : Colors.black.withValues(alpha: 0.9),
-                ),
-              ),
-              const TextSpan(text: ' '),
-              TextSpan(
-                children: [
-                  // Integer part (55)
-                  TextSpan(
-                    text: integerPart,
-                    style: GoogleFonts.dmSans(
-                      fontSize: AppTypography.fontSizeLarge,
-                      fontWeight: AppTypography.fontWeightMedium,
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.9)
-                          : Colors.black.withValues(alpha: 0.9),
-                    ),
-                  ),
-
-                  // Decimal point + decimals (35)
-                  TextSpan(
-                    text: '.$decimalPart',
-                    style: GoogleFonts.dmSans(
-                      fontSize: AppTypography.fontSizeMedium,
-                      fontWeight: AppTypography.fontWeightMedium,
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.9)
-                          : Colors.black.withValues(alpha: 0.9),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-
-      ],
     );
   }
 
@@ -550,6 +374,161 @@ class _BalanceCardState extends State<BalanceCard>
             child: const Text('Save'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class CurrencyText extends StatelessWidget {
+  final double amount;
+  final bool isNegative;
+  final bool isDark;
+  final double integerSize;
+
+  const CurrencyText({
+    super.key,
+    required this.amount,
+    required this.isNegative,
+    required this.isDark,
+    required this.integerSize,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final formatted = NumberFormat.currency(
+      symbol: '',
+      decimalDigits: 2,
+    ).format(amount);
+
+    final parts = formatted.split('.');
+    final integerPart = parts[0];
+    final decimalPart = parts.length > 1 ? parts[1] : '00';
+
+    return RichText(
+      text: TextSpan(
+        children: [
+          TextSpan(
+            text: '₹',
+            style: GoogleFonts.dmSans(
+              fontSize: integerSize * 0.63,
+              fontWeight: AppTypography.fontWeightBlack,
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.9)
+                  : Colors.black.withValues(alpha: 0.9),
+            ),
+          ),
+          const TextSpan(text: '  '),
+          TextSpan(
+            text: integerPart,
+            style: GoogleFonts.bayon(
+              fontSize: integerSize,
+              height: 1,
+              fontWeight: AppTypography.fontWeightMedium,
+              color: isNegative ? AppColors.accentRed : AppColors.accentGreen,
+              letterSpacing: 1,
+            ),
+          ),
+          TextSpan(
+            text: '.$decimalPart',
+            style: GoogleFonts.bayon(
+              fontSize: integerSize * 0.63,
+              fontWeight: AppTypography.fontWeightMedium,
+              color: isNegative ? AppColors.accentRed : AppColors.accentGreen,
+              letterSpacing: 1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class StatItem extends StatelessWidget {
+  final String label;
+  final double amount;
+  final String icon;
+  final Color color;
+  final bool isDark;
+
+  const StatItem({
+    super.key,
+    required this.label,
+    required this.amount,
+    required this.icon,
+    required this.color,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            SvgPicture.asset(
+              icon,
+              colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+              width: AppDimensions.iconSizeXSmall,
+              height: AppDimensions.iconSizeXSmall,
+            ),
+            const SizedBox(width: AppDimensions.paddingSmall),
+            Text(
+              label,
+              style: GoogleFonts.dmSans(
+                fontSize: AppTypography.fontSizeMedium,
+                fontWeight: AppTypography.fontWeightMedium,
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.9)
+                    : Colors.black.withValues(alpha: 0.9),
+              ),
+            ),
+          ],
+        ),
+        CurrencyText(
+          amount: amount,
+          isNegative:
+              false, // Stats are always shown in their respective colors
+          isDark: isDark,
+          integerSize: AppTypography.fontSizeLarge + 2,
+        ),
+      ],
+    );
+  }
+}
+
+enum LinePosition { top, bottom }
+
+class DecorativeLine extends StatelessWidget {
+  final Color color;
+  final LinePosition position;
+
+  const DecorativeLine({
+    super.key,
+    required this.color,
+    required this.position,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 4,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.only(
+          topLeft: position == LinePosition.top
+              ? const Radius.circular(AppDimensions.borderRadiusFull)
+              : Radius.zero,
+          topRight: position == LinePosition.top
+              ? const Radius.circular(AppDimensions.borderRadiusFull)
+              : Radius.zero,
+          bottomLeft: position == LinePosition.bottom
+              ? const Radius.circular(AppDimensions.borderRadiusFull)
+              : Radius.zero,
+          bottomRight: position == LinePosition.bottom
+              ? const Radius.circular(AppDimensions.borderRadiusFull)
+              : Radius.zero,
+        ),
       ),
     );
   }

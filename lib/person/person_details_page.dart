@@ -1,29 +1,23 @@
-import 'dart:ui';
-
 import 'package:aspends_tracker/const/app_colors.dart';
 import 'package:aspends_tracker/const/app_dimensions.dart';
-import 'package:aspends_tracker/const/app_strings.dart';
 import 'package:aspends_tracker/widgets/floating_action_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import '../const/app_assets.dart';
 import '../models/person.dart';
 import '../models/person_transaction.dart';
 import '../view_models/person_view_model.dart';
-import '../view_models/theme_view_model.dart';
 import '../widgets/header_delegate.dart';
-import '../widgets/modern_card.dart';
 import '../widgets/add_transaction_dialog.dart';
 import '../widgets/glass_app_bar.dart';
 import '../widgets/empty_state_view.dart';
-import '../widgets/glass_action_button.dart';
+import '../widgets/person_transaction_item.dart';
+import '../widgets/person_detail_header.dart';
 
 class PersonDetailPage extends StatefulWidget {
   final Person person;
@@ -96,13 +90,20 @@ class _PersonDetailPageState extends State<PersonDetailPage>
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<PersonViewModel>();
-    final person = viewModel.people.firstWhere(
-      (p) => p.key == widget.person.key,
-      orElse: () => widget.person,
-    );
-    final txs = viewModel.transactionsFor(person.name);
-    final total = viewModel.getTotalForPerson(person.name);
+    final viewModel = context.read<PersonViewModel>();
+    // Optimized rebuilds with select
+    final person =
+        context.select<PersonViewModel, Person>((vm) => vm.people.firstWhere(
+              (p) => p.key == widget.person.key,
+              orElse: () => widget.person,
+            ));
+    final groupedTxs =
+        viewModel.getGroupedTransactionsFor(person.name, _isDescending);
+    final total = context.select<PersonViewModel, double>(
+        (vm) => vm.getTotalForPerson(person.name));
+    final txsCount =
+        groupedTxs.values.fold(0, (prev, element) => prev + element.length);
+
     final isPositive = total >= 0;
     final theme = Theme.of(context);
 
@@ -225,30 +226,42 @@ class _PersonDetailPageState extends State<PersonDetailPage>
           SliverPersistentHeader(
             pinned: true,
             delegate: HomeHeaderDelegate(
-              // minHeight: 150,
-              // maxHeight: 150,
               height: 210,
-              child: GestureDetector(
+              child: RepaintBoundary(
+                child: GestureDetector(
                   onLongPress: () {
                     HapticFeedback.lightImpact();
                     _showDeleteConfirmation(context, person);
                   },
-                  child: _buildPinnedHeader(context)),
+                  child: PersonDetailHeader(
+                    person: person,
+                    total: total,
+                    txsCount: txsCount,
+                    fadeAnimation: _fadeAnimation,
+                    slideAnimation: _slideAnimation,
+                    isDescending: _isDescending,
+                    onToggleSort: () {
+                      HapticFeedback.selectionClick();
+                      setState(() => _isDescending = !_isDescending);
+                    },
+                  ),
+                ),
+              ),
             ),
           ),
-          if (txs.isEmpty)
-            SliverFillRemaining(
+          if (groupedTxs.isEmpty)
+            const SliverFillRemaining(
               hasScrollBody: false,
               child: EmptyStateView(
                 icon: Icons.receipt_long_outlined,
                 title: 'No transactions yet',
-                description: 'Add your first transaction with ${person.name}',
+                description: 'Add your first transaction with the person',
               ),
             )
           else
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              sliver: _buildGroupedTransactionList(txs, theme),
+              sliver: _buildGroupedTransactionList(groupedTxs, theme),
             ),
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
@@ -257,8 +270,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
   }
 
   Widget _buildGroupedTransactionList(
-      List<PersonTransaction> txs, ThemeData theme) {
-    final groupedTxs = _groupTransactions(txs);
+      Map<String, List<PersonTransaction>> groupedTxs, ThemeData theme) {
     final flatList = [];
     groupedTxs.forEach((date, items) {
       flatList.add(date);
@@ -285,561 +297,16 @@ class _PersonDetailPageState extends State<PersonDetailPage>
           }
 
           final tx = item as PersonTransaction;
-          return _buildTransactionItem(tx, theme);
+          return PersonTransactionItem(
+            tx: tx,
+            animation: _fadeAnimation,
+            onLongPress: () {
+              HapticFeedback.lightImpact();
+              _showDeleteTransactionDialog(context, tx);
+            },
+          );
         },
         childCount: flatList.length,
-      ),
-    );
-  }
-
-  Map<String, List<PersonTransaction>> _groupTransactions(
-      List<PersonTransaction> txs) {
-    final sortedTxs = List<PersonTransaction>.from(txs)
-      ..sort((a, b) =>
-          _isDescending ? b.date.compareTo(a.date) : a.date.compareTo(b.date));
-
-    final groups = <String, List<PersonTransaction>>{};
-    for (var tx in sortedTxs) {
-      final dateStr = _getGroupHeader(tx.date);
-      if (!groups.containsKey(dateStr)) {
-        groups[dateStr] = [];
-      }
-      groups[dateStr]!.add(tx);
-    }
-    return groups;
-  }
-
-  String _getGroupHeader(DateTime date) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final yesterday = today.subtract(const Duration(days: 1));
-    final txDate = DateTime(date.year, date.month, date.day);
-
-    if (txDate == today) {
-      return 'Today';
-    } else if (txDate == yesterday) {
-      return 'Yesterday';
-    } else {
-      return DateFormat('d MMM, yyyy').format(date);
-    }
-  }
-
-  Widget _buildTransactionItem(PersonTransaction tx, ThemeData theme) {
-    final isPositiveTx = tx.isIncome;
-
-    return AnimatedBuilder(
-      animation: _fadeController,
-      builder: (context, child) {
-        return Transform.translate(
-          offset: Offset(0, 20 * (1 - _fadeController.value)),
-          child: Opacity(
-            opacity: _fadeController.value,
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              child: GestureDetector(
-                onLongPress: () {
-                  HapticFeedback.lightImpact();
-                  _showDeleteTransactionDialog(context, tx);
-                },
-                child: ZoomTapAnimation(
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      builder: (context) => AddTransactionDialog(
-                        isIncome: tx.isIncome,
-                        existingPersonTransaction: tx,
-                      ),
-                    );
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.surface,
-                      borderRadius: BorderRadius.circular(
-                          AppDimensions.borderRadiusXLarge),
-                      border: Border.all(
-                        color: theme.dividerColor.withValues(alpha: 0.05),
-                        width: 1.4,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.03),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: IntrinsicHeight(
-                      child: Row(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(left: 1),
-                            child: Container(
-                              width: 4,
-                              height: 43, // Adjust the height as needed
-                              decoration: BoxDecoration(
-                                color: isPositiveTx
-                                    ? AppColors.accentGreen
-                                        .withValues(alpha: 0.2)
-                                    : AppColors.accentRed
-                                        .withValues(alpha: 0.2),
-                                borderRadius: const BorderRadius.horizontal(
-                                  left: Radius.circular(
-                                      AppDimensions.borderRadiusXLarge),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 16),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 48,
-                                    height: 48,
-                                    decoration: BoxDecoration(
-                                      color: (isPositiveTx
-                                              ? AppColors.accentGreen
-                                              : AppColors.accentRed)
-                                          .withValues(alpha: 0.1),
-                                      border: Border.all(
-                                        color: isPositiveTx
-                                            ? AppColors.accentGreen
-                                                .withValues(alpha: 0.1)
-                                            : AppColors.accentRed
-                                                .withValues(alpha: 0.1),
-                                        width: 1,
-                                      ),
-                                      borderRadius: BorderRadius.circular(
-                                          AppDimensions.borderRadiusMedium),
-                                    ),
-                                    child: Icon(
-                                      isPositiveTx
-                                          ? Icons.add_circle_rounded
-                                          : Icons.remove_circle,
-                                      color: isPositiveTx
-                                          ? AppColors.accentGreen
-                                          : AppColors.accentRed,
-                                      size: 20,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          tx.note.isEmpty
-                                              ? 'No note provided'
-                                              : tx.note,
-                                          style: GoogleFonts.dmSans(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w700,
-                                            color: theme.colorScheme.onSurface,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          DateFormat('MMM d, yyyy • hh:mm a')
-                                              .format(tx.date),
-                                          style: GoogleFonts.dmSans(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w500,
-                                            color: theme.colorScheme.onSurface
-                                                .withValues(alpha: 0.4),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        '₹${tx.amount.abs().toStringAsFixed(0)}',
-                                        style: GoogleFonts.dmSans(
-                                          fontSize: 17,
-                                          fontWeight: FontWeight.w800,
-                                          color: isPositiveTx
-                                              ? AppColors.accentGreen
-                                              : AppColors.accentRed,
-                                        ),
-                                      ),
-                                      // const SizedBox(height: 2),
-                                      // Text(
-                                      //   isPositiveTx
-                                      //       ? 'Credit'
-                                      //       : 'Debit',
-                                      //   style:
-                                      //       GoogleFonts.dmSans(
-                                      //     fontSize: 10,
-                                      //     fontWeight:
-                                      //         FontWeight.w800,
-                                      //     color: (isPositiveTx
-                                      //             ? AppColors
-                                      //                 .accentGreen
-                                      //             : AppColors
-                                      //                 .accentRed)
-                                      //         .withValues(
-                                      //             alpha: 0.5),
-                                      //     letterSpacing: 0.5,
-                                      //   ),
-                                      // ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildPinnedHeader(BuildContext context) {
-    final theme = Theme.of(context);
-    final person = context.read<PersonViewModel>().people.firstWhere(
-          (p) => p.key == widget.person.key,
-          orElse: () => widget.person,
-        );
-    final txs = context.read<PersonViewModel>().transactionsFor(person.name);
-    final total =
-        context.read<PersonViewModel>().getTotalForPerson(person.name);
-    final isPositive = total >= 0;
-    final formatted = NumberFormat.currency(
-      symbol: '',
-      decimalDigits: 2,
-    ).format(total);
-    final parts = formatted.split('.');
-    final integerPart = parts[0];
-    final decimalPart = parts.length > 1 ? parts[1] : '00';
-
-    return ClipRRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: SlideTransition(
-            position: _slideAnimation,
-            child: Column(
-              children: [
-                Stack(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 7),
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 14,
-                        ),
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: (isPositive
-                                    ? AppColors.accentGreen
-                                    : AppColors.accentRed)
-                                .withValues(alpha: 0.2),
-                            width: 1.4,
-                          ),
-                          borderRadius: BorderRadius.circular(
-                              AppDimensions.borderRadiusXLarge),
-                          color: isPositive
-                              ? AppColors.accentGreen.withValues(alpha: 0.1)
-                              : AppColors.accentRed.withValues(alpha: 0.1),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 4,
-                            vertical: 4,
-                          ),
-                          child: Row(
-                            children: [
-                              Stack(
-                                children: [
-                                  Container(
-                                    width: 65,
-                                    height: 65,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(
-                                          AppDimensions.borderRadiusLarge),
-                                      color: theme.colorScheme.primary
-                                          .withValues(alpha: 0.1),
-                                      border: Border.all(
-                                        color: theme.colorScheme.primary
-                                            .withValues(alpha: 0.1),
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(2.0),
-                                      child: person.photoPath != null
-                                          ? ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                      AppDimensions
-                                                          .borderRadiusLarge),
-                                              child: person.photoPath!
-                                                      .startsWith('assets/')
-                                                  ? Image.asset(
-                                                      person.photoPath!,
-                                                      fit: BoxFit.cover)
-                                                  : Image.file(
-                                                      File(person.photoPath!),
-                                                      fit: BoxFit.cover,
-                                                    ),
-                                            )
-                                          : Icon(
-                                              Icons.person_rounded,
-                                              color: theme.colorScheme.primary,
-                                              size: 32,
-                                            ),
-                                    ),
-                                  ),
-                                  Positioned(
-                                    right: 0,
-                                    top: 0,
-                                    child: Container(
-                                      width: 20,
-                                      height: 20,
-                                      decoration: BoxDecoration(
-                                        color: isPositive
-                                            ? AppColors.accentGreen
-                                            : AppColors.accentRed,
-                                        shape: BoxShape.circle,
-                                        // border: Border.all(
-                                        //     color: isPositive
-                                        //         ? const Color(0xFF1B2E21)
-                                        //         : const Color(0xFF2E1B1B),
-                                        //     width: 1.5),
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(4.0),
-                                        child: SvgPicture.asset(
-                                            isPositive
-                                                ? SvgAppIcons.incomeIcon
-                                                : SvgAppIcons.expenseIcon,
-                                            colorFilter: ColorFilter.mode(
-                                                Colors.white, BlendMode.srcIn)),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      isPositive
-                                          ? AppStrings.youGet
-                                          : AppStrings.youGive,
-                                      style: GoogleFonts.dmSans(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600,
-                                        color: theme.colorScheme.onSurface,
-                                      ),
-                                    ),
-                                    RichText(
-                                      text: TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: '₹ ',
-                                            style: GoogleFonts.bebasNeue(
-                                              fontSize: 25,
-                                              fontWeight: FontWeight.w900,
-                                              color: isPositive
-                                                  ? AppColors.accentGreen
-                                                  : AppColors.accentRed,
-                                              letterSpacing: -1,
-                                            ),
-                                          ),
-                                          const TextSpan(text: " "),
-                                          TextSpan(
-                                            text: integerPart,
-                                            style: GoogleFonts.bayon(
-                                              fontSize: 36,
-                                              height: 1,
-                                              fontWeight: FontWeight.w900,
-                                              color: isPositive
-                                                  ? AppColors.accentGreen
-                                                  : AppColors.accentRed,
-                                              letterSpacing: 1,
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: '.$decimalPart',
-                                            style: GoogleFonts.bayon(
-                                              fontSize: 25,
-                                              fontWeight: FontWeight.w900,
-                                              color: isPositive
-                                                  ? AppColors.accentGreen
-                                                  : AppColors.accentRed,
-                                              letterSpacing: 1,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    // Positioned(
-                                    //   left: 0,
-                                    //   top: 0,
-                                    //   child: Text(
-                                    //     isPositive
-                                    //         ? AppStrings.youWillGet
-                                    //         : AppStrings.youWillGive,
-                                    //     style: GoogleFonts.dmSans(
-                                    //       fontSize: 15,
-                                    //       fontWeight: FontWeight.w600,
-                                    //       color: theme.colorScheme.onSurface,
-                                    //     ),
-                                    //   ),
-                                    // )
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      left: 60,
-                      right: 60,
-                      child: Container(
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: isPositive
-                              ? AppColors.accentGreen
-                              : AppColors.accentRed,
-                          // rounded corners only on the top
-                          borderRadius: const BorderRadius.only(
-                            bottomLeft:
-                                Radius.circular(AppDimensions.borderRadiusFull),
-                            bottomRight:
-                                Radius.circular(AppDimensions.borderRadiusFull),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 16,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            'Transactions',
-                            style: GoogleFonts.dmSans(
-                              fontSize: 23,
-                              fontWeight: FontWeight.bold,
-                              color: theme.colorScheme.onSurface,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            height: 27,
-                            width: 27,
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.primary
-                                  .withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(
-                                  AppDimensions.borderRadiusRegular),
-                              border: Border.all(
-                                color:
-                                    theme.dividerColor.withValues(alpha: 0.1),
-                                width: 1.4,
-                              ),
-                            ),
-                            child: Center(
-                              child: Text(
-                                '${txs.length}',
-                                style: GoogleFonts.dmSans(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: theme.colorScheme.primary,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _isDescending = !_isDescending;
-                          });
-                        },
-                        child: Container(
-                          width: 110,
-                          height: 41,
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.primary
-                                .withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(
-                                AppDimensions.borderRadiusRegular),
-                            border: Border.all(
-                              color: theme.dividerColor.withValues(alpha: 0.1),
-                              width: 1.4,
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                _isDescending ? 'Recent' : 'Oldest',
-                                style: GoogleFonts.dmSans(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: theme.colorScheme.primary,
-                                ),
-                              ),
-                              Icon(
-                                _isDescending
-                                    ? Icons.keyboard_arrow_down
-                                    : Icons.keyboard_arrow_up,
-                                size: 20,
-                                color: theme.colorScheme.primary,
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }

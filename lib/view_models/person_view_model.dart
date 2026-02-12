@@ -20,6 +20,7 @@ class PersonViewModel with ChangeNotifier {
   // Memoization
   Map<String, List<PersonTransaction>>? _cachedGroupedByPerson;
   Map<String, double>? _cachedTotals;
+  List<Person>? _cachedSortedPeople;
   bool _isDirty = true;
 
   PersonViewModel(this._repository) {
@@ -32,11 +33,15 @@ class PersonViewModel with ChangeNotifier {
   PersonSortOption get currentSortOption => _sortOption;
 
   void setSortOption(PersonSortOption option) {
+    if (_sortOption == option) return;
     _sortOption = option;
+    _cachedSortedPeople = null;
     notifyListeners();
   }
 
   List<Person> get sortedPeople {
+    if (_cachedSortedPeople != null) return _cachedSortedPeople!;
+
     final list = List<Person>.from(_people);
     switch (_sortOption) {
       case PersonSortOption.nameAZ:
@@ -56,6 +61,7 @@ class PersonViewModel with ChangeNotifier {
             getTotalForPerson(a.name).compareTo(getTotalForPerson(b.name)));
         break;
     }
+    _cachedSortedPeople = list;
     return list;
   }
 
@@ -83,10 +89,12 @@ class PersonViewModel with ChangeNotifier {
 
   void addPerson(Person person) async {
     await _repository.addPerson(person);
+    _loadData();
   }
 
   void deletePerson(Person person) async {
     await _repository.deletePerson(person.key);
+    _loadData();
   }
 
   void updatePerson(Person oldPerson, Person newPerson) async {
@@ -113,19 +121,76 @@ class PersonViewModel with ChangeNotifier {
 
   void addPersonTransaction(PersonTransaction tx, String personName) async {
     await _repository.addPersonTransaction(tx);
+    _loadData();
   }
 
   void updatePersonTransaction(
       PersonTransaction oldTx, PersonTransaction newTx) async {
     await _repository.updatePersonTransaction(oldTx.key, newTx);
+    _loadData();
   }
 
   void deleteTransaction(PersonTransaction tx) async {
     await _repository.deletePersonTransaction(tx.key);
+    _loadData();
   }
 
   List<PersonTransaction> transactionsFor(String personName) {
     return allTransactions.where((tx) => tx.personName == personName).toList();
+  }
+
+  // Moved from UI for performance
+  Map<String, List<PersonTransaction>> getGroupedTransactionsFor(
+      String personName, bool descending) {
+    final txs = transactionsFor(personName);
+    final sortedTxs = List<PersonTransaction>.from(txs)
+      ..sort((a, b) =>
+          descending ? b.date.compareTo(a.date) : a.date.compareTo(b.date));
+
+    final groups = <String, List<PersonTransaction>>{};
+    for (var tx in sortedTxs) {
+      final dateStr = _getGroupHeader(tx.date);
+      if (!groups.containsKey(dateStr)) {
+        groups[dateStr] = [];
+      }
+      groups[dateStr]!.add(tx);
+    }
+    return groups;
+  }
+
+  String _getGroupHeader(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final txDate = DateTime(date.year, date.month, date.day);
+
+    if (txDate == today) {
+      return 'Today';
+    } else if (txDate == yesterday) {
+      return 'Yesterday';
+    } else {
+      // We don't have access to DateFormat here unless we import intl
+      // But we can return a consistently formatted string
+      return "${date.day} ${_getMonthName(date.month)}, ${date.year}";
+    }
+  }
+
+  String _getMonthName(int month) {
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
+    return months[month - 1];
   }
 
   double getTotalForPerson(String name) {
@@ -182,5 +247,6 @@ class PersonViewModel with ChangeNotifier {
     _isDirty = true;
     _cachedGroupedByPerson = null;
     _cachedTotals = null;
+    _cachedSortedPeople = null;
   }
 }

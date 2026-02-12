@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
+import '../const/app_colors.dart';
 import '../models/detection_history.dart';
 import '../services/transaction_detection_service.dart';
 import '../widgets/add_transaction_dialog.dart';
@@ -26,8 +27,10 @@ class DetectionHistoryPage extends StatefulWidget {
 class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
   String? _searchQuery;
 
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
@@ -35,6 +38,34 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
           GlassAppBar(
             title: 'Detection History',
             centerTitle: true,
+            leading:   GestureDetector(
+          onTap: () {
+    HapticFeedback.lightImpact();
+    Navigator.pop(context);
+    },
+      child: Padding(
+        padding: const EdgeInsets.only(
+            left: AppDimensions.paddingSmall +
+                AppDimensions.paddingSmall),
+        child: Center(
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: theme.dividerColor.withValues(alpha: 0.1),
+                width: 1,
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(15.0),
+              child: SvgPicture.asset(
+                SvgAppIcons.backButtonIcon,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
             actions: [
               IconButton(
                 icon: const Icon(Icons.refresh),
@@ -117,7 +148,6 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
       ),
     );
   }
-
   Widget _buildSearchSection(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = context.watch<ThemeViewModel>().isDarkMode;
@@ -125,70 +155,99 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
     return Padding(
       padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.paddingStandard,
-          vertical: AppDimensions.paddingSmall),
-      child: Container(
-        height: 54,
-        decoration: BoxDecoration(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.05)
-              : Colors.black.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusFull),
-          border: Border.all(
-            color: theme.dividerColor.withValues(alpha: 0.1),
-            width: 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(6.0),
-              child: Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: SvgPicture.asset(
-                    SvgAppIcons.searchIcon,
-                    colorFilter: ColorFilter.mode(
-                        theme.colorScheme.primary, BlendMode.srcIn),
-                    width: 20,
-                    height: 20,
-                  ),
+          vertical: AppDimensions.paddingStandard),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              height: 56,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? theme.primaryColor.withValues(alpha: 0.05)
+                // : Colors.black.withValues(alpha: 0.05),
+                    : Colors.white.withValues(alpha: 0.2),
+                borderRadius:
+                BorderRadius.circular(AppDimensions.borderRadiusMinLarge),
+                border: Border.all(
+                  color: theme.dividerColor.withValues(alpha: 0.2),
+                  width: 1.4,
                 ),
               ),
-            ),
-            Container(
-              width: 1,
-              height: 24,
-              color: theme.dividerColor.withValues(alpha: 0.2),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: TextField(
-                onChanged: (val) {
-                  setState(() {
-                    _searchQuery =
-                        val.trim().isEmpty ? null : val.toLowerCase();
-                  });
-                },
-                decoration: InputDecoration(
-                  hintText: 'Search logs...',
-                  hintStyle: GoogleFonts.dmSans(
-                    color: isDark ? Colors.white38 : Colors.black38,
-                    fontSize: AppTypography.fontSizeSmall,
+              child: Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6
+                    ),
+                    child: Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                          color:isDark
+                              ?AppColors.balanceCardDarkModePositive
+                              :AppColors.balanceCardLightModePositive,
+                          // color: theme.colorScheme.primary.withValues(alpha: 0.05),
+                          border: Border.all(
+                              color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                              width: 1.4
+                          ),
+                          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRegular)
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusMedium),
+                          ),
+                          child: Center(
+                            child: SvgPicture.asset(
+                              SvgAppIcons.searchIcon,
+                              colorFilter:const ColorFilter.mode(
+                                // theme.colorScheme.primary,
+                                  AppColors.accentGreen,
+                                  BlendMode.srcIn),
+                              width: 16,
+                              height: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
-                  border: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  disabledBorder: InputBorder.none,
-                  filled: true,
-                  fillColor: Colors.transparent,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                  suffixIcon: _searchQuery != null
-                      ? IconButton(
+                  Container(
+                    width: 1,
+                    height: 24,
+                    color: theme.dividerColor.withValues(alpha: 0.2),
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: TextField(
+                      onChanged: (val) {
+                        setState(() {
+                          _searchQuery = val.trim().isEmpty
+                              ? null
+                              : val.trim().toLowerCase();
+                        });
+                      },
+                      //transaparnt search bar
+                      decoration: InputDecoration(
+                        hintText: "Search Logs...",
+                        hintStyle: GoogleFonts.dmSans(
+                          color:   theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                          fontSize: AppTypography.fontSizeSmall,
+                        ),
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        disabledBorder: InputBorder.none,
+                        filled: true,
+                        fillColor: Colors.transparent,
+                        contentPadding:
+                        const EdgeInsets.symmetric(vertical: 12),
+                        suffixIcon: _searchQuery != null
+                            ? IconButton(
                           icon: const Icon(Icons.clear, size: 18),
                           onPressed: () {
                             setState(() {
@@ -196,19 +255,117 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
                             });
                           },
                         )
-                      : null,
-                ),
-                style: GoogleFonts.dmSans(
-                  fontSize: AppTypography.fontSizeSmall,
-                  color: theme.colorScheme.onSurface,
-                ),
+                            : null,
+                      ),
+                      style: GoogleFonts.dmSans(
+                          fontSize: AppTypography.fontSizeRegular,
+                          color: theme.colorScheme.onSurface,
+                          letterSpacing: -0.1
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+
+        ],
       ),
     );
   }
+
+
+  // Widget _buildSearchSection(BuildContext context) {
+  //   final theme = Theme.of(context);
+  //   final isDark = context.watch<ThemeViewModel>().isDarkMode;
+  //
+  //   return Padding(
+  //     padding: const EdgeInsets.symmetric(
+  //         horizontal: AppDimensions.paddingStandard,
+  //         vertical: AppDimensions.paddingSmall),
+  //     child: Container(
+  //       height: 54,
+  //       decoration: BoxDecoration(
+  //         color: isDark
+  //             ? Colors.white.withValues(alpha: 0.05)
+  //             : Colors.black.withValues(alpha: 0.05),
+  //         borderRadius: BorderRadius.circular(AppDimensions.borderRadiusFull),
+  //         border: Border.all(
+  //           color: theme.dividerColor.withValues(alpha: 0.1),
+  //           width: 1,
+  //         ),
+  //       ),
+  //       child: Row(
+  //         children: [
+  //           Padding(
+  //             padding: const EdgeInsets.all(6.0),
+  //             child: Container(
+  //               width: 42,
+  //               height: 42,
+  //               decoration: BoxDecoration(
+  //                 color: theme.colorScheme.primary.withValues(alpha: 0.15),
+  //                 shape: BoxShape.circle,
+  //               ),
+  //               child: Center(
+  //                 child: SvgPicture.asset(
+  //                   SvgAppIcons.searchIcon,
+  //                   colorFilter: ColorFilter.mode(
+  //                       theme.colorScheme.primary, BlendMode.srcIn),
+  //                   width: 20,
+  //                   height: 20,
+  //                 ),
+  //               ),
+  //             ),
+  //           ),
+  //           Container(
+  //             width: 1,
+  //             height: 24,
+  //             color: theme.dividerColor.withValues(alpha: 0.2),
+  //           ),
+  //           const SizedBox(width: 12),
+  //           Expanded(
+  //             child: TextField(
+  //               onChanged: (val) {
+  //                 setState(() {
+  //                   _searchQuery =
+  //                       val.trim().isEmpty ? null : val.toLowerCase();
+  //                 });
+  //               },
+  //               decoration: InputDecoration(
+  //                 hintText: 'Search logs...',
+  //                 hintStyle: GoogleFonts.dmSans(
+  //                   color: isDark ? Colors.white38 : Colors.black38,
+  //                   fontSize: AppTypography.fontSizeSmall,
+  //                 ),
+  //                 border: InputBorder.none,
+  //                 enabledBorder: InputBorder.none,
+  //                 focusedBorder: InputBorder.none,
+  //                 disabledBorder: InputBorder.none,
+  //                 filled: true,
+  //                 fillColor: Colors.transparent,
+  //                 contentPadding: const EdgeInsets.symmetric(vertical: 12),
+  //                 suffixIcon: _searchQuery != null
+  //                     ? IconButton(
+  //                         icon: const Icon(Icons.clear, size: 18),
+  //                         onPressed: () {
+  //                           setState(() {
+  //                             _searchQuery = null;
+  //                           });
+  //                         },
+  //                       )
+  //                     : null,
+  //               ),
+  //               style: GoogleFonts.dmSans(
+  //                 fontSize: AppTypography.fontSizeSmall,
+  //                 color: theme.colorScheme.onSurface,
+  //               ),
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
   void _showClearConfirmation(BuildContext context) {
     showDialog(

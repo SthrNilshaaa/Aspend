@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
@@ -45,9 +44,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late ScrollController _scrollController;
   bool _showFab = true;
   String? _searchQuery;
-  String _selectedRange = 'All'; // Day, Week, Month, Year, All
-  DateTime _startDate = DateTime(2000);
-  DateTime _endDate = DateTime.now();
+  final String _selectedRange = 'All'; // Day, Week, Month, Year, All
+  final DateTime _startDate = DateTime(2000);
+  final DateTime _endDate = DateTime.now();
   double _turns = 0.0;
   StreamSubscription<String>? _uiEventSubscription;
 
@@ -62,15 +61,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       final atTop = position.pixels <= 0;
 
       // Pull to rotate leading icon proportionally
-      if (position.pixels < 0) {
-        setState(() {
-          _turns = -position.pixels / 100; // Direct mapping instead of -=
-        });
-      } else if (_turns != 0) {
-        setState(() {
-          _turns = 0;
-        });
-      }
+      // if (position.pixels < 0) {
+      //   setState(() {
+      //     _turns = -position.pixels / 100; // Direct mapping instead of -=
+      //   });
+      // } else if (_turns != 0) {
+      //   setState(() {
+      //     _turns = 0;
+      //   });
+      // }
 
       final scrollingUp =
           position.userScrollDirection == ScrollDirection.forward;
@@ -167,7 +166,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             leading: GestureDetector(
               onTap: () {
                 setState(() {
-                  _turns += 1;
+                  _turns += 4;
                 });
               },
               child: Padding(
