@@ -1,9 +1,11 @@
+import 'package:aspends_tracker/widgets/search_bar_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
+import '../const/app_colors.dart';
 import '../view_models/transaction_view_model.dart';
 import '../view_models/theme_view_model.dart';
 import '../widgets/range_selector.dart';
@@ -76,9 +78,38 @@ class _TransactionsHistoryPageState extends State<TransactionsHistoryPage> {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          const GlassAppBar(
+          GlassAppBar(
             title: 'Transaction History',
             centerTitle: true,
+            leading: GestureDetector(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                Navigator.pop(context);
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(
+                    left: AppDimensions.paddingSmall +
+                        AppDimensions.paddingSmall),
+                child: Center(
+                  child: Container(
+                    decoration:   BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: theme.dividerColor.withValues(alpha: 0.1),
+                        width: 1,
+                      ),
+                    ),
+                    child: Padding(
+                      padding:   const EdgeInsets.all(15.0),
+                      child: SvgPicture.asset(
+                        SvgAppIcons.backButtonIcon,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
           ),
           SliverToBoxAdapter(
             child: _buildSearchSection(context),
@@ -149,100 +180,136 @@ class _TransactionsHistoryPageState extends State<TransactionsHistoryPage> {
       },
     );
   }
-
   Widget _buildSearchSection(BuildContext context) {
     final theme = Theme.of(context);
+    final themeViewModel = context.watch<ThemeViewModel>();
+    final isDark = themeViewModel.isDarkMode;
     final transactionViewModel = context.watch<TransactionViewModel>();
-    final isDark = context.watch<ThemeViewModel>().isDarkMode;
-
+    // return SearchFilterBar(
+    //   searchQuery: _searchQuery,
+    //   onSearchChanged: (val) {
+    //     setState(() {
+    //       _searchQuery = val.toLowerCase().isEmpty ? null : val.toLowerCase();
+    //       _updateDateRange();
+    //     });
+    //   },
+    //   onClear: () {
+    //     setState(() {
+    //     _searchQuery = null;
+    //     _updateDateRange();
+    //   }); },
+    //   onSortTap: () {
+    //
+    //     HapticFeedback.mediumImpact();
+    //     _showSortDialog(context);      },
+    //
+    // );
     return Padding(
       padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingStandard,
+        horizontal: AppDimensions.paddingStandard,
           vertical: AppDimensions.paddingSmall),
       child: Row(
         children: [
           Expanded(
             child: Container(
-              height: 54,
+              height: 56,
               decoration: BoxDecoration(
                 color: isDark
-                    ? Colors.white.withValues(alpha: 0.05)
-                    : Colors.black.withValues(alpha: 0.05),
+                    ? theme.primaryColor.withValues(alpha: 0.05)
+                // : Colors.black.withValues(alpha: 0.05),
+                    : Colors.white.withValues(alpha: 0.2),
                 borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadiusFull),
+                BorderRadius.circular(AppDimensions.borderRadiusMinLarge),
                 border: Border.all(
-                  color: theme.dividerColor.withValues(alpha: 0.1),
-                  width: 1,
+                  color: theme.dividerColor.withValues(alpha: 0.2),
+                  width: 1.4,
                 ),
               ),
               child: Row(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.all(6.0),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6),
                     child: Container(
                       width: 42,
                       height: 42,
                       decoration: BoxDecoration(
-                        color:
+                        color: isDark
+                            ? AppColors.balanceCardDarkModePositive
+                            : AppColors.balanceCardLightModePositive,
+                        // color: theme.colorScheme.primary.withValues(alpha: 0.05),
+                        border: Border.all(
+                            color:
                             theme.colorScheme.primary.withValues(alpha: 0.15),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: SvgPicture.asset(
-                          SvgAppIcons.searchIcon,
-                          colorFilter: ColorFilter.mode(
-                              theme.colorScheme.primary, BlendMode.srcIn),
-                          width: 25,
-                          height: 25,
+                            width: 1.4),
+                        borderRadius: BorderRadius.circular(
+                            AppDimensions.borderRadiusRegular),),
+                      child: Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(
+                                AppDimensions.borderRadiusMedium),
+                          ),
+                          child: Center(
+                            child: SvgPicture.asset(
+                              SvgAppIcons.searchIcon,
+                              colorFilter:const ColorFilter.mode(
+                                // theme.colorScheme.primary,
+                                  AppColors.accentGreen,
+                                  BlendMode.srcIn),
+                              width: 16,
+                              height: 16,
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
+                  const SizedBox(width: 2),
                   Container(
                     width: 1,
                     height: 24,
                     color: theme.dividerColor.withValues(alpha: 0.2),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: TextField(
                       onChanged: (val) {
                         setState(() {
-                          _searchQuery = val.toLowerCase().isEmpty
-                              ? null
-                              : val.toLowerCase();
+                          _searchQuery = val.toLowerCase().isEmpty ? null : val.toLowerCase();
                           _updateDateRange();
                         });
                       },
                       decoration: InputDecoration(
                         hintText: AppStrings.searchHint,
                         hintStyle: GoogleFonts.dmSans(
-                          color: isDark ? Colors.white38 : Colors.black38,
                           fontSize: AppTypography.fontSizeSmall,
+                          color:
+                          theme.colorScheme.onSurface.withValues(alpha: 0.4),
                         ),
                         border: InputBorder.none,
                         enabledBorder: InputBorder.none,
                         focusedBorder: InputBorder.none,
-                        disabledBorder: InputBorder.none,
-                        filled: true,
-                        fillColor: Colors.transparent,
-                        contentPadding:
-                            const EdgeInsets.symmetric(vertical: 12),
+                        filled: false,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 12),
                         suffixIcon: _searchQuery != null
                             ? IconButton(
-                                icon: const Icon(Icons.clear, size: 18),
-                                onPressed: () {
-                                  setState(() {
-                                    _searchQuery = null;
-                                    _updateDateRange();
-                                  });
-                                },
-                              )
+                          icon: const Icon(Icons.clear, size: 18),
+                          onPressed: () {
+                            setState(() {
+                              _searchQuery = null;
+                            });
+                          },
+                        )
                             : null,
                       ),
                       style: GoogleFonts.dmSans(
-                        fontSize: AppTypography.fontSizeSmall,
-                        color: theme.colorScheme.onSurface,
+                          fontSize: AppTypography.fontSizeRegular,
+                          color: theme.colorScheme.onSurface,
+                          letterSpacing: -0.1
                       ),
                     ),
                   ),
@@ -250,7 +317,7 @@ class _TransactionsHistoryPageState extends State<TransactionsHistoryPage> {
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 6),
           ZoomTapAnimation(
             onTap: () {
               HapticFeedback.mediumImpact();
@@ -260,22 +327,47 @@ class _TransactionsHistoryPageState extends State<TransactionsHistoryPage> {
               width: 54,
               height: 54,
               decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.05)
-                    : Colors.black.withValues(alpha: 0.05),
-                shape: BoxShape.circle,
+
+                borderRadius:  BorderRadius.circular(AppDimensions.borderRadiusMinLarge),
                 border: Border.all(
-                  color: theme.dividerColor.withValues(alpha: 0.1),
-                  width: 1,
+                  color: theme.dividerColor.withValues(alpha: 0.2),
+                  width: 1.4,
                 ),
               ),
               child: Center(
-                child: SvgPicture.asset(
-                  SvgAppIcons.filterIcon,
-                  colorFilter: ColorFilter.mode(
-                      theme.colorScheme.primary, BlendMode.srcIn),
-                  width: 20,
-                  height: 20,
+                child: Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color:isDark
+                        ?AppColors.balanceCardDarkModePositive
+                        :AppColors.balanceCardLightModePositive,
+                    // color: theme.colorScheme.primary.withValues(alpha: 0.05),
+                    border: Border.all(
+                        color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                        width: 1.4
+                    ),
+                    borderRadius:  BorderRadius.circular(AppDimensions.borderRadiusRegular
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+
+                        borderRadius:  BorderRadius.circular(AppDimensions.borderRadiusMedium),
+                      ),
+                      child: Center(
+                        child: SvgPicture.asset(
+                          SvgAppIcons.filterIcon,
+                          colorFilter: const ColorFilter.mode(
+                             AppColors.accentGreen, BlendMode.srcIn),
+                          width: 16,
+                          height: 16,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -284,6 +376,8 @@ class _TransactionsHistoryPageState extends State<TransactionsHistoryPage> {
       ),
     );
   }
+
+
 
   void _showSortDialog(BuildContext context) {
     final theme = Theme.of(context);

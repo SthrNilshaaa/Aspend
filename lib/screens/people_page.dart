@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
@@ -182,7 +183,8 @@ class _PeopleTabState extends State<PeopleTab> {
                 controller: controller,
                 decoration: InputDecoration(
                   labelText: AppStrings.personName,
-                  labelStyle: GoogleFonts.dmSans(fontSize: AppTypography.fontSizeSmall),
+                  labelStyle:
+                      GoogleFonts.dmSans(fontSize: AppTypography.fontSizeSmall),
                   border: OutlineInputBorder(
                     borderRadius:
                         BorderRadius.circular(AppDimensions.borderRadiusSmall),
@@ -253,81 +255,145 @@ class _PeopleTabState extends State<PeopleTab> {
       required Color color,
       required dynamic icon}) {
     final theme = Theme.of(context);
+    final formatted = NumberFormat.currency(
+      symbol: '',
+      decimalDigits: 2,
+    ).format(amount);
+
+    final parts = formatted.split('.');
+    final integerPart = parts[0];
+    final decimalPart = parts.length > 1 ? parts[1] : '00';
     return Stack(
-      children:[
+      children: [
         Padding(
           padding: const EdgeInsets.symmetric(
-
             vertical: AppDimensions.paddingXSmall,
           ),
           child: Container(
-          decoration: BoxDecoration(
-            border: Border.all(
-              color:color.withValues(alpha: 0.1),
-              width: 1.4,
-              style: BorderStyle.solid,
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: color.withValues(alpha: 0.1),
+                width: 1.4,
+                style: BorderStyle.solid,
+              ),
+              borderRadius:
+                  BorderRadius.circular(AppDimensions.borderRadiusXLarge),
+              color: color.withValues(alpha: 0.1),
             ),
-            borderRadius:
-            BorderRadius.circular(AppDimensions.borderRadiusXLarge),
-            color:  color.withValues(alpha: 0.1),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.paddingXLarge,
-              vertical: AppDimensions.paddingSmall,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.paddingXLarge,
+                vertical: AppDimensions.paddingSmall,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: color.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: icon is String
+                            ? SvgPicture.asset(
+                                icon,
+                                colorFilter:
+                                    ColorFilter.mode(color, BlendMode.srcIn),
+                                width: AppDimensions.iconSizeXSmall,
+                                height: AppDimensions.iconSizeXSmall,
+                              )
+                            : Icon(icon,
+                                color: color,
+                                size: AppDimensions.iconSizeSmall),
                       ),
-                      child: icon is String
-                          ? SvgPicture.asset(
-                        icon,
-                        colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
-                        width: AppDimensions.iconSizeXSmall,
-                        height: AppDimensions.iconSizeXSmall,
-                      )
-                          : Icon(icon, color: color, size: AppDimensions.iconSizeSmall),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      label,
-                      style: GoogleFonts.dmSans(
-                        fontSize: ResponsiveUtils.getResponsiveFontSize(context,
-                            mobile: 12, tablet: 14, desktop: 16),
-                        fontWeight: FontWeight.w600,
-                        color:
-                            theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                      const SizedBox(width: 8),
+                      Text(
+                        label,
+                        style: GoogleFonts.dmSans(
+                          fontSize: ResponsiveUtils.getResponsiveFontSize(
+                              context,
+                              mobile: 12,
+                              tablet: 14,
+                              desktop: 16),
+                          fontWeight: FontWeight.w600,
+                          color: theme.colorScheme.onSurfaceVariant
+                              .withValues(alpha: 0.7),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  '₹${amount.toStringAsFixed(2)}',
-                  style: GoogleFonts.dmSans(
-                    fontSize: ResponsiveUtils.getResponsiveFontSize(context,
-                        mobile: 20, tablet: 24, desktop: 28),
-                    fontWeight: FontWeight.w800,
-                    color: color,
-                    letterSpacing: -0.5,
+                    ],
                   ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+                  const SizedBox(height: 6),
+                  RichText(
+                    text: TextSpan(children: [
+                      TextSpan(
+                        text: '₹',
+                        style: GoogleFonts.dmSans(
+                          fontSize: ResponsiveUtils.getResponsiveFontSize(
+                              context,
+                              mobile: 20,
+                              tablet: 24,
+                              desktop: 28),
+                          fontWeight: FontWeight.w800,
+                          color: color,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      const TextSpan(text: '  '),
+                      TextSpan(
+                        children: [
+                          // Integer part (55)
+                          TextSpan(
+                            text: integerPart,
+                            style: GoogleFonts.dmSans(
+                              fontSize: ResponsiveUtils.getResponsiveFontSize(
+                                  context,
+                                  mobile: 20,
+                                  tablet: 24,
+                                  desktop: 28),
+                              fontWeight: FontWeight.w800,
+                              color: color,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+
+                          // Decimal point + decimals (35)
+                          TextSpan(
+                            text: '.$decimalPart',
+                            style: GoogleFonts.dmSans(
+                              fontSize: ResponsiveUtils.getResponsiveFontSize(
+                                  context,
+                                  mobile: 16,
+                                  tablet: 20,
+                                  desktop: 24),
+                              fontWeight: FontWeight.w800,
+                              color: color,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ]),
+                  ),
+                  // Text(
+                  //   '₹${amount.toStringAsFixed(2)}',
+                  //   style: GoogleFonts.dmSans(
+                  //     fontSize: ResponsiveUtils.getResponsiveFontSize(context,
+                  //         mobile: 20, tablet: 24, desktop: 28),
+                  //     fontWeight: FontWeight.w800,
+                  //     color: color,
+                  //     letterSpacing: -0.5,
+                  //   ),
+                  //   overflow: TextOverflow.ellipsis,
+                  // ),
+                ],
+              ),
             ),
           ),
-                ),
         ),
         Positioned(
           bottom: 0,
@@ -339,10 +405,8 @@ class _PeopleTabState extends State<PeopleTab> {
               color: color,
               // rounded corners only on the top
               borderRadius: const BorderRadius.only(
-                bottomLeft:
-                Radius.circular(AppDimensions.borderRadiusFull),
-                bottomRight:
-                Radius.circular(AppDimensions.borderRadiusFull),
+                bottomLeft: Radius.circular(AppDimensions.borderRadiusFull),
+                bottomRight: Radius.circular(AppDimensions.borderRadiusFull),
               ),
             ),
           ),
@@ -363,7 +427,8 @@ class _PeopleTabState extends State<PeopleTab> {
         //     ),
         //   ),
         // ),
-    ],    );
+      ],
+    );
   }
 
   @override
@@ -385,26 +450,20 @@ class _PeopleTabState extends State<PeopleTab> {
         slivers: [
           GlassAppBar(
             title: AppStrings.people,
-
             centerTitle: true,
-
           ),
           SliverPersistentHeader(
-
             pinned: true,
             delegate: HomeHeaderDelegate(
               // minHeight: 150,
               // maxHeight: 150,
               height: 180,
-              child: _buildPinnedHeader(context,personViewModel),
+              child: _buildPinnedHeader(context, personViewModel),
             ),
           ),
 
-
-
-
           if (people.isEmpty)
-            SliverFillRemaining(
+            const SliverFillRemaining(
               hasScrollBody: false,
               child: EmptyStateView(
                 icon: Icons.people_outline,
@@ -414,7 +473,7 @@ class _PeopleTabState extends State<PeopleTab> {
             )
           else
             SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
               sliver: SliverGrid(
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount:
@@ -446,131 +505,138 @@ class _PeopleTabState extends State<PeopleTab> {
                         padding: const EdgeInsets.all(12),
                         borderRadius: AppDimensions.borderRadiusXLarge,
                         color: theme.colorScheme.surface,
-                        child: Row(
-                          children: [
-                            Stack(
-                              children: [
-                                Container(
-                                  width: ResponsiveUtils.getResponsiveIconSize(
-                                      context,
-                                      mobile: 60,
-                                      tablet: 56,
-                                      desktop: 64),
-                                  height: ResponsiveUtils.getResponsiveIconSize(
-                                      context,
-                                      mobile: 60,
-                                      tablet: 56,
-                                      desktop: 64),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(
-                                        AppDimensions.borderRadiusLarge),
-
-                                    color: theme.colorScheme.primary
-                                        .withValues(alpha: 0.1),
-                                    border: Border.all(
+                        child: IntrinsicHeight(
+                          child: Row(
+                            children: [
+                              Stack(
+                                children: [
+                                  Container(
+                                    width:
+                                        ResponsiveUtils.getResponsiveIconSize(
+                                            context,
+                                            mobile: 60,
+                                            tablet: 56,
+                                            desktop: 64),
+                                    height:
+                                        ResponsiveUtils.getResponsiveIconSize(
+                                            context,
+                                            mobile: 60,
+                                            tablet: 56,
+                                            desktop: 64),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(
+                                          AppDimensions.borderRadiusLarge),
                                       color: theme.colorScheme.primary
                                           .withValues(alpha: 0.1),
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(2.0),
-                                    child: person.photoPath != null
-                                        ? ClipRRect(
-                                            borderRadius: BorderRadius.circular(
-                                                AppDimensions.borderRadiusMinLarge),
-                                            child: person.photoPath!
-                                                    .startsWith('assets/')
-                                                ? Image.asset(person.photoPath!,
-                                                    fit: BoxFit.cover)
-                                                : Image.file(
-                                                    File(person.photoPath!),
-                                                    fit: BoxFit.cover,
-                                                  ),
-                                          )
-                                        : Icon(Icons.person_rounded,
-                                            color: theme.colorScheme.primary,
-                                            size: 24),
-                                  ),
-                                ),
-                                Positioned(
-                                  right: 0,
-                                  bottom: 0,
-                                  child: Container(
-                                    width: 14,
-                                    height: 14,
-                                    decoration: BoxDecoration(
-                                      color: isPositive
-                                          ? AppColors.accentGreen
-                                          : AppColors.accentRed,
-                                      shape: BoxShape.circle,
                                       border: Border.all(
-                                          color: theme.colorScheme.surface,
-                                          width: 2),
+                                        color: theme.colorScheme.primary
+                                            .withValues(alpha: 0.1),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: person.photoPath != null
+                                          ? ClipRRect(
+                                              borderRadius: BorderRadius
+                                                  .circular(AppDimensions
+                                                      .borderRadiusMinLarge),
+                                              child: person.photoPath!
+                                                      .startsWith('assets/')
+                                                  ? Image.asset(
+                                                      person.photoPath!,
+                                                      fit: BoxFit.cover)
+                                                  : Image.file(
+                                                      File(person.photoPath!),
+                                                      fit: BoxFit.cover,
+                                                    ),
+                                            )
+                                          : Icon(Icons.person_rounded,
+                                              color: theme.colorScheme.primary,
+                                              size: 24),
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    person.name,
-                                    style: GoogleFonts.dmSans(
-                                      fontWeight: FontWeight.w700,
-                                      fontSize:
-                                          ResponsiveUtils.getResponsiveFontSize(
-                                              context,
-                                              mobile: AppTypography.fontSizeMedium,
-                                              tablet: 17,
-                                              desktop: 19),
-                                      color: theme.colorScheme.onSurface,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    isPositive
-                                        ? AppStrings.youWillGet
-                                        : AppStrings.youWillGive,
-                                    style: GoogleFonts.dmSans(
-                                      fontSize: 11,
-                                      color: theme.colorScheme.onSurface
-                                          .withValues(alpha: 0.5),
-                                      fontWeight: FontWeight.w500,
+                                  Positioned(
+                                    right: 0,
+                                    bottom: 0,
+                                    child: Container(
+                                      width: 14,
+                                      height: 14,
+                                      decoration: BoxDecoration(
+                                        color: isPositive
+                                            ? AppColors.accentGreen
+                                            : AppColors.accentRed,
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                            color: theme.colorScheme.surface,
+                                            width: 2),
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  '₹ ${total.abs().toStringAsFixed(0)}',
-                                  style: GoogleFonts.dmSans(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize:
-                                        ResponsiveUtils.getResponsiveFontSize(
-                                            context,
-                                            mobile: 16,
-                                            tablet: 18,
-                                            desktop: 20),
-                                    color: isPositive
-                                        ? AppColors.accentGreen
-                                        : AppColors.accentRed,
-                                  ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      person.name,
+                                      style: GoogleFonts.dmSans(
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: ResponsiveUtils
+                                            .getResponsiveFontSize(context,
+                                                mobile: AppTypography
+                                                    .fontSizeMedium,
+                                                tablet: 17,
+                                                desktop: 19),
+                                        color: theme.colorScheme.onSurface,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      isPositive
+                                          ? AppStrings.youGet
+                                          : AppStrings.youGive,
+                                      style: GoogleFonts.dmSans(
+                                        fontSize: 11,
+                                        color: theme.colorScheme.onSurface
+                                            .withValues(alpha: 0.7),
+                                        fontWeight:
+                                            AppTypography.fontWeightMedium,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          ],
+                              ),
+                              const SizedBox(width: 8),
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    '₹ ${total.abs().toStringAsFixed(0)}',
+                                    style: GoogleFonts.dmSans(
+                                      fontWeight: FontWeight.w900,
+                                      fontSize:
+                                          ResponsiveUtils.getResponsiveFontSize(
+                                              context,
+                                              mobile: 16,
+                                              tablet: 18,
+                                              desktop: 20),
+                                      color: isPositive
+                                          ? AppColors.accentGreen
+                                          : AppColors.accentRed,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     );
@@ -586,10 +652,21 @@ class _PeopleTabState extends State<PeopleTab> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: people.isEmpty
           ? _buildAddPersonFab(context)
-          : (_showFab ? _buildAddPersonFab(context) : null),
+          : AnimatedSlide(
+              offset: _showFab ? Offset.zero : const Offset(0, 2),
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              child: AnimatedOpacity(
+                opacity: _showFab ? 1.0 : 0.5,
+                duration: const Duration(milliseconds: 300),
+                child: _buildAddPersonFab(context),
+              ),
+            ),
     );
   }
-  Widget _buildPinnedHeader(BuildContext context,PersonViewModel personViewModel) {
+
+  Widget _buildPinnedHeader(
+      BuildContext context, PersonViewModel personViewModel) {
     final double totalYouGet = personViewModel.overallTotalRent;
     final double totalYouGive = personViewModel.overallTotalGiven;
 
@@ -602,7 +679,7 @@ class _PeopleTabState extends State<PeopleTab> {
             color: theme.colorScheme.surface.withValues(alpha: 0.15),
           ),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16,2),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 2),
             child: Column(
               children: [
                 Row(
@@ -641,7 +718,9 @@ class _PeopleTabState extends State<PeopleTab> {
                   ],
                 ),
                 //sizebox
-                SizedBox(height: 12,),
+                SizedBox(
+                  height: 12,
+                ),
                 _buildSearchSection(context),
               ],
             ),
@@ -656,130 +735,175 @@ class _PeopleTabState extends State<PeopleTab> {
     final themeViewModel = context.watch<ThemeViewModel>();
     final isDark = themeViewModel.isDarkMode;
 
-    return Row(
-      children: [
-        Expanded(
-          child: Container(
-            height: 54,
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface.withValues(alpha: 0.5),
-              borderRadius:
-                  BorderRadius.circular(AppDimensions.borderRadiusFull),
-              border: Border.all(
-                color: theme.dividerColor.withValues(alpha: 0.1),
-                width: 1,
-              ),
-            ),
-            child: Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(6.0),
-                  child: Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: SvgPicture.asset(
-                        SvgAppIcons.searchIcon,
-                        colorFilter: ColorFilter.mode(
-                            theme.colorScheme.primary, BlendMode.srcIn),
-                        width: 25,
-                        height: 25,
-                      ),
-                    ),
-                  ),
-                ),
-                Container(
-                  width: 1,
-                  height: 24,
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+          // horizontal: AppDimensions.paddingStandard,
+          vertical: AppDimensions.paddingSmall),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              height: 56,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? theme.primaryColor.withValues(alpha: 0.05)
+                // : Colors.black.withValues(alpha: 0.05),
+                    : Colors.white.withValues(alpha: 0.2),
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadiusMinLarge),
+                border: Border.all(
                   color: theme.dividerColor.withValues(alpha: 0.2),
+                  width: 1.4,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextField(
-                    onChanged: (val) {
-                      setState(() {
-                        _searchQuery = val.trim().isEmpty ? null : val.trim();
-                      });
-                    },
-                    decoration: InputDecoration(
-                      hintText: AppStrings.searchPeople,
-                      hintStyle: GoogleFonts.dmSans(
-                        fontSize: AppTypography.fontSizeSmall,
-                        color:
-                            theme.colorScheme.onSurface.withValues(alpha: 0.4),
+              ),
+              child: Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6),
+                    child: Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                          color: isDark
+                              ? AppColors.balanceCardDarkModePositive
+                              : AppColors.balanceCardLightModePositive,
+                          // color: theme.colorScheme.primary.withValues(alpha: 0.05),
+                          border: Border.all(
+                              color:
+                                  theme.colorScheme.primary.withValues(alpha: 0.15),
+                              width: 1.4),
+                          borderRadius: BorderRadius.circular(
+                              AppDimensions.borderRadiusRegular),),
+                      child: Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(
+                                AppDimensions.borderRadiusMedium),
+                          ),
+                          child: Center(
+                            child: SvgPicture.asset(
+                              SvgAppIcons.searchIcon,
+                              colorFilter:const ColorFilter.mode(
+                                // theme.colorScheme.primary,
+                                  AppColors.accentGreen,
+                                  BlendMode.srcIn),
+                              width: 16,
+                              height: 16,
+                            ),
+                          ),
+                        ),
                       ),
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      filled: false,
-                      contentPadding:
-                          const EdgeInsets.symmetric(vertical: 12),
-                      suffixIcon: _searchQuery != null
-                          ? IconButton(
-                              icon: const Icon(Icons.clear, size: 18),
-                              onPressed: () {
-                                setState(() {
-                                  _searchQuery = null;
-                                });
-                              },
-                            )
-                          : null,
-                    ),
-                    style: GoogleFonts.dmSans(
-                      fontSize: AppTypography.fontSizeSmall,
-                      color: theme.colorScheme.onSurface,
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        ZoomTapAnimation(
-          onTap: () {
-            HapticFeedback.mediumImpact();
-            _showSortDialog(context);
-          },
-          child: Container(
-            width: 54,
-            height: 54,
-            decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.05)
-                  : Colors.white.withValues(alpha: 0.2),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: theme.dividerColor.withValues(alpha: 0.1),
-                width: 1,
-              ),
-            ),
-            child: Center(
-              child: Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: SvgPicture.asset(
-                    SvgAppIcons.filterIcon,
-                    colorFilter: ColorFilter.mode(
-                        theme.colorScheme.primary, BlendMode.srcIn),
-                    width: 16,
-                    height: 16,
+                  const SizedBox(width: 2),
+                  Container(
+                    width: 1,
+                    height: 24,
+                    color: theme.dividerColor.withValues(alpha: 0.2),
                   ),
-                ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      onChanged: (val) {
+                        setState(() {
+                          _searchQuery = val.trim().isEmpty ? null : val.trim();
+                        });
+                      },
+                      decoration: InputDecoration(
+                        hintText: AppStrings.searchPeople,
+                        hintStyle: GoogleFonts.dmSans(
+                          fontSize: AppTypography.fontSizeSmall,
+                          color:
+                              theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                        ),
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        filled: false,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                        suffixIcon: _searchQuery != null
+                            ? IconButton(
+                                icon: const Icon(Icons.clear, size: 18),
+                                onPressed: () {
+                                  setState(() {
+                                    _searchQuery = null;
+                                  });
+                                },
+                              )
+                            : null,
+                      ),
+                      style: GoogleFonts.dmSans(
+                        fontSize: AppTypography.fontSizeRegular,
+                        color: theme.colorScheme.onSurface,
+                        letterSpacing: -0.1
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-        ),
-      ],
+          const SizedBox(width: 6),
+          ZoomTapAnimation(
+            onTap: () {
+              HapticFeedback.mediumImpact();
+              _showSortDialog(context);
+            },
+            child: Container(
+              width: 54,
+              height: 54,
+              decoration: BoxDecoration(
+
+                borderRadius:  BorderRadius.circular(AppDimensions.borderRadiusMinLarge),
+                border: Border.all(
+                  color: theme.dividerColor.withValues(alpha: 0.2),
+                  width: 1.4,
+                ),
+              ),
+              child: Center(
+                child: Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color:isDark
+                        ?AppColors.balanceCardDarkModePositive
+                        :AppColors.balanceCardLightModePositive,
+                    // color: theme.colorScheme.primary.withValues(alpha: 0.05),
+                    border: Border.all(
+                        color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                        width: 1.4
+                    ),
+                    borderRadius:  BorderRadius.circular(AppDimensions.borderRadiusRegular
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+
+                        borderRadius:  BorderRadius.circular(AppDimensions.borderRadiusMedium),
+                      ),
+                      child: Center(
+                        child: SvgPicture.asset(
+                          SvgAppIcons.filterIcon,
+                          colorFilter: ColorFilter.mode(
+                              AppColors.accentGreen, BlendMode.srcIn),
+                          width: 16,
+                          height: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -820,8 +944,10 @@ class _PeopleTabState extends State<PeopleTab> {
               ),
             ),
             const SizedBox(height: 16),
-            _buildSortOption(context, 'Name (A-Z)', PersonSortOption.nameAZ, vm),
-            _buildSortOption(context, 'Name (Z-A)', PersonSortOption.nameZA, vm),
+            _buildSortOption(
+                context, 'Name (A-Z)', PersonSortOption.nameAZ, vm),
+            _buildSortOption(
+                context, 'Name (Z-A)', PersonSortOption.nameZA, vm),
             _buildSortOption(context, 'Balance (Highest)',
                 PersonSortOption.balanceHighest, vm),
             _buildSortOption(context, 'Balance (Lowest)',
@@ -882,7 +1008,8 @@ class _PeopleTabState extends State<PeopleTab> {
                 ),
               ),
               child: FloatingActionButton.extended(
-                onPressed: null, // Tap is handled by ZoomTapAnimation
+                onPressed: null,
+                // Tap is handled by ZoomTapAnimation
                 backgroundColor: Colors.transparent,
                 elevation: 0,
                 icon: const Icon(Icons.person_add_alt, size: 24),

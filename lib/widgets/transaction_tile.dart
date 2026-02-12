@@ -40,6 +40,14 @@ class _TransactionTileState extends State<TransactionTile> {
     final color =
         TransactionUtils.getCategoryColor(widget.transaction.category);
     final icon = TransactionUtils.getCategoryIcon(widget.transaction.category);
+    final formatted = NumberFormat.currency(
+      symbol: '',
+      decimalDigits: 2,
+    ).format(widget.transaction.amount);
+
+    final parts = formatted.split('.');
+    final integerPart = parts[0];
+    final decimalPart = parts.length > 1 ? parts[1] : '00';
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: AppDimensions.paddingXSmall),
@@ -80,14 +88,7 @@ class _TransactionTileState extends State<TransactionTile> {
                     tablet: AppDimensions.categoryIconSizeTablet,
                     desktop: AppDimensions.categoryIconSizeDesktop),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      color.withValues(alpha: 0.2),
-                      color.withValues(alpha: 0.05),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+                  color:  color.withValues(alpha: 0.2),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusRegular),
                 ),
@@ -149,19 +150,85 @@ class _TransactionTileState extends State<TransactionTile> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
-                    "${widget.transaction.isIncome ? '+' : '-'}${NumberFormat.currency(symbol: '₹', decimalDigits: 2).format(widget.transaction.amount)}",
-                    style: GoogleFonts.dmSans(
-                      fontWeight: AppTypography.fontWeightBlack,
-                      fontSize: ResponsiveUtils.getResponsiveFontSize(context,
-                          mobile: AppTypography.fontSizeMedium,
-                          tablet: AppTypography.fontSizeRegular,
-                          desktop: AppTypography.fontSizeLarge),
-                      color: widget.transaction.isIncome
-                          ? AppColors.accentGreen
-                          : AppColors.accentRed,
-                    ),
-                  ),
+                  RichText(text: TextSpan(
+                    children: [
+
+                      TextSpan(
+                        text: '₹',
+                        style: GoogleFonts.dmSans(
+                          fontWeight: AppTypography.fontWeightBlack,
+                          fontSize: ResponsiveUtils.getResponsiveFontSize(context,
+                              mobile: AppTypography.fontSizeMedium,
+                              tablet: AppTypography.fontSizeRegular,
+                              desktop: AppTypography.fontSizeLarge),
+                          color: widget.transaction.isIncome
+                              ? AppColors.accentGreen
+                              : AppColors.accentRed,
+                        ),
+                      ),
+                      const TextSpan(text: ' '),
+                      TextSpan(
+                        text: widget.transaction.isIncome ? '+' : '-',
+                        style: GoogleFonts.dmSans(
+                          fontWeight: AppTypography.fontWeightBlack,
+                          fontSize: ResponsiveUtils.getResponsiveFontSize(context,
+                              mobile: AppTypography.fontSizeMedium,
+                              tablet: AppTypography.fontSizeRegular,
+                              desktop: AppTypography.fontSizeLarge),
+                          color: widget.transaction.isIncome
+                              ? AppColors.accentGreen
+                              : AppColors.accentRed,
+                        ),
+                      ),
+                      TextSpan(
+                        children: [
+                          // Integer part (55)
+                          TextSpan(
+                            text: integerPart,
+                            style: GoogleFonts.dmSans(
+                              fontWeight: AppTypography.fontWeightBlack,
+                              fontSize: ResponsiveUtils.getResponsiveFontSize(context,
+                                  mobile: AppTypography.fontSizeMedium,
+                                  tablet: AppTypography.fontSizeRegular,
+                                  desktop: AppTypography.fontSizeLarge),
+                              color: widget.transaction.isIncome
+                                  ? AppColors.accentGreen
+                                  : AppColors.accentRed,
+                            ),
+                          ),
+
+                          // Decimal point + decimals (35)
+                          TextSpan(
+                            text: '.$decimalPart',
+                            style: GoogleFonts.dmSans(
+                              fontWeight: AppTypography.fontWeightBlack,
+                              fontSize: ResponsiveUtils.getResponsiveFontSize(context,
+                                  mobile: AppTypography.fontSizeXSmall,
+                                  tablet: AppTypography.fontSizeRegular,
+                                  desktop: AppTypography.fontSizeLarge),
+                              color: widget.transaction.isIncome
+                                  ? AppColors.accentGreen
+                                  : AppColors.accentRed,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),),
+                  // Text(
+                  //   "${widget.transaction.isIncome ? '+' : '-'}"
+                  //       "${NumberFormat.currency(symbol: '₹', decimalDigits: 2).format(widget.transaction.amount)}",
+                  //   style: GoogleFonts.dmSans(
+                  //     fontWeight: AppTypography.fontWeightBlack,
+                  //     fontSize: ResponsiveUtils.getResponsiveFontSize(context,
+                  //         mobile: AppTypography.fontSizeMedium,
+                  //         tablet: AppTypography.fontSizeRegular,
+                  //         desktop: AppTypography.fontSizeLarge),
+                  //     color: widget.transaction.isIncome
+                  //         ? AppColors.accentGreen
+                  //         : AppColors.accentRed,
+                  //   ),
+                  // ),
                   Text(
                     DateFormat('hh:mm a').format(widget.transaction.date),
                     style: GoogleFonts.dmSans(

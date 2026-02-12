@@ -225,7 +225,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: theme.dividerColor.withValues(alpha: 0.1),
-                            width: 1,
+                            width: 1.3,
                           ),
                         ),
                         child: Padding(
@@ -283,7 +283,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: _showFab ? _buildDualFab(theme) : null,
+      floatingActionButton:  AnimatedSlide(
+        offset: _showFab ? Offset.zero : const Offset(0, 2),
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+
+
+        child: AnimatedOpacity(
+          opacity: _showFab ? 1.0 : 0.5,
+          duration: const Duration(milliseconds: 300),
+          child:  _buildDualFab(theme) ,
+        ),
+      ),
     );
   }
 
@@ -325,28 +336,40 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
   Widget _buildTransactionHeaderRow(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          AppStrings.transactionsTitle,
-          style: GoogleFonts.dmSans(
-            fontSize: AppTypography.fontSizeSubHeader,
-            fontWeight: AppTypography.fontWeightBold,
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+      horizontal: 3
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            AppStrings.transactionsTitle,
+            style: GoogleFonts.dmSans(
+              fontSize: AppTypography.fontSizeSubHeader,
+              fontWeight: AppTypography.fontWeightBold,
+            ),
           ),
-        ),
-        TextButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const TransactionsHistoryPage(),
-              ),
-            );
-          },
-          child: const Text(AppStrings.viewAllLabel),
-        ),
-      ],
+          TextButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const TransactionsHistoryPage(),
+                ),
+              );
+            },
+            child:  Text(
+                AppStrings.viewAllLabel,
+                style: GoogleFonts.dmSans(
+                  fontSize: AppTypography.fontSizeSmall,
+                  fontWeight: AppTypography.fontWeightSemiBold,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -356,6 +379,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return SliverToBoxAdapter(
       child: Column(
         children: [
+
+          const SizedBox(
+            height: AppDimensions.paddingSmall,
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.paddingStandard,
@@ -408,38 +435,58 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         children: [
           Expanded(
             child: Container(
-              height: 54,
+              height: 56,
               decoration: BoxDecoration(
                 color: isDark
-                    ? Colors.white.withValues(alpha: 0.05)
+                    ? theme.primaryColor.withValues(alpha: 0.05)
                     // : Colors.black.withValues(alpha: 0.05),
                     : Colors.white.withValues(alpha: 0.2),
                 borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadiusFull),
+                    BorderRadius.circular(AppDimensions.borderRadiusMinLarge),
                 border: Border.all(
-                  color: theme.dividerColor.withValues(alpha: 0.1),
-                  width: 1,
+                  color: theme.dividerColor.withValues(alpha: 0.2),
+                  width: 1.4,
                 ),
               ),
               child: Row(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.all(6.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6
+                    ),
                     child: Container(
                       width: 42,
                       height: 42,
                       decoration: BoxDecoration(
-                        color:
-                            theme.colorScheme.primary.withValues(alpha: 0.15),
-                        shape: BoxShape.circle,
+                        color:isDark
+                        ?AppColors.balanceCardDarkModePositive
+                        :AppColors.balanceCardLightModePositive,
+                          // color: theme.colorScheme.primary.withValues(alpha: 0.05),
+                          border: Border.all(
+                              color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                              width: 1.4
+                          ),
+                        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRegular)
                       ),
-                      child: Center(
-                        child: SvgPicture.asset(
-                          SvgAppIcons.searchIcon,
-                          colorFilter: ColorFilter.mode(
-                              theme.colorScheme.primary, BlendMode.srcIn),
-                          width: 25,
-                          height: 25,
+                      child: Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusMedium),
+                          ),
+                          child: Center(
+                            child: SvgPicture.asset(
+                              SvgAppIcons.searchIcon,
+                              colorFilter:const ColorFilter.mode(
+                                  // theme.colorScheme.primary,
+                                AppColors.accentGreen,
+                                  BlendMode.srcIn),
+                              width: 16,
+                              height: 16,
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -449,7 +496,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     height: 24,
                     color: theme.dividerColor.withValues(alpha: 0.2),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 4),
                   Expanded(
                     child: TextField(
                       onChanged: (val) {
@@ -463,7 +510,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       decoration: InputDecoration(
                         hintText: AppStrings.searchHint,
                         hintStyle: GoogleFonts.dmSans(
-                          color: isDark ? Colors.white38 : Colors.black38,
+                          color:   theme.colorScheme.onSurface.withValues(alpha: 0.4),
                           fontSize: AppTypography.fontSizeSmall,
                         ),
                         border: InputBorder.none,
@@ -486,8 +533,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             : null,
                       ),
                       style: GoogleFonts.dmSans(
-                        fontSize: AppTypography.fontSizeSmall,
+                        fontSize: AppTypography.fontSizeRegular,
                         color: theme.colorScheme.onSurface,
+                        letterSpacing: -0.1
                       ),
                     ),
                   ),
@@ -495,7 +543,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 6),
           ZoomTapAnimation(
             onTap: () {
               HapticFeedback.mediumImpact();
@@ -505,13 +553,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               width: 54,
               height: 54,
               decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.05)
-                    : Colors.white.withValues(alpha: 0.2),
-                shape: BoxShape.circle,
+
+                 borderRadius:  BorderRadius.circular(AppDimensions.borderRadiusMinLarge),
                 border: Border.all(
-                  color: theme.dividerColor.withValues(alpha: 0.1),
-                  width: 1,
+                  color: theme.dividerColor.withValues(alpha: 0.2),
+                  width: 1.4,
                 ),
               ),
               child: Center(
@@ -519,16 +565,35 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   width: 42,
                   height: 42,
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.15),
-                    shape: BoxShape.circle,
+                    color:isDark
+                        ?AppColors.balanceCardDarkModePositive
+                        :AppColors.balanceCardLightModePositive,
+                    // color: theme.colorScheme.primary.withValues(alpha: 0.05),
+                    border: Border.all(
+                       color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                      width: 1.4
+                    ),
+                    borderRadius:  BorderRadius.circular(AppDimensions.borderRadiusRegular
+                    ),
                   ),
-                  child: Center(
-                    child: SvgPicture.asset(
-                      SvgAppIcons.filterIcon,
-                      colorFilter: ColorFilter.mode(
-                          theme.colorScheme.primary, BlendMode.srcIn),
-                      width: 16,
-                      height: 16,
+                  child: Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+
+                        borderRadius:  BorderRadius.circular(AppDimensions.borderRadiusMedium),
+                      ),
+                      child: Center(
+                        child: SvgPicture.asset(
+                          SvgAppIcons.filterIcon,
+                          colorFilter:const ColorFilter.mode(
+                              // theme.colorScheme.primary,
+                            AppColors.accentGreen,
+                              BlendMode.srcIn),
+                          width: 16,
+                          height: 16,
+                        ),
+                      ),
                     ),
                   ),
                 ),

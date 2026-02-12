@@ -35,7 +35,7 @@ static const Color balanceCardLineDarkModePositive = Color(0xFF55DF69);
 
 
   // Status & Accent Colors
-  static const Color accentGreen = Color(0xFF2ECC71);
+  static const Color accentGreen = Color(0xFF55DF69);
   static const Color accentRed = Color(0xFFD32E2E);
 
   static Color getCardShadow(bool isDark) =>

@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:aspends_tracker/const/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class FloatingActionBar extends StatelessWidget {
@@ -24,6 +25,7 @@ class FloatingActionBar extends StatelessWidget {
         children: [
           // 🔵 Settle Balance Pill Button
           _glassContainer(
+            color: Colors.greenAccent,
             child: InkWell(
               onTap: onSettle,
               borderRadius: BorderRadius.circular(40),
@@ -69,7 +71,10 @@ class FloatingActionBar extends StatelessWidget {
   }
 
   // Glassmorphism container
-  Widget _glassContainer({required Widget child}) {
+  Widget _glassContainer({
+    required Widget child,
+    required Color color,
+  }) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(40),
       child: BackdropFilter(
@@ -78,10 +83,15 @@ class FloatingActionBar extends StatelessWidget {
           height: 65,
           width: 215,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.06),
+            // color: AppColors.accentGreen.withOpacity(0.06),
             borderRadius: BorderRadius.circular(40),
+            // border: Border.all(
+            //   color: AppColors.accentGreen.withOpacity(0.15),
+            // ),
+            color: color.withOpacity(0.15),
+
             border: Border.all(
-              color: Colors.white.withOpacity(0.15),
+              color: color.withOpacity(0.5),
             ),
           ),
           child: child,

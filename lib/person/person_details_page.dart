@@ -42,6 +42,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
   late Animation<Offset> _slideAnimation;
   late ScrollController _scrollController;
   bool _showFab = true;
+  bool _isDescending = true;
 
   @override
   void initState() {
@@ -226,7 +227,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
             delegate: HomeHeaderDelegate(
               // minHeight: 150,
               // maxHeight: 150,
-              height: 220,
+              height: 210,
               child: GestureDetector(
                   onLongPress: () {
                     HapticFeedback.lightImpact();
@@ -247,245 +248,269 @@ class _PersonDetailPageState extends State<PersonDetailPage>
           else
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (c, i) {
-                    final tx = txs[i];
-                    final sign = tx.isIncome ? '+' : '-';
-                    final isPositiveTx = tx.isIncome;
-
-                    return AnimatedBuilder(
-                      animation: _fadeController,
-                      builder: (context, child) {
-                        return Transform.translate(
-                          offset: Offset(0, 20 * (1 - _fadeController.value)),
-                          child: Opacity(
-                            opacity: _fadeController.value,
-                            child: Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              child: GestureDetector(
-                                onLongPress: () {
-                                  HapticFeedback.lightImpact();
-                                  _showDeleteTransactionDialog(context, tx);
-                                },
-                                child: ZoomTapAnimation(
-                                  onTap: () {
-                                    HapticFeedback.lightImpact();
-                                    showModalBottomSheet(
-                                      context: context,
-                                      isScrollControlled: true,
-                                      backgroundColor: Colors.transparent,
-                                      builder: (context) =>
-                                          AddTransactionDialog(
-                                        isIncome: tx.isIncome,
-                                        existingPersonTransaction: tx,
-                                      ),
-                                    );
-                                  },
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: theme.colorScheme.surface,
-                                      borderRadius: BorderRadius.circular(
-                                          AppDimensions.borderRadiusXLarge),
-                                      border: Border.all(
-                                        color: theme.dividerColor
-                                            .withValues(alpha: 0.05),
-                                        width: 1,
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black
-                                              .withValues(alpha: 0.03),
-                                          blurRadius: 10,
-                                          offset: const Offset(0, 4),
-                                        ),
-                                      ],
-                                    ),
-                                    child: IntrinsicHeight(
-                                      child: Row(
-                                        children: [
-                                          Padding(
-                                            padding:
-                                                const EdgeInsets.only(left: 1),
-                                            child: Container(
-                                              width: 4,
-                                              height:
-                                                  43, // Adjust the height as needed
-                                              decoration: BoxDecoration(
-                                                color: isPositiveTx
-                                                    ? AppColors.accentGreen
-                                                        .withValues(alpha: 0.2)
-                                                    : AppColors.accentRed
-                                                        .withValues(alpha: 0.2),
-                                                borderRadius: const BorderRadius
-                                                    .horizontal(
-                                                  left: Radius.circular(
-                                                      AppDimensions
-                                                          .borderRadiusXLarge),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Padding(
-                                              padding: const EdgeInsets.symmetric(
-                                                  horizontal: 8,
-                                              vertical: 16),
-                                              child: Row(
-                                                children: [
-                                                  Container(
-                                                    width: 48,
-                                                    height: 48,
-                                                    decoration: BoxDecoration(
-                                                      color: (isPositiveTx
-                                                              ? AppColors
-                                                                  .accentGreen
-                                                              : AppColors
-                                                                  .accentRed)
-                                                          .withValues(
-                                                              alpha: 0.1),
-                                                      border: Border.all(
-                                                        color: isPositiveTx
-                                                            ? AppColors
-                                                                .accentGreen
-                                                                .withValues(
-                                                                    alpha: 0.1)
-                                                            : AppColors
-                                                                .accentRed
-                                                                .withValues(
-                                                                    alpha: 0.1),
-                                                        width: 1,
-                                                      ),
-                                                      borderRadius: BorderRadius
-                                                          .circular(AppDimensions
-                                                              .borderRadiusMedium),
-                                                    ),
-                                                    child: Icon(
-                                                      isPositiveTx
-                                                          ? Icons
-                                                              .add_circle_rounded
-                                                          : Icons.remove_circle,
-                                                      color: isPositiveTx
-                                                          ? AppColors
-                                                              .accentGreen
-                                                          : AppColors.accentRed,
-                                                      size: 20,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 16),
-                                                  Expanded(
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      children: [
-                                                        Text(
-                                                          tx.note.isEmpty
-                                                              ? 'No note provided'
-                                                              : tx.note,
-                                                          style: GoogleFonts
-                                                              .dmSans(
-                                                            fontSize: 16,
-                                                            fontWeight:
-                                                                FontWeight.w700,
-                                                            color: theme
-                                                                .colorScheme
-                                                                .onSurface,
-                                                          ),
-                                                          maxLines: 1,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                        ),
-                                                        const SizedBox(
-                                                            height: 4),
-                                                        Text(
-                                                          DateFormat(
-                                                                  'MMM d, yyyy • hh:mm a')
-                                                              .format(tx.date),
-                                                          style: GoogleFonts
-                                                              .dmSans(
-                                                            fontSize: 12,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            color: theme
-                                                                .colorScheme
-                                                                .onSurface
-                                                                .withValues(
-                                                                    alpha: 0.4),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment.end,
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      Text(
-                                                        '$sign₹${tx.amount.abs().toStringAsFixed(0)}',
-                                                        style:
-                                                            GoogleFonts.dmSans(
-                                                          fontSize: 17,
-                                                          fontWeight:
-                                                              FontWeight.w800,
-                                                          color: isPositiveTx
-                                                              ? AppColors
-                                                                  .accentGreen
-                                                              : AppColors
-                                                                  .accentRed,
-                                                        ),
-                                                      ),
-                                                      // const SizedBox(height: 2),
-                                                      // Text(
-                                                      //   isPositiveTx
-                                                      //       ? 'Credit'
-                                                      //       : 'Debit',
-                                                      //   style:
-                                                      //       GoogleFonts.dmSans(
-                                                      //     fontSize: 10,
-                                                      //     fontWeight:
-                                                      //         FontWeight.w800,
-                                                      //     color: (isPositiveTx
-                                                      //             ? AppColors
-                                                      //                 .accentGreen
-                                                      //             : AppColors
-                                                      //                 .accentRed)
-                                                      //         .withValues(
-                                                      //             alpha: 0.5),
-                                                      //     letterSpacing: 0.5,
-                                                      //   ),
-                                                      // ),
-                                                    ],
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                  childCount: txs.length,
-                ),
-              ),
+              sliver: _buildGroupedTransactionList(txs, theme),
             ),
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
       ),
+    );
+  }
+
+  Widget _buildGroupedTransactionList(
+      List<PersonTransaction> txs, ThemeData theme) {
+    final groupedTxs = _groupTransactions(txs);
+    final flatList = [];
+    groupedTxs.forEach((date, items) {
+      flatList.add(date);
+      flatList.addAll(items);
+    });
+
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          final item = flatList[index];
+
+          if (item is String) {
+            return Padding(
+              padding: const EdgeInsets.only(top: 8, bottom: 8),
+              child: Text(
+                item,
+                style: GoogleFonts.dmSans(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                ),
+              ),
+            );
+          }
+
+          final tx = item as PersonTransaction;
+          return _buildTransactionItem(tx, theme);
+        },
+        childCount: flatList.length,
+      ),
+    );
+  }
+
+  Map<String, List<PersonTransaction>> _groupTransactions(
+      List<PersonTransaction> txs) {
+    final sortedTxs = List<PersonTransaction>.from(txs)
+      ..sort((a, b) =>
+          _isDescending ? b.date.compareTo(a.date) : a.date.compareTo(b.date));
+
+    final groups = <String, List<PersonTransaction>>{};
+    for (var tx in sortedTxs) {
+      final dateStr = _getGroupHeader(tx.date);
+      if (!groups.containsKey(dateStr)) {
+        groups[dateStr] = [];
+      }
+      groups[dateStr]!.add(tx);
+    }
+    return groups;
+  }
+
+  String _getGroupHeader(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final txDate = DateTime(date.year, date.month, date.day);
+
+    if (txDate == today) {
+      return 'Today';
+    } else if (txDate == yesterday) {
+      return 'Yesterday';
+    } else {
+      return DateFormat('d MMM, yyyy').format(date);
+    }
+  }
+
+  Widget _buildTransactionItem(PersonTransaction tx, ThemeData theme) {
+    final isPositiveTx = tx.isIncome;
+
+    return AnimatedBuilder(
+      animation: _fadeController,
+      builder: (context, child) {
+        return Transform.translate(
+          offset: Offset(0, 20 * (1 - _fadeController.value)),
+          child: Opacity(
+            opacity: _fadeController.value,
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              child: GestureDetector(
+                onLongPress: () {
+                  HapticFeedback.lightImpact();
+                  _showDeleteTransactionDialog(context, tx);
+                },
+                child: ZoomTapAnimation(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (context) => AddTransactionDialog(
+                        isIncome: tx.isIncome,
+                        existingPersonTransaction: tx,
+                      ),
+                    );
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(
+                          AppDimensions.borderRadiusXLarge),
+                      border: Border.all(
+                        color: theme.dividerColor.withValues(alpha: 0.05),
+                        width: 1.4,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.03),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: IntrinsicHeight(
+                      child: Row(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(left: 1),
+                            child: Container(
+                              width: 4,
+                              height: 43, // Adjust the height as needed
+                              decoration: BoxDecoration(
+                                color: isPositiveTx
+                                    ? AppColors.accentGreen
+                                        .withValues(alpha: 0.2)
+                                    : AppColors.accentRed
+                                        .withValues(alpha: 0.2),
+                                borderRadius: const BorderRadius.horizontal(
+                                  left: Radius.circular(
+                                      AppDimensions.borderRadiusXLarge),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 16),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 48,
+                                    height: 48,
+                                    decoration: BoxDecoration(
+                                      color: (isPositiveTx
+                                              ? AppColors.accentGreen
+                                              : AppColors.accentRed)
+                                          .withValues(alpha: 0.1),
+                                      border: Border.all(
+                                        color: isPositiveTx
+                                            ? AppColors.accentGreen
+                                                .withValues(alpha: 0.1)
+                                            : AppColors.accentRed
+                                                .withValues(alpha: 0.1),
+                                        width: 1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(
+                                          AppDimensions.borderRadiusMedium),
+                                    ),
+                                    child: Icon(
+                                      isPositiveTx
+                                          ? Icons.add_circle_rounded
+                                          : Icons.remove_circle,
+                                      color: isPositiveTx
+                                          ? AppColors.accentGreen
+                                          : AppColors.accentRed,
+                                      size: 20,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          tx.note.isEmpty
+                                              ? 'No note provided'
+                                              : tx.note,
+                                          style: GoogleFonts.dmSans(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w700,
+                                            color: theme.colorScheme.onSurface,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          DateFormat('MMM d, yyyy • hh:mm a')
+                                              .format(tx.date),
+                                          style: GoogleFonts.dmSans(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                            color: theme.colorScheme.onSurface
+                                                .withValues(alpha: 0.4),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        '₹${tx.amount.abs().toStringAsFixed(0)}',
+                                        style: GoogleFonts.dmSans(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.w800,
+                                          color: isPositiveTx
+                                              ? AppColors.accentGreen
+                                              : AppColors.accentRed,
+                                        ),
+                                      ),
+                                      // const SizedBox(height: 2),
+                                      // Text(
+                                      //   isPositiveTx
+                                      //       ? 'Credit'
+                                      //       : 'Debit',
+                                      //   style:
+                                      //       GoogleFonts.dmSans(
+                                      //     fontSize: 10,
+                                      //     fontWeight:
+                                      //         FontWeight.w800,
+                                      //     color: (isPositiveTx
+                                      //             ? AppColors
+                                      //                 .accentGreen
+                                      //             : AppColors
+                                      //                 .accentRed)
+                                      //         .withValues(
+                                      //             alpha: 0.5),
+                                      //     letterSpacing: 0.5,
+                                      //   ),
+                                      // ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -523,14 +548,16 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                           horizontal: 16, vertical: 7),
                       child: Container(
                         padding: EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 4,
+                          horizontal: 14,
+                          vertical: 14,
                         ),
                         decoration: BoxDecoration(
                           border: Border.all(
-                            color: Colors.red.withValues(alpha: 0.1),
+                            color: (isPositive
+                                    ? AppColors.accentGreen
+                                    : AppColors.accentRed)
+                                .withValues(alpha: 0.2),
                             width: 1.4,
-                            style: BorderStyle.solid,
                           ),
                           borderRadius: BorderRadius.circular(
                               AppDimensions.borderRadiusXLarge),
@@ -597,12 +624,14 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                                             ? AppColors.accentGreen
                                             : AppColors.accentRed,
                                         shape: BoxShape.circle,
-                                        border: Border.all(
-                                            color: theme.colorScheme.surface,
-                                            width: 1.5),
+                                        // border: Border.all(
+                                        //     color: isPositive
+                                        //         ? const Color(0xFF1B2E21)
+                                        //         : const Color(0xFF2E1B1B),
+                                        //     width: 1.5),
                                       ),
                                       child: Padding(
-                                        padding: const EdgeInsets.all(2.0),
+                                        padding: const EdgeInsets.all(4.0),
                                         child: SvgPicture.asset(
                                             isPositive
                                                 ? SvgAppIcons.incomeIcon
@@ -617,14 +646,14 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                
                                     Text(
                                       isPositive
-                                          ? AppStrings.youWillGet
-                                          : AppStrings.youWillGive,
+                                          ? AppStrings.youGet
+                                          : AppStrings.youGive,
                                       style: GoogleFonts.dmSans(
                                         fontSize: 15,
                                         fontWeight: FontWeight.w600,
@@ -650,6 +679,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                                             text: integerPart,
                                             style: GoogleFonts.bayon(
                                               fontSize: 36,
+                                              height: 1,
                                               fontWeight: FontWeight.w900,
                                               color: isPositive
                                                   ? AppColors.accentGreen
@@ -761,32 +791,45 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                           ),
                         ],
                       ),
-                      Container(
-                        width: 110,
-                        height: 41,
-                        decoration: BoxDecoration(
-                          color:
-                              theme.colorScheme.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(
-                              AppDimensions.borderRadiusRegular),
-                          border: Border.all(
-                            color: theme.dividerColor.withValues(alpha: 0.1),
-                            width: 1.4,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Recent',
-                              style: GoogleFonts.dmSans(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: theme.colorScheme.primary,
-                              ),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _isDescending = !_isDescending;
+                          });
+                        },
+                        child: Container(
+                          width: 110,
+                          height: 41,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary
+                                .withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(
+                                AppDimensions.borderRadiusRegular),
+                            border: Border.all(
+                              color: theme.dividerColor.withValues(alpha: 0.1),
+                              width: 1.4,
                             ),
-                            Icon(Icons.keyboard_arrow_down)
-                          ],
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                _isDescending ? 'Recent' : 'Oldest',
+                                style: GoogleFonts.dmSans(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: theme.colorScheme.primary,
+                                ),
+                              ),
+                              Icon(
+                                _isDescending
+                                    ? Icons.keyboard_arrow_down
+                                    : Icons.keyboard_arrow_up,
+                                size: 20,
+                                color: theme.colorScheme.primary,
+                              )
+                            ],
+                          ),
                         ),
                       ),
                     ],

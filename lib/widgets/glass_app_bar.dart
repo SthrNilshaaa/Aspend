@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../const/app_dimensions.dart';
 import '../utils/responsive_utils.dart';
 
 class GlassAppBar extends StatelessWidget {
@@ -27,8 +28,21 @@ class GlassAppBar extends StatelessWidget {
     final theme = Theme.of(context);
 
     return SliverAppBar(
-      toolbarHeight: ResponsiveUtils.isMobile(context) ? 70 : 80,
-      expandedHeight: ResponsiveUtils.isMobile(context) ? 70 : 80,
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.paddingStandard,
+
+          ),
+          child: Container(
+            color: theme.dividerColor.withValues(alpha: 0.1),
+            height: 1,
+          ),
+        ),
+      ),
+      toolbarHeight: ResponsiveUtils.isMobile(context) ? 80 : 80,
+      expandedHeight: ResponsiveUtils.isMobile(context) ? 80 : 80,
       floating: floating,
       pinned: true,
       scrolledUnderElevation: 0.0,
@@ -43,7 +57,7 @@ class GlassAppBar extends StatelessWidget {
         title,
         style: GoogleFonts.dmSans(
           fontSize: ResponsiveUtils.getResponsiveFontSize(context,
-              mobile: 32, tablet: 24, desktop: 28),
+              mobile: 20, tablet: 24, desktop: 28),
           fontWeight: FontWeight.bold,
           color: theme.colorScheme.onSurface,
         ),

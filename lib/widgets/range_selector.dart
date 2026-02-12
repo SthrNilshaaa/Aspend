@@ -1,3 +1,4 @@
+import 'package:aspends_tracker/const/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -46,19 +47,19 @@ class RangeSelector extends StatelessWidget {
                     vertical: AppDimensions.paddingSmall),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? theme.colorScheme.primary
+                      ? AppColors.accentGreen.withValues(alpha: 0.5)
                       : theme.colorScheme.surface,
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusMedium),
                   border: Border.all(
                     color: isSelected
-                        ? theme.colorScheme.primary
+                        ?  AppColors.balanceCardBorderDarkModePositive
                         : theme.dividerColor.withValues(alpha: 0.1),
                   ),
                   boxShadow: isSelected
                       ? [
                           BoxShadow(
-                            color: theme.colorScheme.primary
+                            color: AppColors.accentGreen
                                 .withValues(alpha: 0.3),
                             blurRadius: AppDimensions.blurRadiusStandard,
                             offset: const Offset(0, 2),

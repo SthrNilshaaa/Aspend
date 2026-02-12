@@ -12,6 +12,8 @@ class AppDimensions {
   static const double borderRadiusTiny = 2.0;
 
   static const double paddingStandard = 16.0;
+
+  static const double paddingXStandard = 20.0;
   static const double paddingSmall = 8.0;
   static const double paddingXSmall = 4.0;
   static const double paddingTiny = 2.0;
@@ -57,6 +59,7 @@ class AppDimensions {
   static const double splashLogoOffsetDesktop = 140.0;
 
   static const double avatarSizeStandard = 40.0;
+  static const double avatar2SizeStandard = 30.0;
 
   static const EdgeInsets horizontalPadding16 =
       EdgeInsets.symmetric(horizontal: 16.0);
