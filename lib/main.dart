@@ -109,6 +109,8 @@ class MyApp extends StatelessWidget {
         final useAdaptive = themeViewModel.useAdaptiveColor;
         final customSeedColor =
             themeViewModel.customSeedColor ?? AppColors.primaryGreen;
+        final scaffoldBackgroundColor =
+            themeViewModel.isDarkMode ? Color(0xFF0D0D0D) : Color(0xFFFDFFFD);
         final lightSchemeFinal = useAdaptive
             ? (lightDynamic ??
                 ColorScheme.fromSeed(
@@ -126,6 +128,7 @@ class MyApp extends StatelessWidget {
           return ThemeData(
             colorScheme: scheme,
             useMaterial3: true,
+            scaffoldBackgroundColor:  scaffoldBackgroundColor,
             fontFamily: AppTypography.legacyFontFamily,
             textTheme: GoogleFonts.dmSansTextTheme(
               scheme.brightness == Brightness.dark
@@ -178,7 +181,9 @@ class MyApp extends StatelessWidget {
           themeMode: themeViewModel.themeMode,
           theme: createTheme(lightSchemeFinal),
           darkTheme: createTheme(darkSchemeFinal),
-          home: const SplashScreen(),
+          home: SplashScreen(
+            isDarkMode:  themeViewModel.isDarkMode,
+          ),
         );
       },
     );

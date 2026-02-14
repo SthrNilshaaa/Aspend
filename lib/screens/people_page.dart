@@ -35,11 +35,13 @@ class _PeopleTabState extends State<PeopleTab> {
   late ScrollController _scrollController;
   bool _showFab = true;
   String? _searchQuery;
+  late TextEditingController _searchController;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
+    _searchController = TextEditingController();
 
     _scrollController.addListener(() {
       if (!_scrollController.hasClients) return;
@@ -71,6 +73,7 @@ class _PeopleTabState extends State<PeopleTab> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -645,8 +648,11 @@ class _PeopleTabState extends State<PeopleTab> {
                 ),
               ),
             ),
-          const SliverToBoxAdapter(
-              child: SizedBox(height: 80)), // Your existing SizedBox
+          SliverToBoxAdapter(
+              child: SizedBox(
+                  height: people.isEmpty ? 100 : 80,
+              ),
+          ), // Your existing SizedBox
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
@@ -747,7 +753,7 @@ class _PeopleTabState extends State<PeopleTab> {
               decoration: BoxDecoration(
                 color: isDark
                     ? theme.primaryColor.withValues(alpha: 0.05)
-                // : Colors.black.withValues(alpha: 0.05),
+                    // : Colors.black.withValues(alpha: 0.05),
                     : Colors.white.withValues(alpha: 0.2),
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadiusMinLarge),
@@ -759,22 +765,22 @@ class _PeopleTabState extends State<PeopleTab> {
               child: Row(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
                     child: Container(
                       width: 42,
                       height: 42,
                       decoration: BoxDecoration(
-                          color: isDark
-                              ? AppColors.balanceCardDarkModePositive
-                              : AppColors.balanceCardLightModePositive,
-                          // color: theme.colorScheme.primary.withValues(alpha: 0.05),
-                          border: Border.all(
-                              color:
-                                  theme.colorScheme.primary.withValues(alpha: 0.15),
-                              width: 1.4),
-                          borderRadius: BorderRadius.circular(
-                              AppDimensions.borderRadiusRegular),),
+                        color: isDark
+                            ? AppColors.balanceCardDarkModePositive
+                            : AppColors.balanceCardLightModePositive,
+                        // color: theme.colorScheme.primary.withValues(alpha: 0.05),
+                        border: Border.all(
+                            color: theme.colorScheme.primary
+                                .withValues(alpha: 0.15),
+                            width: 1.4),
+                        borderRadius: BorderRadius.circular(
+                            AppDimensions.borderRadiusRegular),
+                      ),
                       child: Padding(
                         padding: const EdgeInsets.all(2.0),
                         child: Container(
@@ -787,8 +793,8 @@ class _PeopleTabState extends State<PeopleTab> {
                           child: Center(
                             child: SvgPicture.asset(
                               SvgAppIcons.searchIcon,
-                              colorFilter:const ColorFilter.mode(
-                                // theme.colorScheme.primary,
+                              colorFilter: const ColorFilter.mode(
+                                  // theme.colorScheme.primary,
                                   AppColors.accentGreen,
                                   BlendMode.srcIn),
                               width: 16,
@@ -808,6 +814,7 @@ class _PeopleTabState extends State<PeopleTab> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: TextField(
+                      controller: _searchController,
                       onChanged: (val) {
                         setState(() {
                           _searchQuery = val.trim().isEmpty ? null : val.trim();
@@ -817,30 +824,31 @@ class _PeopleTabState extends State<PeopleTab> {
                         hintText: AppStrings.searchPeople,
                         hintStyle: GoogleFonts.dmSans(
                           fontSize: AppTypography.fontSizeSmall,
-                          color:
-                              theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.4),
                         ),
                         border: InputBorder.none,
                         enabledBorder: InputBorder.none,
                         focusedBorder: InputBorder.none,
                         filled: false,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                        contentPadding:
+                            const EdgeInsets.symmetric(vertical: 12),
                         suffixIcon: _searchQuery != null
                             ? IconButton(
                                 icon: const Icon(Icons.clear, size: 18),
                                 onPressed: () {
                                   setState(() {
                                     _searchQuery = null;
+                                    _searchController.clear();
                                   });
                                 },
                               )
                             : null,
                       ),
                       style: GoogleFonts.dmSans(
-                        fontSize: AppTypography.fontSizeRegular,
-                        color: theme.colorScheme.onSurface,
-                        letterSpacing: -0.1
-                      ),
+                          fontSize: AppTypography.fontSizeRegular,
+                          color: theme.colorScheme.onSurface,
+                          letterSpacing: -0.1),
                     ),
                   ),
                 ],
@@ -857,8 +865,8 @@ class _PeopleTabState extends State<PeopleTab> {
               width: 54,
               height: 54,
               decoration: BoxDecoration(
-
-                borderRadius:  BorderRadius.circular(AppDimensions.borderRadiusMinLarge),
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadiusMinLarge),
                 border: Border.all(
                   color: theme.dividerColor.withValues(alpha: 0.2),
                   width: 1.4,
@@ -869,23 +877,23 @@ class _PeopleTabState extends State<PeopleTab> {
                   width: 42,
                   height: 42,
                   decoration: BoxDecoration(
-                    color:isDark
-                        ?AppColors.balanceCardDarkModePositive
-                        :AppColors.balanceCardLightModePositive,
+                    color: isDark
+                        ? AppColors.balanceCardDarkModePositive
+                        : AppColors.balanceCardLightModePositive,
                     // color: theme.colorScheme.primary.withValues(alpha: 0.05),
                     border: Border.all(
-                        color: theme.colorScheme.primary.withValues(alpha: 0.15),
-                        width: 1.4
-                    ),
-                    borderRadius:  BorderRadius.circular(AppDimensions.borderRadiusRegular
-                    ),
+                        color:
+                            theme.colorScheme.primary.withValues(alpha: 0.15),
+                        width: 1.4),
+                    borderRadius: BorderRadius.circular(
+                        AppDimensions.borderRadiusRegular),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(2.0),
                     child: Container(
                       decoration: BoxDecoration(
-
-                        borderRadius:  BorderRadius.circular(AppDimensions.borderRadiusMedium),
+                        borderRadius: BorderRadius.circular(
+                            AppDimensions.borderRadiusMedium),
                       ),
                       child: Center(
                         child: SvgPicture.asset(

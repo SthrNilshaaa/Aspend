@@ -18,6 +18,7 @@ import '../widgets/glass_app_bar.dart';
 import '../widgets/empty_state_view.dart';
 import '../widgets/person_transaction_item.dart';
 import '../widgets/person_detail_header.dart';
+import '../const/app_typography.dart';
 
 class PersonDetailPage extends StatefulWidget {
   final Person person;
@@ -36,7 +37,8 @@ class _PersonDetailPageState extends State<PersonDetailPage>
   late Animation<Offset> _slideAnimation;
   late ScrollController _scrollController;
   bool _showFab = true;
-  bool _isDescending = true;
+  PersonTransactionSortOption _sortOption =
+      PersonTransactionSortOption.dateNewest;
 
   @override
   void initState() {
@@ -98,7 +100,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
               orElse: () => widget.person,
             ));
     final groupedTxs =
-        viewModel.getGroupedTransactionsFor(person.name, _isDescending);
+        viewModel.getGroupedTransactionsFor(person.name, _sortOption);
     final total = context.select<PersonViewModel, double>(
         (vm) => vm.getTotalForPerson(person.name));
     final txsCount =
@@ -239,10 +241,10 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                     txsCount: txsCount,
                     fadeAnimation: _fadeAnimation,
                     slideAnimation: _slideAnimation,
-                    isDescending: _isDescending,
-                    onToggleSort: () {
+                    currentSortOption: _sortOption,
+                    onShowSortOptions: () {
                       HapticFeedback.selectionClick();
-                      setState(() => _isDescending = !_isDescending);
+                      _showSortOptions(context);
                     },
                   ),
                 ),
@@ -277,36 +279,36 @@ class _PersonDetailPageState extends State<PersonDetailPage>
       flatList.addAll(items);
     });
 
-    return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          final item = flatList[index];
-
-          if (item is String) {
-            return Padding(
-              padding: const EdgeInsets.only(top: 8, bottom: 8),
-              child: Text(
-                item,
-                style: GoogleFonts.dmSans(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+    return SliverToBoxAdapter(
+      child: RepaintBoundary(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: flatList.map((item) {
+            if (item is String) {
+              return Padding(
+                padding: const EdgeInsets.only(top: 8, bottom: 8),
+                child: Text(
+                  item,
+                  style: GoogleFonts.dmSans(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                  ),
                 ),
-              ),
-            );
-          }
+              );
+            }
 
-          final tx = item as PersonTransaction;
-          return PersonTransactionItem(
-            tx: tx,
-            animation: _fadeAnimation,
-            onLongPress: () {
-              HapticFeedback.lightImpact();
-              _showDeleteTransactionDialog(context, tx);
-            },
-          );
-        },
-        childCount: flatList.length,
+            final tx = item as PersonTransaction;
+            return PersonTransactionItem(
+              tx: tx,
+              animation: _fadeAnimation,
+              onLongPress: () {
+                HapticFeedback.lightImpact();
+                _showDeleteTransactionDialog(context, tx);
+              },
+            );
+          }).toList(),
+        ),
       ),
     );
   }
@@ -604,6 +606,85 @@ class _PersonDetailPageState extends State<PersonDetailPage>
           ],
         ),
       ),
+    );
+  }
+
+  void _showSortOptions(BuildContext context) {
+    final theme = Theme.of(context);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(AppDimensions.borderRadiusXLarge)),
+        ),
+        padding: const EdgeInsets.all(AppDimensions.paddingLarge),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: theme.dividerColor.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Sort Transactions By',
+              style: GoogleFonts.dmSans(
+                fontSize: AppTypography.fontSizeLarge,
+                fontWeight: AppTypography.fontWeightBold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildSortOption(context, 'Date (Recent)',
+                PersonTransactionSortOption.dateNewest),
+            _buildSortOption(context, 'Date (Oldest)',
+                PersonTransactionSortOption.dateOldest),
+            _buildSortOption(context, 'Amount (Highest)',
+                PersonTransactionSortOption.amountHighest),
+            _buildSortOption(context, 'Amount (Lowest)',
+                PersonTransactionSortOption.amountLowest),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSortOption(
+      BuildContext context, String title, PersonTransactionSortOption option) {
+    final theme = Theme.of(context);
+    final isSelected = _sortOption == option;
+
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      title: Text(
+        title,
+        style: GoogleFonts.dmSans(
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          color: isSelected
+              ? theme.colorScheme.primary
+              : theme.colorScheme.onSurface,
+        ),
+      ),
+      trailing: isSelected
+          ? Icon(Icons.check_circle_rounded, color: theme.colorScheme.primary)
+          : null,
+      onTap: () {
+        setState(() {
+          _sortOption = option;
+        });
+        Navigator.pop(context);
+      },
     );
   }
 }

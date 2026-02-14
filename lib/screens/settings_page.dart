@@ -1,6 +1,8 @@
 import 'dart:ui';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:local_auth/local_auth.dart';
 import '../view_models/theme_view_model.dart';
@@ -22,6 +24,9 @@ import '../utils/error_handler.dart';
 import 'detection_history_page.dart';
 import '../widgets/glass_app_bar.dart';
 import '../widgets/settings_widgets.dart';
+import '../widgets/transaction_tile.dart';
+import '../utils/transaction_utils.dart';
+import '../const/app_assets.dart';
 import '../const/app_strings.dart';
 import '../const/app_constants.dart';
 
@@ -133,12 +138,12 @@ class _SettingsPageState extends State<SettingsPage> {
                         icon: Icons.palette,
                         children: [
                           _buildThemeCard(context, isDark),
-                          if (!useAdaptive) ...[
-                            const SizedBox(height: 12),
-                            _buildColorPickerTile(context),
-                          ],
-                          const SizedBox(height: 12),
-                          _buildAdaptiveColorSwitch(context),
+                          // if (!useAdaptive) ...[
+                          //   const SizedBox(height: 12),
+                          //   _buildColorPickerTile(context),
+                          // ],
+                          // const SizedBox(height: 12),
+                          // _buildAdaptiveColorSwitch(context),
                         ],
                       ),
                       const SizedBox(height: 24),
@@ -338,7 +343,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Widget _buildColorPickerTile(BuildContext context) {
     final viewModel = context.watch<ThemeViewModel>();
-    final currentColor = viewModel.customSeedColor ?? Colors.teal;
+    final currentColor = viewModel.customSeedColor ?? Colors.green;
     return SettingTile(
       icon: Icons.color_lens,
       title: AppStrings.appColor,
@@ -916,6 +921,27 @@ class _SettingsPageState extends State<SettingsPage> {
                             itemBuilder: (context, index) {
                               final item = items[index];
                               return ListTile(
+                                leading: (type == 'Income' || type == 'Expense')
+                                    ? Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color:
+                                              TransactionUtils.getCategoryColor(
+                                                      item)
+                                                  .withValues(alpha: 0.1),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: SvgPicture.asset(
+                                          TransactionUtils.getCategorySvg(item),
+                                          colorFilter: ColorFilter.mode(
+                                              TransactionUtils.getCategoryColor(
+                                                  item),
+                                              BlendMode.srcIn),
+                                          width: 18,
+                                          height: 18,
+                                        ),
+                                      )
+                                    : null,
                                 title: Text(item, style: GoogleFonts.dmSans()),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -1058,22 +1084,36 @@ class _SettingsPageState extends State<SettingsPage> {
           icon: Icons.description,
           title: 'Privacy Policy',
           subtitle: 'Read our privacy policy',
-          onTap: () {
-            HapticFeedback.lightImpact();
-            _showSnackBar(context, 'Privacy policy coming soon!');
-          },
+          onTap: () =>
+              _launchExternalUrl(context, AppConstants.privacyPolicyUrl),
         ),
         SettingTile(
           icon: Icons.help_outline,
           title: 'Help & Support',
           subtitle: 'Get help and contact support',
-          onTap: () {
-            HapticFeedback.lightImpact();
-            _showSnackBar(context, 'Help section coming soon!');
-          },
+          onTap: () =>
+              _launchExternalUrl(context, AppConstants.supportTelegramUrl),
         ),
       ],
     );
+  }
+
+  Future<void> _launchExternalUrl(
+      BuildContext context, String urlString) async {
+    HapticFeedback.lightImpact();
+    final url = Uri.parse(urlString);
+    try {
+      // Use externalApplication mode for better reliability with universal links
+      final launched =
+          await launchUrl(url, mode: LaunchMode.externalApplication);
+      if (!launched && context.mounted) {
+        _showSnackBar(context, 'Could not launch URL');
+      }
+    } catch (e) {
+      if (context.mounted) {
+        _showSnackBar(context, 'Error: $e');
+      }
+    }
   }
 
   Widget _buildBudgetSection(BuildContext context) {

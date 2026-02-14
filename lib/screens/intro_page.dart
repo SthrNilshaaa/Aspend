@@ -281,8 +281,8 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
               HapticFeedback.lightImpact();
               try {
                 // Request permissions
-                await NativeBridge.requestNotificationPermission();
                 await NativeBridge.requestBatteryOptimization();
+                await NativeBridge.requestNotificationPermission();
 
                 // Enable auto-detection
                 await TransactionDetectionService.setEnabled(true);

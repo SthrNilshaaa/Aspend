@@ -39,7 +39,8 @@ class _TransactionTileState extends State<TransactionTile> {
     final isDark = themeViewModel.isDarkMode;
     final color =
         TransactionUtils.getCategoryColor(widget.transaction.category);
-    final icon = TransactionUtils.getCategoryIcon(widget.transaction.category);
+    final iconSvg =
+        TransactionUtils.getCategorySvg(widget.transaction.category);
     final formatted = NumberFormat.currency(
       symbol: '',
       decimalDigits: 2,
@@ -88,16 +89,19 @@ class _TransactionTileState extends State<TransactionTile> {
                     tablet: AppDimensions.categoryIconSizeTablet,
                     desktop: AppDimensions.categoryIconSizeDesktop),
                 decoration: BoxDecoration(
-                  color:  color.withValues(alpha: 0.2),
+                  color: color.withValues(alpha: 0.2),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.borderRadiusRegular),
                 ),
-                child: Icon(icon,
-                    color: color,
-                    size: ResponsiveUtils.getResponsiveIconSize(context,
-                        mobile: AppDimensions.categoryIconInsideMobile,
-                        tablet: AppDimensions.categoryIconInsideTablet,
-                        desktop: AppDimensions.categoryIconInsideDesktop)),
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: SvgPicture.asset(iconSvg,
+                      colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+                      width: ResponsiveUtils.getResponsiveIconSize(context,
+                          mobile: AppDimensions.categoryIconInsideMobile,
+                          tablet: AppDimensions.categoryIconInsideTablet,
+                          desktop: AppDimensions.categoryIconInsideDesktop)),
+                ),
               ),
               const SizedBox(width: AppDimensions.paddingStandard),
               Expanded(
@@ -150,71 +154,76 @@ class _TransactionTileState extends State<TransactionTile> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  RichText(text: TextSpan(
-                    children: [
-
-                      TextSpan(
-                        text: '₹',
-                        style: GoogleFonts.dmSans(
-                          fontWeight: AppTypography.fontWeightBlack,
-                          fontSize: ResponsiveUtils.getResponsiveFontSize(context,
-                              mobile: AppTypography.fontSizeMedium,
-                              tablet: AppTypography.fontSizeRegular,
-                              desktop: AppTypography.fontSizeLarge),
-                          color: widget.transaction.isIncome
-                              ? AppColors.accentGreen
-                              : AppColors.accentRed,
-                        ),
-                      ),
-                      const TextSpan(text: ' '),
-                      TextSpan(
-                        text: widget.transaction.isIncome ? '+' : '-',
-                        style: GoogleFonts.dmSans(
-                          fontWeight: AppTypography.fontWeightBlack,
-                          fontSize: ResponsiveUtils.getResponsiveFontSize(context,
-                              mobile: AppTypography.fontSizeMedium,
-                              tablet: AppTypography.fontSizeRegular,
-                              desktop: AppTypography.fontSizeLarge),
-                          color: widget.transaction.isIncome
-                              ? AppColors.accentGreen
-                              : AppColors.accentRed,
-                        ),
-                      ),
-                      TextSpan(
-                        children: [
-                          // Integer part (55)
-                          TextSpan(
-                            text: integerPart,
-                            style: GoogleFonts.dmSans(
-                              fontWeight: AppTypography.fontWeightBlack,
-                              fontSize: ResponsiveUtils.getResponsiveFontSize(context,
-                                  mobile: AppTypography.fontSizeMedium,
-                                  tablet: AppTypography.fontSizeRegular,
-                                  desktop: AppTypography.fontSizeLarge),
-                              color: widget.transaction.isIncome
-                                  ? AppColors.accentGreen
-                                  : AppColors.accentRed,
-                            ),
+                  RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: '₹',
+                          style: GoogleFonts.dmSans(
+                            fontWeight: AppTypography.fontWeightBlack,
+                            fontSize: ResponsiveUtils.getResponsiveFontSize(
+                                context,
+                                mobile: AppTypography.fontSizeMedium,
+                                tablet: AppTypography.fontSizeRegular,
+                                desktop: AppTypography.fontSizeLarge),
+                            color: widget.transaction.isIncome
+                                ? AppColors.accentGreen
+                                : AppColors.accentRed,
                           ),
-
-                          // Decimal point + decimals (35)
-                          TextSpan(
-                            text: '.$decimalPart',
-                            style: GoogleFonts.dmSans(
-                              fontWeight: AppTypography.fontWeightBlack,
-                              fontSize: ResponsiveUtils.getResponsiveFontSize(context,
-                                  mobile: AppTypography.fontSizeXSmall,
-                                  tablet: AppTypography.fontSizeRegular,
-                                  desktop: AppTypography.fontSizeLarge),
-                              color: widget.transaction.isIncome
-                                  ? AppColors.accentGreen
-                                  : AppColors.accentRed,
-                            ),
+                        ),
+                        const TextSpan(text: ' '),
+                        TextSpan(
+                          text: widget.transaction.isIncome ? '+' : '-',
+                          style: GoogleFonts.dmSans(
+                            fontWeight: AppTypography.fontWeightBlack,
+                            fontSize: ResponsiveUtils.getResponsiveFontSize(
+                                context,
+                                mobile: AppTypography.fontSizeMedium,
+                                tablet: AppTypography.fontSizeRegular,
+                                desktop: AppTypography.fontSizeLarge),
+                            color: widget.transaction.isIncome
+                                ? AppColors.accentGreen
+                                : AppColors.accentRed,
                           ),
-                        ],
-                      ),
-                    ],
-                  ),),
+                        ),
+                        TextSpan(
+                          children: [
+                            // Integer part (55)
+                            TextSpan(
+                              text: integerPart,
+                              style: GoogleFonts.dmSans(
+                                fontWeight: AppTypography.fontWeightBlack,
+                                fontSize: ResponsiveUtils.getResponsiveFontSize(
+                                    context,
+                                    mobile: AppTypography.fontSizeMedium,
+                                    tablet: AppTypography.fontSizeRegular,
+                                    desktop: AppTypography.fontSizeLarge),
+                                color: widget.transaction.isIncome
+                                    ? AppColors.accentGreen
+                                    : AppColors.accentRed,
+                              ),
+                            ),
+
+                            // Decimal point + decimals (35)
+                            TextSpan(
+                              text: '.$decimalPart',
+                              style: GoogleFonts.dmSans(
+                                fontWeight: AppTypography.fontWeightBlack,
+                                fontSize: ResponsiveUtils.getResponsiveFontSize(
+                                    context,
+                                    mobile: AppTypography.fontSizeXSmall,
+                                    tablet: AppTypography.fontSizeRegular,
+                                    desktop: AppTypography.fontSizeLarge),
+                                color: widget.transaction.isIncome
+                                    ? AppColors.accentGreen
+                                    : AppColors.accentRed,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                   // Text(
                   //   "${widget.transaction.isIncome ? '+' : '-'}"
                   //       "${NumberFormat.currency(symbol: '₹', decimalDigits: 2).format(widget.transaction.amount)}",
@@ -254,7 +263,8 @@ class _TransactionTileState extends State<TransactionTile> {
     final theme = Theme.of(context);
     final color =
         TransactionUtils.getCategoryColor(widget.transaction.category);
-    final icon = TransactionUtils.getCategoryIcon(widget.transaction.category);
+    final iconSvg =
+        TransactionUtils.getCategorySvg(widget.transaction.category);
 
     showModalBottomSheet(
       context: context,
@@ -320,8 +330,11 @@ class _TransactionTileState extends State<TransactionTile> {
                               color: color.withValues(alpha: 0.15),
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(icon,
-                                color: color, size: AppDimensions.iconSizeHuge),
+                            child: SvgPicture.asset(iconSvg,
+                                colorFilter:
+                                    ColorFilter.mode(color, BlendMode.srcIn),
+                                width: AppDimensions.iconSizeHuge,
+                                height: AppDimensions.iconSizeHuge),
                           ),
                           const Spacer(),
                           Text(

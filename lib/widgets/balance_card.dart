@@ -60,7 +60,7 @@ class _BalanceCardState extends State<BalanceCard>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    Theme.of(context);
     // Optimized rebuilds with select
     final isDark = context.select<ThemeViewModel, bool>((vm) => vm.isDarkMode);
     final totalIncome =
@@ -194,6 +194,11 @@ class _BalanceCardState extends State<BalanceCard>
                           isNegative: isNegative,
                           isDark: isDark,
                           integerSize: 55,
+                          symbolSize: 40,
+                          fontName: GoogleFonts.bayon(),
+                          extraColor: isNegative
+                              ? AppColors.accentRed
+                              : AppColors.accentGreen,
                         ),
                         const SizedBox(height: AppDimensions.paddingSmall),
                         Row(
@@ -238,15 +243,15 @@ class _BalanceCardState extends State<BalanceCard>
                 left: 50,
                 right: 50,
                 child: DecorativeLine(
-                    color: lineColor, position: LinePosition.bottom),
+                    color: backgroundColor, position: LinePosition.bottom),
               ),
-              Positioned(
-                left: 50,
-                right: 50,
-                top: 3,
-                child: DecorativeLine(
-                    color: lineColor, position: LinePosition.top),
-              ),
+              // Positioned(
+              //   left: 50,
+              //   right: 50,
+              //   top: 3,
+              //   child: DecorativeLine(
+              //       color: lineColor, position: LinePosition.top),
+              // ),
             ]),
           ),
         ),
@@ -384,13 +389,19 @@ class CurrencyText extends StatelessWidget {
   final bool isNegative;
   final bool isDark;
   final double integerSize;
+  final double symbolSize;
+  final TextStyle fontName;
+  final Color extraColor;
 
-  const CurrencyText({
+   CurrencyText({
     super.key,
     required this.amount,
     required this.isNegative,
     required this.isDark,
     required this.integerSize,
+    required this.symbolSize,
+    required this.fontName,
+     this.extraColor = Colors.transparent,
   });
 
   @override
@@ -410,30 +421,32 @@ class CurrencyText extends StatelessWidget {
           TextSpan(
             text: '₹',
             style: GoogleFonts.dmSans(
-              fontSize: integerSize * 0.63,
+              fontSize: symbolSize,
               fontWeight: AppTypography.fontWeightBlack,
               color: isDark
                   ? Colors.white.withValues(alpha: 0.9)
                   : Colors.black.withValues(alpha: 0.9),
             ),
           ),
-          const TextSpan(text: '  '),
+          const TextSpan(text: ' '),
           TextSpan(
             text: integerPart,
-            style: GoogleFonts.bayon(
+            style: fontName.copyWith(
               fontSize: integerSize,
               height: 1,
               fontWeight: AppTypography.fontWeightMedium,
-              color: isNegative ? AppColors.accentRed : AppColors.accentGreen,
-              letterSpacing: 1,
+              color: extraColor,
+              // color: isNegative ? AppColors.accentRed : AppColors.accentGreen,
+              letterSpacing: 0,
             ),
           ),
           TextSpan(
             text: '.$decimalPart',
-            style: GoogleFonts.bayon(
+            style:fontName.copyWith(
               fontSize: integerSize * 0.63,
               fontWeight: AppTypography.fontWeightMedium,
-              color: isNegative ? AppColors.accentRed : AppColors.accentGreen,
+              color: extraColor,
+              // color: isNegative ? AppColors.accentRed : AppColors.accentGreen,
               letterSpacing: 1,
             ),
           ),
@@ -465,6 +478,7 @@ class StatItem extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             SvgPicture.asset(
               icon,
@@ -487,10 +501,20 @@ class StatItem extends StatelessWidget {
         ),
         CurrencyText(
           amount: amount,
+
           isNegative:
               false, // Stats are always shown in their respective colors
           isDark: isDark,
-          integerSize: AppTypography.fontSizeLarge + 2,
+          integerSize: AppTypography.fontSizeRegular + 2,
+          symbolSize:AppTypography.fontSizeRegular + 2,
+          extraColor:isDark? Colors.white:Colors.black54,
+          fontName: GoogleFonts.dmSans(
+            fontWeight: AppTypography.fontWeightSemiBold,
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.9)
+                : Colors.black.withValues(alpha: 0.9),
+            // fontSize: AppTypography.fontSizeSmall
+          ),
         ),
       ],
     );

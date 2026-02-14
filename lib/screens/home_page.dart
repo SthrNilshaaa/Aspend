@@ -43,10 +43,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late ScrollController _scrollController;
   bool _showFab = true;
-  String? _searchQuery;
-  final String _selectedRange = 'All'; // Day, Week, Month, Year, All
-  final DateTime _startDate = DateTime(2000);
-  final DateTime _endDate = DateTime.now();
   double _turns = 0.0;
   StreamSubscription<String>? _uiEventSubscription;
 
@@ -138,20 +134,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final themeViewModel = context.watch<ThemeViewModel>();
     final transactionViewModel = context.watch<TransactionViewModel>();
+    final isDark = context.select<ThemeViewModel, bool>((vm) => vm.isDarkMode);
+    final useAdaptive =
+        context.select<ThemeViewModel, bool>((vm) => vm.useAdaptiveColor);
 
-    final txns = transactionViewModel.sortedTransactions.where((t) {
-      final matchesSearch = _searchQuery == null ||
-          t.note.toLowerCase().contains(_searchQuery!) ||
-          t.category.toLowerCase().contains(_searchQuery!);
-      final matchesRange = _selectedRange == 'All' ||
-          (t.date.isAfter(_startDate.subtract(const Duration(seconds: 1))) &&
-              t.date.isBefore(_endDate.add(const Duration(days: 1))));
-      return matchesSearch && matchesRange;
-    }).toList();
-
-    final grouped = TransactionUtils.groupTransactionsByDate(txns);
+    final grouped = transactionViewModel.groupedFilteredTransactions;
+    final txns = transactionViewModel.filteredTransactions;
 
     return Scaffold(
       body: CustomScrollView(
@@ -189,9 +178,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       child: Padding(
                         padding: const EdgeInsets.all(4.0),
                         child: SvgPicture.asset(
-                          themeViewModel.isDarkMode
-                              ? SvgAppIcons.lightLogoIcon
-                              : SvgAppIcons.darkLogoIcon,
+                          isDark
+                              ? SvgAppIcons.appBarIcon
+                              : SvgAppIcons.appBarIcon,
                         ),
                       ),
                     ),
@@ -230,7 +219,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         child: Padding(
                           padding: const EdgeInsets.all(13.0),
                           child: SvgPicture.asset(
-                             SvgAppIcons.notificationLogoIcon,
+                            SvgAppIcons.notificationLogoIcon,
                             colorFilter: ColorFilter.mode(
                                 theme.colorScheme.onSurface, BlendMode.srcIn),
                           ),
@@ -258,7 +247,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
           _buildBalanceSection(context, transactionViewModel),
           SliverPersistentHeader(
-
             pinned: true,
             delegate: HomeHeaderDelegate(
               // minHeight: 150,
@@ -268,30 +256,34 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ),
           ),
           if (txns.isNotEmpty)
-            _buildTransactionList(
-                grouped, theme, themeViewModel.useAdaptiveColor)
+            _buildTransactionList(grouped, theme, useAdaptive)
           else
             SliverFillRemaining(
               hasScrollBody: false,
               child: _buildEmptyState(),
             ),
           SliverToBoxAdapter(
+            child: RepaintBoundary(
               child: SizedBox(
-                  height: MediaQuery.of(context).padding.bottom +
-                      AppDimensions.paddingXLarge * 2.5)),
+                height: txns.isNotEmpty
+                    ? MediaQuery.of(context).padding.bottom +
+                        AppDimensions.paddingXLarge * 2.5
+                    : MediaQuery.of(context).padding.bottom +
+                        AppDimensions.paddingXLarge * 3,
+              ),
+            ),
+          ),
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton:  AnimatedSlide(
+      floatingActionButton: AnimatedSlide(
         offset: _showFab ? Offset.zero : const Offset(0, 2),
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
-
-
         child: AnimatedOpacity(
           opacity: _showFab ? 1.0 : 0.5,
           duration: const Duration(milliseconds: 300),
-          child:  _buildDualFab(theme) ,
+          child: _buildDualFab(theme),
         ),
       ),
     );
@@ -313,7 +305,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             //   ],
             // ),
             color: theme.colorScheme.surface.withValues(alpha: 0.15),
-        ),
+          ),
           child: Column(
             children: [
               const SizedBox(height: 10),
@@ -334,11 +326,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       ),
     );
   }
+
   Widget _buildTransactionHeaderRow(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-      horizontal: 3
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 3),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -349,44 +340,53 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               fontWeight: AppTypography.fontWeightBold,
             ),
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const TransactionsHistoryPage(),
+
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const TransactionsHistoryPage(),
+                    ),
+                  );
+                },
+                child: Row(
+                  children: [
+                    Text(
+                      AppStrings.viewAllLabel,
+                      style: GoogleFonts.dmSans(
+                        fontSize: AppTypography.fontSizeSmall,
+                        fontWeight: AppTypography.fontWeightSemiBold,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                    SizedBox(width: 2,),
+                    Icon(Icons.arrow_forward_rounded)
+                  ],
                 ),
-              );
-            },
-            child:  Text(
-                AppStrings.viewAllLabel,
-                style: GoogleFonts.dmSans(
-                  fontSize: AppTypography.fontSizeSmall,
-                  fontWeight: AppTypography.fontWeightSemiBold,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-            ),
-          ),
+              ),
+
+
         ],
       ),
     );
   }
 
-
-  Widget _buildBalanceSection(BuildContext context, TransactionViewModel viewModel) {
+  Widget _buildBalanceSection(
+      BuildContext context, TransactionViewModel viewModel) {
     final isLargeScreen = !ResponsiveUtils.isMobile(context);
     return SliverToBoxAdapter(
       child: Column(
         children: [
-
           const SizedBox(
             height: AppDimensions.paddingSmall,
           ),
           Padding(
             padding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.paddingStandard,
-                vertical:
-                    AppDimensions.paddingSmall + AppDimensions.paddingXSmall),
+                // vertical:
+                //     AppDimensions.paddingSmall + AppDimensions.paddingXSmall
+            ),
             child: isLargeScreen
                 ? Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -424,7 +424,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Widget _buildSearchSection(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = context.watch<ThemeViewModel>().isDarkMode;
+    final isDark = context.select<ThemeViewModel, bool>((vm) => vm.isDarkMode);
+    final searchQuery =
+        context.select<TransactionViewModel, String?>((vm) => vm.searchQuery);
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -450,37 +452,36 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               child: Row(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
                     child: Container(
                       width: 42,
                       height: 42,
                       decoration: BoxDecoration(
-                        color:isDark
-                        ?AppColors.balanceCardDarkModePositive
-                        :AppColors.balanceCardLightModePositive,
+                          color: isDark
+                              ? AppColors.balanceCardDarkModePositive
+                              : AppColors.balanceCardLightModePositive,
                           // color: theme.colorScheme.primary.withValues(alpha: 0.05),
                           border: Border.all(
-                              color: theme.colorScheme.primary.withValues(alpha: 0.15),
-                              width: 1.4
-                          ),
-                        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRegular)
-                      ),
+                              color: theme.colorScheme.primary
+                                  .withValues(alpha: 0.15),
+                              width: 1.4),
+                          borderRadius: BorderRadius.circular(
+                              AppDimensions.borderRadiusRegular)),
                       child: Padding(
                         padding: const EdgeInsets.all(2.0),
                         child: Container(
                           width: 42,
                           height: 42,
                           decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusMedium),
+                            borderRadius: BorderRadius.circular(
+                                AppDimensions.borderRadiusMedium),
                           ),
                           child: Center(
                             child: SvgPicture.asset(
                               SvgAppIcons.searchIcon,
-                              colorFilter:const ColorFilter.mode(
+                              colorFilter: const ColorFilter.mode(
                                   // theme.colorScheme.primary,
-                                AppColors.accentGreen,
+                                  AppColors.accentGreen,
                                   BlendMode.srcIn),
                               width: 16,
                               height: 16,
@@ -498,18 +499,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   const SizedBox(width: 4),
                   Expanded(
                     child: TextField(
+                      controller: TextEditingController(text: searchQuery)
+                        ..selection = TextSelection.fromPosition(
+                            TextPosition(offset: searchQuery?.length ?? 0)),
                       onChanged: (val) {
-                        setState(() {
-                          _searchQuery = val.trim().isEmpty
-                              ? null
-                              : val.trim().toLowerCase();
-                        });
+                        context
+                            .read<TransactionViewModel>()
+                            .setSearchQuery(val);
                       },
                       //transaparnt search bar
                       decoration: InputDecoration(
                         hintText: AppStrings.searchHint,
                         hintStyle: GoogleFonts.dmSans(
-                          color:   theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.4),
                           fontSize: AppTypography.fontSizeSmall,
                         ),
                         border: InputBorder.none,
@@ -520,22 +523,21 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         fillColor: Colors.transparent,
                         contentPadding:
                             const EdgeInsets.symmetric(vertical: 12),
-                        suffixIcon: _searchQuery != null
+                        suffixIcon: searchQuery != null
                             ? IconButton(
                                 icon: const Icon(Icons.clear, size: 18),
                                 onPressed: () {
-                                  setState(() {
-                                    _searchQuery = null;
-                                  });
+                                  context
+                                      .read<TransactionViewModel>()
+                                      .setSearchQuery(null);
                                 },
                               )
                             : null,
                       ),
                       style: GoogleFonts.dmSans(
-                        fontSize: AppTypography.fontSizeRegular,
-                        color: theme.colorScheme.onSurface,
-                        letterSpacing: -0.1
-                      ),
+                          fontSize: AppTypography.fontSizeRegular,
+                          color: theme.colorScheme.onSurface,
+                          letterSpacing: -0.1),
                     ),
                   ),
                 ],
@@ -552,8 +554,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               width: 54,
               height: 54,
               decoration: BoxDecoration(
-
-                 borderRadius:  BorderRadius.circular(AppDimensions.borderRadiusMinLarge),
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadiusMinLarge),
                 border: Border.all(
                   color: theme.dividerColor.withValues(alpha: 0.2),
                   width: 1.4,
@@ -564,30 +566,30 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   width: 42,
                   height: 42,
                   decoration: BoxDecoration(
-                    color:isDark
-                        ?AppColors.balanceCardDarkModePositive
-                        :AppColors.balanceCardLightModePositive,
+                    color: isDark
+                        ? AppColors.balanceCardDarkModePositive
+                        : AppColors.balanceCardLightModePositive,
                     // color: theme.colorScheme.primary.withValues(alpha: 0.05),
                     border: Border.all(
-                       color: theme.colorScheme.primary.withValues(alpha: 0.15),
-                      width: 1.4
-                    ),
-                    borderRadius:  BorderRadius.circular(AppDimensions.borderRadiusRegular
-                    ),
+                        color:
+                            theme.colorScheme.primary.withValues(alpha: 0.15),
+                        width: 1.4),
+                    borderRadius: BorderRadius.circular(
+                        AppDimensions.borderRadiusRegular),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(2.0),
                     child: Container(
                       decoration: BoxDecoration(
-
-                        borderRadius:  BorderRadius.circular(AppDimensions.borderRadiusMedium),
+                        borderRadius: BorderRadius.circular(
+                            AppDimensions.borderRadiusMedium),
                       ),
                       child: Center(
                         child: SvgPicture.asset(
                           SvgAppIcons.filterIcon,
-                          colorFilter:const ColorFilter.mode(
+                          colorFilter: const ColorFilter.mode(
                               // theme.colorScheme.primary,
-                            AppColors.accentGreen,
+                              AppColors.accentGreen,
                               BlendMode.srcIn),
                           width: 16,
                           height: 16,
@@ -683,52 +685,58 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildTransactionList(Map<String, List<Transaction>> grouped,
+  Widget _buildTransactionList(Map<DateTime, List<Transaction>> grouped,
       ThemeData theme, bool useAdaptive) {
     return SliverPadding(
       padding:
           const EdgeInsets.symmetric(horizontal: AppDimensions.paddingStandard),
-      sliver: SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            final dateKey = grouped.keys.elementAt(index);
-            final dayTxs = grouped[dateKey]!;
-            final relativeDate = TransactionUtils.formatRelativeDate(dateKey);
+      sliver: SliverToBoxAdapter(
+        child: RepaintBoundary(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: grouped.entries.map((entry) {
+              final dateKey = entry.key;
+              final dayTxs = entry.value;
+              final dateStr =
+                  "${dateKey.year}-${dateKey.month.toString().padLeft(2, '0')}-${dateKey.day.toString().padLeft(2, '0')}";
+              final relativeDate = TransactionUtils.formatRelativeDate(dateStr);
 
-            return Padding(
-              padding:
-                  const EdgeInsets.only(bottom: AppDimensions.paddingXLarge),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(
-                        left: AppDimensions.paddingXSmall,
-                        bottom: AppDimensions.paddingXSmall),
-                    child: Text(
-                      relativeDate,
-                      style: GoogleFonts.dmSans(
-                        fontWeight: FontWeight.w800,
-                        color: theme.colorScheme.primary.withValues(alpha: 0.8),
-                        fontSize: ResponsiveUtils.getResponsiveFontSize(context,
-                            mobile: AppTypography.fontSizeSmall,
-                            tablet: AppTypography.fontSizeMedium,
-                            desktop: AppTypography.fontSizeSmall + 4),
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ),
-                  ...dayTxs.asMap().entries.map(
-                        (entry) => TransactionTile(
-                          transaction: entry.value,
-                          index: entry.key,
+              return Padding(
+                padding:
+                    const EdgeInsets.only(bottom: AppDimensions.paddingXLarge),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(
+                          left: AppDimensions.paddingXSmall,
+                          bottom: AppDimensions.paddingXSmall),
+                      child: Text(
+                        relativeDate,
+                        style: GoogleFonts.dmSans(
+                          fontWeight: FontWeight.w800,
+                          color:
+                              theme.colorScheme.primary.withValues(alpha: 0.8),
+                          fontSize: ResponsiveUtils.getResponsiveFontSize(
+                              context,
+                              mobile: AppTypography.fontSizeSmall,
+                              tablet: AppTypography.fontSizeMedium,
+                              desktop: AppTypography.fontSizeSmall + 4),
+                          letterSpacing: 0.5,
                         ),
                       ),
-                ],
-              ),
-            );
-          },
-          childCount: grouped.length,
+                    ),
+                    ...dayTxs.asMap().entries.map(
+                          (entry) => TransactionTile(
+                            transaction: entry.value,
+                            index: entry.key,
+                          ),
+                        ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
         ),
       ),
     );

@@ -35,9 +35,9 @@ class AppDimensions {
   static const double categoryIconSizeTablet = 52.0;
   static const double categoryIconSizeDesktop = 56.0;
 
-  static const double categoryIconInsideMobile = 22.0;
+  static const double categoryIconInsideMobile = 20.0;
   static const double categoryIconInsideTablet = 24.0;
-  static const double categoryIconInsideDesktop = 26.0;
+  static const double categoryIconInsideDesktop = 28.0;
 
   static const double spacingStandard = 16.0;
   static const double spacingLarge = 24.0;

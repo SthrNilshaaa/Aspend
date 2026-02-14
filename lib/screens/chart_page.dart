@@ -32,7 +32,7 @@ class ChartPage extends StatefulWidget {
 
 class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
   late TabController _tabController;
-  String _selectedRange = 'Month'; // Day, Week, Month, Year
+  String _selectedRange = 'All'; // Day, Week, Month, Year
   DateTime _startDate = DateTime.now();
   DateTime _endDate = DateTime.now();
 
@@ -79,7 +79,7 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
               child: SizedBox(height: AppDimensions.paddingLarge)),
           SliverToBoxAdapter(
             child: RangeSelector(
-              ranges: const ['All','Day', 'Week', 'Month', 'Year'],
+              ranges: const ['All', 'Day', 'Week', 'Month', 'Year'],
               selectedRange: _selectedRange,
               onRangeSelected: (range) {
                 setState(() {
@@ -170,8 +170,14 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
                               subtitle: topCategory != null
                                   ? '₹${topCategoryAmount.toStringAsFixed(0)}'
                                   : 'No spending',
-                              icon: Icons.category_rounded,
-                              color: Colors.blueAccent,
+                              icon: topCategory != null
+                                  ? TransactionUtils.getCategorySvg(
+                                      topCategory!)
+                                  : Icons.category_rounded,
+                              color: topCategory != null
+                                  ? TransactionUtils.getCategoryColor(
+                                      topCategory!)
+                                  : Colors.blueAccent,
                               isDark: isDark,
                             ),
                           ),
@@ -317,7 +323,7 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
     required String title,
     required String value,
     required String subtitle,
-    required IconData icon,
+    required dynamic icon,
     required Color color,
     required bool isDark,
   }) {
@@ -340,7 +346,12 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
               color: color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: color, size: 18),
+            child: icon is String
+                ? SvgPicture.asset(icon,
+                    colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+                    width: 18,
+                    height: 18)
+                : Icon(icon, color: color, size: 18),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -613,12 +624,18 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
                         width: AppDimensions.spacingMedium,
                         height: AppDimensions.spacingMedium,
                         decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .primary
-                              .withValues(
-                                  alpha: 0.8 - (index * 0.1).clamp(0.2, 0.8)),
+                          color: TransactionUtils.getCategoryColor(item.key)
+                              .withValues(alpha: 0.1),
                           shape: BoxShape.circle,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: SvgPicture.asset(
+                            TransactionUtils.getCategorySvg(item.key),
+                            colorFilter: ColorFilter.mode(
+                                TransactionUtils.getCategoryColor(item.key),
+                                BlendMode.srcIn),
+                          ),
                         ),
                       ),
                       const SizedBox(width: AppDimensions.paddingSmall),
@@ -676,7 +693,7 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
   }
 
   Widget _buildEmptyState(bool isDark) {
-    return EmptyStateView(
+    return const EmptyStateView(
       icon: Icons.auto_graph_rounded,
       title: AppStrings.noDataFound,
     );

@@ -10,6 +10,13 @@ enum PersonSortOption {
   balanceLowest,
 }
 
+enum PersonTransactionSortOption {
+  dateNewest,
+  dateOldest,
+  amountHighest,
+  amountLowest,
+}
+
 class PersonViewModel with ChangeNotifier {
   final PersonRepository _repository;
 
@@ -141,11 +148,24 @@ class PersonViewModel with ChangeNotifier {
 
   // Moved from UI for performance
   Map<String, List<PersonTransaction>> getGroupedTransactionsFor(
-      String personName, bool descending) {
+      String personName, PersonTransactionSortOption sortOption) {
     final txs = transactionsFor(personName);
-    final sortedTxs = List<PersonTransaction>.from(txs)
-      ..sort((a, b) =>
-          descending ? b.date.compareTo(a.date) : a.date.compareTo(b.date));
+    final sortedTxs = List<PersonTransaction>.from(txs);
+
+    switch (sortOption) {
+      case PersonTransactionSortOption.dateNewest:
+        sortedTxs.sort((a, b) => b.date.compareTo(a.date));
+        break;
+      case PersonTransactionSortOption.dateOldest:
+        sortedTxs.sort((a, b) => a.date.compareTo(b.date));
+        break;
+      case PersonTransactionSortOption.amountHighest:
+        sortedTxs.sort((a, b) => b.amount.compareTo(a.amount));
+        break;
+      case PersonTransactionSortOption.amountLowest:
+        sortedTxs.sort((a, b) => a.amount.compareTo(b.amount));
+        break;
+    }
 
     final groups = <String, List<PersonTransaction>>{};
     for (var tx in sortedTxs) {

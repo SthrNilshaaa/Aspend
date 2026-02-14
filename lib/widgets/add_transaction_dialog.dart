@@ -15,6 +15,7 @@ import '../const/app_colors.dart';
 import '../const/app_dimensions.dart';
 import '../const/app_typography.dart';
 import '../const/app_assets.dart';
+import '../utils/transaction_utils.dart';
 
 class AddTransactionDialog extends StatefulWidget {
   final bool isIncome;
@@ -284,11 +285,11 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                       fontWeight: FontWeight.bold,
                     ),
                     prefixIcon: Padding(
-                      padding: const EdgeInsets.all(14.0),
+                      padding: const EdgeInsets.all(8.0),
                       child: SvgPicture.asset(
                         SvgAppIcons.noteIcon,
                         colorFilter: ColorFilter.mode(
-                            theme.colorScheme.primary.withValues(alpha: 0.5),
+                            theme.colorScheme.primary.withValues(alpha: 0.8),
                             BlendMode.srcIn),
                         width: 20,
                         height: 20,
@@ -415,6 +416,14 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                   const Icon(Icons.calendar_today,
                       size: 16, color: Colors.grey),
                   const SizedBox(width: 8),
+                ] else if (type == 'Income' || type == 'Expense') ...[
+                  SvgPicture.asset(TransactionUtils.getCategorySvg(val),
+                      colorFilter: ColorFilter.mode(
+                          TransactionUtils.getCategoryColor(val),
+                          BlendMode.srcIn),
+                      width: 18,
+                      height: 18),
+                  const SizedBox(width: 8),
                 ],
                 Expanded(child: Text(val, style: GoogleFonts.dmSans())),
                 if (type != 'Date') const Icon(Icons.arrow_drop_down),
@@ -460,6 +469,24 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                   itemBuilder: (c, i) {
                     final item = currentItems[i];
                     return ListTile(
+                      leading: (type == 'Income' || type == 'Expense')
+                          ? Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: TransactionUtils.getCategoryColor(item)
+                                    .withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: SvgPicture.asset(
+                                TransactionUtils.getCategorySvg(item),
+                                colorFilter: ColorFilter.mode(
+                                    TransactionUtils.getCategoryColor(item),
+                                    BlendMode.srcIn),
+                                width: 20,
+                                height: 20,
+                              ),
+                            )
+                          : null,
                       title: Text(item,
                           style: GoogleFonts.dmSans(
                               fontWeight: item == selected

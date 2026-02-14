@@ -21,7 +21,12 @@ class AppConstants {
   // Animation Durations
   static const Duration splashEntryDuration = Duration(milliseconds: 1000);
   static const Duration splashExitDuration = Duration(milliseconds: 1000);
-  static const Duration splashWaitDuration = Duration(seconds: 2);
-  static const Duration widgetWaitDuration = Duration(seconds: 1);
-  static const Duration homeArrivalDelay = Duration(milliseconds: 2200);
+  static const Duration splashWaitDuration = Duration(milliseconds: 1000);
+  static const Duration widgetWaitDuration = Duration(milliseconds: 500);
+  static const Duration homeArrivalDelay = Duration(milliseconds: 500);
+
+  // External URLs
+  static const String supportTelegramUrl = 'https://t.me/+W7iMso5YsO1lZDM1';
+  static const String privacyPolicyUrl =
+      'https://github.com/SthrNilshaaa/Aspend/blob/main/PRIVACY_POLICY.md';
 }

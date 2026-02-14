@@ -93,45 +93,46 @@ class _TransactionsHistoryPageState extends State<TransactionsHistoryPage> {
             SliverPadding(
               padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.paddingStandard),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final dateKey = grouped.keys.elementAt(index);
-                    final dayTxs = grouped[dateKey]!;
+              sliver: SliverToBoxAdapter(
+                child: RepaintBoundary(
+                  child: Column(
+                    children: grouped.entries.map((entry) {
+                      final dateKey = entry.key;
+                      final dayTxs = entry.value;
 
-                    // Convert DateTime back to the format history expects or update history to handle DateTime
-                    final dateKeyStr =
-                        "${dateKey.year}-${dateKey.month.toString().padLeft(2, '0')}-${dateKey.day.toString().padLeft(2, '0')}";
-                    final relativeDate =
-                        TransactionUtils.formatRelativeDate(dateKeyStr);
+                      // Convert DateTime back to the format history expects or update history to handle DateTime
+                      final dateKeyStr =
+                          "${dateKey.year}-${dateKey.month.toString().padLeft(2, '0')}-${dateKey.day.toString().padLeft(2, '0')}";
+                      final relativeDate =
+                          TransactionUtils.formatRelativeDate(dateKeyStr);
 
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 12, horizontal: 8),
-                          child: Text(
-                            relativeDate,
-                            style: GoogleFonts.dmSans(
-                              fontWeight: FontWeight.w800,
-                              color: theme.colorScheme.primary
-                                  .withValues(alpha: 0.8),
-                              fontSize: AppTypography.fontSizeSmall,
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 12, horizontal: 8),
+                            child: Text(
+                              relativeDate,
+                              style: GoogleFonts.dmSans(
+                                fontWeight: FontWeight.w800,
+                                color: theme.colorScheme.primary
+                                    .withValues(alpha: 0.8),
+                                fontSize: AppTypography.fontSizeSmall,
+                              ),
                             ),
                           ),
-                        ),
-                        ...dayTxs.asMap().entries.map((entry) => Padding(
-                              padding: const EdgeInsets.only(bottom: 8),
-                              child: TransactionTile(
-                                transaction: entry.value,
-                                index: entry.key,
-                              ),
-                            )),
-                      ],
-                    );
-                  },
-                  childCount: grouped.length,
+                          ...dayTxs.asMap().entries.map((entry) => Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: TransactionTile(
+                                  transaction: entry.value,
+                                  index: entry.key,
+                                ),
+                              )),
+                        ],
+                      );
+                    }).toList(),
+                  ),
                 ),
               ),
             ),

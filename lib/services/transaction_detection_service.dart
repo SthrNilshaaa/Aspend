@@ -82,14 +82,14 @@ class TransactionDetectionService {
   }
 
   static Future<void> _requestPermissions() async {
-    // Request notification permission
-    await Permission.notification.request();
-
     // Request SMS permission
     await Permission.sms.request();
 
     // Requesting ignore battery optimization is also important for background services
     await NativeBridge.requestBatteryOptimization();
+
+    // Request notification permission - Last as requested
+    await Permission.notification.request();
   }
 
   static Future<void> _startNotificationMonitoring() async {

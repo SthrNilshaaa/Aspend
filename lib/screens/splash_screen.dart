@@ -18,7 +18,11 @@ import '../const/app_typography.dart';
 import '../view_models/theme_view_model.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  final bool isDarkMode;
+  const SplashScreen({
+    super.key,
+    required this.isDarkMode,
+  });
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -158,7 +162,8 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     final themeViewModel = context.watch<ThemeViewModel>();
-    final isDarkMode = themeViewModel.isDarkMode;
+    final isDark = themeViewModel.isDarkMode;
+
     const launcherBackgroundColor = AppColors.launcherBackground;
 
     return Scaffold(
@@ -209,10 +214,11 @@ class _SplashScreenState extends State<SplashScreen>
                             child: SlideTransition(
                               position: _entrySlide,
                               child: SvgPicture.asset(
-                                // isDarkMode
+                                // widget.isDarkMode
                                 //     ?
-                                    SvgAppIcons.lightLogoIcon,
-                                    // : SvgAppIcons.darkLogoIcon,
+                                //     SvgAppIcons.lightLogoIcon
+                                //       : SvgAppIcons.darkLogoIcon,
+                                SvgAppIcons.darkLogoIconSplash,
                                 height:
                                     ResponsiveUtils.getResponsiveIconSize(
                                         context,

@@ -14,7 +14,7 @@ dependencies:
   app_links:
   printing: ^5.11.1
   hive_flutter: ^1.1.0
-  material_color_utilities: ^0.11.1
+  material_color_utilities: ^0.13.0
   dynamic_color:
   zoom_tap_animation:
   loading_animation_widget:
@@ -40,6 +40,7 @@ dependencies:
   flutter_colorpicker: ^1.1.0
   custom_refresh_indicator: ^4.0.1
   flutter_svg: ^2.2.3
+  url_launcher: ^6.2.1
 
 dev_dependencies:
   flutter_test:
@@ -73,8 +74,8 @@ flutter_launcher_icons:
   ios: false
   android: true
   adaptive_icon_background: "#0D1311"
-  adaptive_icon_foreground: "assets/icons/Logo_Final_transparent.png"
-  image_path: "assets/icons/Logo_Final_transparent.png"
+  adaptive_icon_foreground: "assets/icons/dark_logo_splash.png"
+  image_path: "assets/icons/dark_logo_splash.png"
   adaptive_icon_foreground_inset: 25
 
 

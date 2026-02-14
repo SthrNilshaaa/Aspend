@@ -1,7 +1,61 @@
 import 'package:flutter/material.dart';
+import '../const/app_assets.dart';
 import '../models/transaction.dart';
 
 class TransactionUtils {
+  static String getCategorySvg(String category) {
+    switch (category.toLowerCase()) {
+      case 'food':
+        return SvgAppIcons.foodIcon;
+      case 'transport':
+        return SvgAppIcons.transportIcon;
+      case 'flipkart':
+        return SvgAppIcons.shoppingIcon;
+      case 'bills':
+        return SvgAppIcons.billIcon;
+      case 'entertainment':
+        return SvgAppIcons.entertainmentIcon;
+      case 'health':
+        return SvgAppIcons.healthIcon;
+      case 'gifts':
+        return SvgAppIcons.giftIcon;
+        case 'groceries':
+        return SvgAppIcons.groceriesIcon;
+      case 'bonus':
+        return SvgAppIcons.giftIcon;
+      case 'fuel':
+        return SvgAppIcons.fuelIcon;
+      case 'rent':
+      case 'rent received':
+        return SvgAppIcons.rentIcon;
+      case 'travel':
+      case 'uber':
+      case 'ola':
+        return SvgAppIcons.travelIcon;
+      case 'maintenance':
+        return SvgAppIcons.maintenanceIcon;
+      case 'insurance':
+        return SvgAppIcons.insuranceIcon;
+      case 'subscription':
+        return SvgAppIcons.subscriptionIcon;
+      case 'personal care':
+        return SvgAppIcons.personalCareIcon;
+      case 'tax':
+        return SvgAppIcons.taxIcon;
+      case 'salary':
+        return SvgAppIcons.insuranceIcon;
+      case 'freelance':
+      case 'investment':
+      case 'income':
+      case 'interest':
+      case 'refund':
+
+        return SvgAppIcons.incomeIcon;
+      default:
+        return SvgAppIcons.genericCategoryIcon;
+    }
+  }
+
   static Map<String, List<Transaction>> groupTransactionsByDate(
       List<Transaction> txns) {
     final Map<String, List<Transaction>> grouped = {};
