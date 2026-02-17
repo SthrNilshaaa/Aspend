@@ -60,7 +60,7 @@ class _TransactionTileState extends State<TransactionTile> {
               vertical:
                   AppDimensions.paddingSmall + AppDimensions.paddingXSmall),
           decoration: BoxDecoration(
-            color: theme.cardColor,
+            // color: theme.cardColor,
             borderRadius:
                 BorderRadius.circular(AppDimensions.borderRadiusLarge),
             border: Border.all(

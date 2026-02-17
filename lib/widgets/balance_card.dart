@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-
 import '../view_models/theme_view_model.dart';
 import '../view_models/transaction_view_model.dart';
 import '../const/app_colors.dart';
@@ -119,15 +118,67 @@ class _BalanceCardState extends State<BalanceCard>
                   margin: const EdgeInsets.symmetric(
                       vertical: AppDimensions.paddingSmall),
                   decoration: BoxDecoration(
-                    border: Border.all(
-                      color: borderColor,
-                      width: 1.4,
-                      style: BorderStyle.solid,
-                    ),
                     borderRadius:
                         BorderRadius.circular(AppDimensions.borderRadiusXLarge),
-                    color: backgroundColor,
+
+                    // Glass base color
+                    color: backgroundColor.withOpacity(isDark ? 0.15 : 0.35),
+
+                    // Glass border highlight
+                    border: Border.all(
+                      color: borderColor,
+                      //.withOpacity(isDark ? 0.15 : 0.4) ,
+                      width: 1.2,
+                    ),
+
+                    // Soft liquid lighting effect
+                    gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: isDark
+                            ? isNegative
+                                ? [
+                                    AppColors.balanceCardLineLightModeNegative
+                                        .withOpacity(0.5),
+                                    AppColors.balanceCardLineLightModeNegative
+                                        .withOpacity(0.1),
+                                  ]
+                                : [
+                                    Colors.greenAccent.withOpacity(0.5),
+                                    Colors.greenAccent.withOpacity(0.1),
+                                  ]
+                            : isNegative
+                                ? [
+                                    AppColors.balanceCardLineLightModeNegative
+                                        .withOpacity(0.5),
+                                    AppColors.balanceCardLineLightModeNegative
+                                        .withOpacity(0.1),
+                                  ]
+                                : [
+                                    Colors.greenAccent.withOpacity(0.5),
+                                    Colors.greenAccent.withOpacity(0.1),
+                                  ]),
+
+                    // boxShadow: [
+                    //   BoxShadow(
+                    //     color: Colors.greenAccent.withOpacity(isDark ? 0.3 : 0.08),
+                    //     blurRadius: 25,
+                    //     spreadRadius: -5,
+                    //     offset: const Offset(0, 10),
+                    //   ),
+                    // ],
                   ),
+
+                  // decoration: BoxDecoration(
+                  //   border: Border.all(
+                  //     color: borderColor,
+                  //     width: 1.4,
+                  //     style: BorderStyle.solid,
+                  //   ),
+                  //   borderRadius:
+                  //       BorderRadius.circular(AppDimensions.borderRadiusXLarge),
+                  //   color: backgroundColor,
+                  // ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppDimensions.paddingLarge,
@@ -144,11 +195,11 @@ class _BalanceCardState extends State<BalanceCard>
                               AppStrings.totalBalanceLabel,
                               style: GoogleFonts.dmSans(
                                 fontSize: AppTypography.fontSizeLarge,
-                                fontWeight: AppTypography.fontWeightMedium,
+                                fontWeight: AppTypography.fontWeightNormal,
                                 color: isDark
                                     ? Colors.white.withValues(alpha: 0.9)
                                     : Colors.black.withValues(alpha: 0.9),
-                                letterSpacing: -0.4,
+                                letterSpacing: -0.2,
                               ),
                             ),
                             GestureDetector(
@@ -196,9 +247,13 @@ class _BalanceCardState extends State<BalanceCard>
                           integerSize: 55,
                           symbolSize: 40,
                           fontName: GoogleFonts.bayon(),
-                          extraColor: isNegative
-                              ? AppColors.accentRed
-                              : AppColors.accentGreen,
+                          extraColor: isDark
+                              ? isNegative
+                                  ? AppColors.balanceCardLineDarkModeNegative
+                                  : AppColors.balanceCardLineDarkModePositive
+                              : isNegative
+                                  ? AppColors.balanceCardLineLightModeNegative
+                                  : AppColors.balanceCardLineLightModePositive,
                         ),
                         const SizedBox(height: AppDimensions.paddingSmall),
                         Row(
@@ -243,7 +298,8 @@ class _BalanceCardState extends State<BalanceCard>
                 left: 50,
                 right: 50,
                 child: DecorativeLine(
-                    color: backgroundColor, position: LinePosition.bottom),
+                    color: isDark ? Colors.grey.shade900 : Colors.grey.shade200,
+                    position: LinePosition.bottom),
               ),
               // Positioned(
               //   left: 50,
@@ -393,7 +449,7 @@ class CurrencyText extends StatelessWidget {
   final TextStyle fontName;
   final Color extraColor;
 
-   CurrencyText({
+  const CurrencyText({
     super.key,
     required this.amount,
     required this.isNegative,
@@ -401,7 +457,7 @@ class CurrencyText extends StatelessWidget {
     required this.integerSize,
     required this.symbolSize,
     required this.fontName,
-     this.extraColor = Colors.transparent,
+    this.extraColor = Colors.transparent,
   });
 
   @override
@@ -422,7 +478,7 @@ class CurrencyText extends StatelessWidget {
             text: '₹',
             style: GoogleFonts.dmSans(
               fontSize: symbolSize,
-              fontWeight: AppTypography.fontWeightBlack,
+              fontWeight: AppTypography.fontWeightSemiBold,
               color: isDark
                   ? Colors.white.withValues(alpha: 0.9)
                   : Colors.black.withValues(alpha: 0.9),
@@ -442,7 +498,7 @@ class CurrencyText extends StatelessWidget {
           ),
           TextSpan(
             text: '.$decimalPart',
-            style:fontName.copyWith(
+            style: fontName.copyWith(
               fontSize: integerSize * 0.63,
               fontWeight: AppTypography.fontWeightMedium,
               color: extraColor,
@@ -491,7 +547,7 @@ class StatItem extends StatelessWidget {
               label,
               style: GoogleFonts.dmSans(
                 fontSize: AppTypography.fontSizeMedium,
-                fontWeight: AppTypography.fontWeightMedium,
+                fontWeight: AppTypography.fontWeightNormal,
                 color: isDark
                     ? Colors.white.withValues(alpha: 0.9)
                     : Colors.black.withValues(alpha: 0.9),
@@ -502,14 +558,14 @@ class StatItem extends StatelessWidget {
         CurrencyText(
           amount: amount,
 
-          isNegative:
-              false, // Stats are always shown in their respective colors
+          isNegative: false,
+          // Stats are always shown in their respective colors
           isDark: isDark,
           integerSize: AppTypography.fontSizeRegular + 2,
-          symbolSize:AppTypography.fontSizeRegular + 2,
-          extraColor:isDark? Colors.white:Colors.black54,
+          symbolSize: AppTypography.fontSizeRegular + 2,
+          extraColor: isDark ? Colors.white : Colors.black,
           fontName: GoogleFonts.dmSans(
-            fontWeight: AppTypography.fontWeightSemiBold,
+            fontWeight: AppTypography.fontWeightMedium,
             color: isDark
                 ? Colors.white.withValues(alpha: 0.9)
                 : Colors.black.withValues(alpha: 0.9),

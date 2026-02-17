@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:gradient_blur/gradient_blur.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
@@ -12,6 +13,7 @@ import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import '../models/transaction.dart';
 import '../view_models/theme_view_model.dart';
 import '../view_models/transaction_view_model.dart';
+import '../widgets/bottom_gradient_widget.dart';
 import '../widgets/header_delegate.dart';
 import '../widgets/transaction_tile.dart';
 import '../widgets/balance_card.dart';
@@ -143,149 +145,185 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     final txns = transactionViewModel.filteredTransactions;
 
     return Scaffold(
-      body: CustomScrollView(
-        controller: _scrollController,
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          GlassAppBar(
-            automaticallyImplyLeading: false,
-            centerTitle: false,
-            floating: false,
-            title: AppStrings.appNameShort,
-            leading: GestureDetector(
-              onTap: () {
-                setState(() {
-                  _turns += 4;
-                });
-              },
-              child: Padding(
-                padding: const EdgeInsets.only(
-                    left: AppDimensions.paddingSmall +
-                        AppDimensions.paddingSmall),
-                child: AnimatedRotation(
-                  turns: _turns,
-                  onEnd: _restorePosistion,
-                  duration: const Duration(seconds: 1),
-                  child: Center(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: theme.dividerColor.withValues(alpha: 0.1),
-                          width: 1,
+        extendBody: true,
+        body: CustomScrollView(
+          controller: _scrollController,
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            GlassAppBar(
+              automaticallyImplyLeading: false,
+              centerTitle: false,
+              floating: false,
+              title: AppStrings.appNameShort,
+              leading: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _turns += 4;
+                  });
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                      left: AppDimensions.paddingSmall +
+                          AppDimensions.paddingSmall),
+                  child: AnimatedRotation(
+                    turns: _turns,
+                    onEnd: _restorePosistion,
+                    duration: const Duration(seconds: 1),
+                    child: Center(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: theme.dividerColor.withValues(alpha: 0.1),
+                            width: 1,
+                          ),
                         ),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(4.0),
-                        child: SvgPicture.asset(
-                          isDark
-                              ? SvgAppIcons.appBarIcon
-                              : SvgAppIcons.appBarIcon,
+                        child: Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: SvgPicture.asset(
+                            isDark
+                                ? SvgAppIcons.appBarIcon
+                                : SvgAppIcons.appBarIcon,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-            actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 16.0),
-                child: GestureDetector(
-                  //navigate to notification page
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const DetectionHistoryPage()),
-                    );
-                  },
-                  child: Stack(
-                    alignment: Alignment.topRight,
-                    children: [
-                      Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color:
-                              theme.colorScheme.surface.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: theme.dividerColor.withValues(alpha: 0.1),
-                            width: 1.3,
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: GestureDetector(
+                    //navigate to notification page
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const DetectionHistoryPage()),
+                      );
+                    },
+                    child: Stack(
+                      alignment: Alignment.topRight,
+                      children: [
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surface
+                                .withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: theme.dividerColor.withValues(alpha: 0.1),
+                              width: 1.3,
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(13.0),
+                            child: SvgPicture.asset(
+                              SvgAppIcons.notificationLogoIcon,
+                              colorFilter: ColorFilter.mode(
+                                  theme.colorScheme.onSurface, BlendMode.srcIn),
+                            ),
                           ),
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(13.0),
-                          child: SvgPicture.asset(
-                            SvgAppIcons.notificationLogoIcon,
-                            colorFilter: ColorFilter.mode(
-                                theme.colorScheme.onSurface, BlendMode.srcIn),
-                          ),
-                        ),
-                      ),
-                      // Positioned(
-                      //   top: 4,
-                      //   right: 4,
-                      //   child: Container(
-                      //     width: 12,
-                      //     height: 12,
-                      //     decoration: BoxDecoration(
-                      //       color: AppColors.accentGreen,
-                      //       shape: BoxShape.circle,
-                      //       border: Border.all(
-                      //           color: theme.colorScheme.surface, width: 2),
-                      //     ),
-                      //   ),
-                      // ),
-                    ],
+                        // Positioned(
+                        //   top: 4,
+                        //   right: 4,
+                        //   child: Container(
+                        //     width: 12,
+                        //     height: 12,
+                        //     decoration: BoxDecoration(
+                        //       color: AppColors.accentGreen,
+                        //       shape: BoxShape.circle,
+                        //       border: Border.all(
+                        //           color: theme.colorScheme.surface, width: 2),
+                        //     ),
+                        //   ),
+                        // ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          _buildBalanceSection(context, transactionViewModel),
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: HomeHeaderDelegate(
-              // minHeight: 150,
-              // maxHeight: 150,
-              height: 160,
-              child: _buildPinnedHeader(context),
+              ],
             ),
-          ),
-          if (txns.isNotEmpty)
-            _buildTransactionList(grouped, theme, useAdaptive)
-          else
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: _buildEmptyState(),
-            ),
-          SliverToBoxAdapter(
-            child: RepaintBoundary(
-              child: SizedBox(
-                height: txns.isNotEmpty
-                    ? MediaQuery.of(context).padding.bottom +
-                        AppDimensions.paddingXLarge * 2.5
-                    : MediaQuery.of(context).padding.bottom +
-                        AppDimensions.paddingXLarge * 3,
+            _buildBalanceSection(context, transactionViewModel),
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: HomeHeaderDelegate(
+                // minHeight: 150,
+                // maxHeight: 150,
+                height: 160,
+                child: _buildPinnedHeader(context),
               ),
             ),
-          ),
-        ],
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: AnimatedSlide(
-        offset: _showFab ? Offset.zero : const Offset(0, 2),
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        child: AnimatedOpacity(
-          opacity: _showFab ? 1.0 : 0.5,
-          duration: const Duration(milliseconds: 300),
-          child: _buildDualFab(theme),
+            if (txns.isNotEmpty)
+              _buildTransactionList(grouped, theme, useAdaptive)
+            else
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: _buildEmptyState(),
+              ),
+            SliverToBoxAdapter(
+              child: RepaintBoundary(
+                child: SizedBox(
+                  height: txns.isNotEmpty
+                      ? MediaQuery.of(context).padding.bottom +
+                          AppDimensions.paddingXLarge * 2.5
+                      : MediaQuery.of(context).padding.bottom +
+                          AppDimensions.paddingXLarge * 3,
+                ),
+              ),
+            ),
+          ],
         ),
-      ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+        floatingActionButton: AnimatedSlide(
+          offset: _showFab ? Offset.zero : const Offset(0, 2),
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          child: AnimatedOpacity(
+            opacity: _showFab ? 1.0 : 0.5,
+            duration: const Duration(milliseconds: 300),
+            child: _buildDualFab(theme),
+          ),
+        ),
+        // Add the gradient and blur effect under the bottom navbar
+      // bottomNavigationBar: Stack(
+      //   children:[
+      //     Positioned(
+      //       bottom: 0,
+      //       left: 0,
+      //       right: 0,
+      //     child: GradientBlur(
+      //       maxBlur: 5.0,
+      //       minBlur: 0.0,
+      //       slices: 100,
+      //       curve: Curves.easeInOut,
+      //       edgeBlur: null,
+      //       direction: GradientBlurDirection.bottomToTop,
+      //       gradient: LinearGradient(
+      //         colors: [
+      //           Theme.of(
+      //             context,
+      //           ).scaffoldBackgroundColor.withValues(alpha: 0.8),
+      //           Colors.transparent,
+      //         ],
+      //         end: Alignment.bottomCenter,
+      //         begin: Alignment.topCenter,
+      //
+      //         stops: const [0.7, 0.0],
+      //
+      //       ),
+      //       child: SizedBox(
+      //         height: 150,
+      //
+      //       ),
+      //     ),
+      //   ),
+      // ],
+      // ),
     );
   }
 
@@ -340,33 +378,32 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               fontWeight: AppTypography.fontWeightBold,
             ),
           ),
-
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const TransactionsHistoryPage(),
-                    ),
-                  );
-                },
-                child: Row(
-                  children: [
-                    Text(
-                      AppStrings.viewAllLabel,
-                      style: GoogleFonts.dmSans(
-                        fontSize: AppTypography.fontSizeSmall,
-                        fontWeight: AppTypography.fontWeightSemiBold,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                    ),
-                    SizedBox(width: 2,),
-                    Icon(Icons.arrow_forward_rounded)
-                  ],
+          TextButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const TransactionsHistoryPage(),
                 ),
-              ),
-
-
+              );
+            },
+            child: Row(
+              children: [
+                Text(
+                  AppStrings.viewAllLabel,
+                  style: GoogleFonts.dmSans(
+                    fontSize: AppTypography.fontSizeSmall,
+                    fontWeight: AppTypography.fontWeightSemiBold,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+                SizedBox(
+                  width: 2,
+                ),
+                Icon(Icons.arrow_forward_rounded)
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -383,9 +420,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.paddingStandard,
-                // vertical:
-                //     AppDimensions.paddingSmall + AppDimensions.paddingXSmall
+              horizontal: AppDimensions.paddingStandard,
+              // vertical:
+              //     AppDimensions.paddingSmall + AppDimensions.paddingXSmall
             ),
             child: isLargeScreen
                 ? Row(

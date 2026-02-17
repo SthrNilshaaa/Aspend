@@ -110,7 +110,7 @@ class MyApp extends StatelessWidget {
         final customSeedColor =
             themeViewModel.customSeedColor ?? AppColors.primaryGreen;
         final scaffoldBackgroundColor =
-            themeViewModel.isDarkMode ? Color(0xFF0D0D0D) : Color(0xFFFDFFFD);
+            themeViewModel.isDarkMode ? const Color(0xFF0D0D0D) : const Color(0xFFFDFFFD);
         final lightSchemeFinal = useAdaptive
             ? (lightDynamic ??
                 ColorScheme.fromSeed(

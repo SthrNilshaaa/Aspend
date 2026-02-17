@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gradient_blur/gradient_blur.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:provider/provider.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
@@ -147,7 +148,37 @@ class _RootNavigationState extends State<RootNavigation>
                     children: _screens,
                   ),
                   if (!isLargeScreen) ...[
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      height: 200,
+                      child: GradientBlur(
+                        maxBlur: 4.0,
+                        minBlur: 0.0,
+                        slices: 30,
+                        curve: Curves.easeInOut,
+                        edgeBlur: null,
+                        direction: GradientBlurDirection.bottomToTop,
+                        gradient: LinearGradient(
+                          colors: [
+                            isDark
+                                ? theme.primaryColor.withValues(alpha: 0.5)
+                                : Colors.white.withValues(alpha: 0.2),
+                            Colors.transparent,
+                          ],
+                          end: Alignment.topCenter,
+                          begin: Alignment.bottomCenter,
 
+                          stops: const [0.0, 0.6],
+
+                        ),
+                        child: SizedBox.expand(
+
+
+                        ),
+                      ),
+                    ),
                     Positioned(
                       bottom: 30,
                       left: 60,
