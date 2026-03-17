@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../const/app_typography.dart';
-import '../const/app_dimensions.dart';
+import '../core/const/app_typography.dart';
+import '../core/const/app_dimensions.dart';
 
 class EmptyStateView extends StatelessWidget {
   final dynamic icon;
@@ -26,26 +26,51 @@ class EmptyStateView extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.all(AppDimensions.paddingXLarge),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withValues(alpha: 0.05),
-              shape: BoxShape.circle,
-            ),
-            child: icon is String
-                ? SvgPicture.asset(
-                    icon,
-                    colorFilter: ColorFilter.mode(
-                        theme.colorScheme.primary.withValues(alpha: 0.4),
-                        BlendMode.srcIn),
-                    width: AppDimensions.chartRadiusSmall,
-                    height: AppDimensions.chartRadiusSmall,
-                  )
-                : Icon(
-                    icon,
-                    size: AppDimensions.chartRadiusSmall,
-                    color: theme.colorScheme.primary.withValues(alpha: 0.4),
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                width: AppDimensions.chartRadiusSmall + 40,
+                height: AppDimensions.chartRadiusSmall + 40,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.03),
+                  shape: BoxShape.circle,
+                ),
+              ),
+              Container(
+                width: AppDimensions.chartRadiusSmall + 20,
+                height: AppDimensions.chartRadiusSmall + 20,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.05),
+                  shape: BoxShape.circle,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(AppDimensions.paddingXLarge),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.08),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                    width: 2,
                   ),
+                ),
+                child: icon is String
+                    ? SvgPicture.asset(
+                        icon,
+                        colorFilter: ColorFilter.mode(
+                            theme.colorScheme.primary.withValues(alpha: 0.6),
+                            BlendMode.srcIn),
+                        width: AppDimensions.chartRadiusSmall - 20,
+                        height: AppDimensions.chartRadiusSmall - 20,
+                      )
+                    : Icon(
+                        icon,
+                        size: AppDimensions.chartRadiusSmall - 20,
+                        color: theme.colorScheme.primary.withValues(alpha: 0.6),
+                      ),
+              ),
+            ],
           ),
           const SizedBox(height: AppDimensions.paddingXLarge),
           Text(

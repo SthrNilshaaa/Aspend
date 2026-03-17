@@ -1,18 +1,18 @@
 import 'dart:ui';
+import 'package:aspends_tracker/core/const/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:gradient_blur/gradient_blur.dart';
-import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:provider/provider.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
-import '../view_models/theme_view_model.dart';
-import '../services/native_bridge.dart';
+import '../core/view_models/theme_view_model.dart';
+import '../core/services/native_bridge.dart';
 import 'dart:async';
 import 'home_page.dart';
 import 'people_page.dart';
 import 'chart_page.dart';
 import 'settings_page.dart';
-import '../utils/responsive_utils.dart';
+import '../core/utils/responsive_utils.dart';
+import '../core/const/app_dimensions.dart';
 
 class RootNavigation extends StatefulWidget {
   const RootNavigation({super.key});
@@ -22,11 +22,8 @@ class RootNavigation extends StatefulWidget {
 }
 
 class _RootNavigationState extends State<RootNavigation>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   int _selectedIndex = 0;
-  late PageController _pageController;
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
   StreamSubscription<String>? _uiEventSubscription;
 
   // Cache screens to avoid rebuilds and glitching
@@ -40,38 +37,27 @@ class _RootNavigationState extends State<RootNavigation>
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(initialPage: _selectedIndex);
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
-    );
-    _animationController.forward();
 
     _uiEventSubscription = NativeBridge.uiEvents.listen((event) {
       if (event == 'SHOW_ADD_INCOME' || event == 'SHOW_ADD_EXPENSE') {
         _onItemTapped(0); // Switch to Home tab
       }
     });
+
+    WidgetsBinding.instance.addObserver(this);
+    // Initial check
   }
 
   @override
   void dispose() {
-    _pageController.dispose();
-    _animationController.dispose();
     _uiEventSubscription?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
-  void _onPageChanged(int index) {
-    if (_selectedIndex != index) {
-      setState(() {
-        _selectedIndex = index;
-      });
-      HapticFeedback.selectionClick();
-    }
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {}
   }
 
   void _onItemTapped(int index) {
@@ -80,8 +66,6 @@ class _RootNavigationState extends State<RootNavigation>
         _selectedIndex = index;
       });
       HapticFeedback.lightImpact();
-      // Using jumpToPage for snappier, non-glitchy tab switching
-      _pageController.jumpToPage(index);
     }
   }
 
@@ -101,7 +85,7 @@ class _RootNavigationState extends State<RootNavigation>
               onDestinationSelected: _onItemTapped,
               labelType: NavigationRailLabelType.selected,
               backgroundColor: theme.scaffoldBackgroundColor,
-              indicatorColor: theme.colorScheme.primary.withValues(alpha: 0.2),
+              indicatorColor: theme.colorScheme.primary.withOpacity(0.2),
               selectedIconTheme:
                   IconThemeData(color: theme.colorScheme.primary),
               unselectedIconTheme: IconThemeData(color: Colors.grey.shade600),
@@ -136,274 +120,169 @@ class _RootNavigationState extends State<RootNavigation>
               ],
             ),
           Expanded(
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: Stack(
-                children: [
-                  PageView(
-                    controller: _pageController,
-                    onPageChanged: _onPageChanged,
-                    physics: const BouncingScrollPhysics(),
-                    scrollBehavior: const MaterialScrollBehavior(),
-                    children: _screens,
-                  ),
-                  if (!isLargeScreen) ...[
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      height: 200,
-                      child: GradientBlur(
-                        maxBlur: 4.0,
-                        minBlur: 0.0,
-                        slices: 30,
-                        curve: Curves.easeInOut,
-                        edgeBlur: null,
-                        direction: GradientBlurDirection.bottomToTop,
+            child: Stack(
+              children: [
+                IndexedStack(
+                  index: _selectedIndex,
+                  children: _screens,
+                ),
+                if (!isLargeScreen) ...[
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: 120,
+                    child: Container(
+                      decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
                             isDark
-                                ? theme.primaryColor.withValues(alpha: 0.5)
-                                : Colors.white.withValues(alpha: 0.2),
+                                ? Colors.black.withOpacity(
+                                    0.05) //theme.primaryColor.withOpacity(0.5)
+                                : Colors.white.withOpacity(0.05),
                             Colors.transparent,
                           ],
                           end: Alignment.topCenter,
                           begin: Alignment.bottomCenter,
-
                           stops: const [0.0, 0.6],
-
-                        ),
-                        child: SizedBox.expand(
-
-
                         ),
                       ),
                     ),
-                    Positioned(
-                      bottom: 30,
-                      left: 60,
-                      right: 60,
-                      height: 70,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(40),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  ),
+                  Positioned(
+                    left: 16,
+                    right: 16,
+                    bottom: 1,
+                    child: SafeArea(
+                      child: Center(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(
+                              AppDimensions.borderRadiusXLarge),
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
                           child: Container(
-
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 8),
                             decoration: BoxDecoration(
-                              color: theme.primaryColor
-                                  .withValues(alpha: 0.05),
-                              borderRadius: BorderRadius.circular(40),
+                              color: isDark
+                                    ? Colors.white.withValues(alpha: 0.03)
+                                    : Colors.black.withValues(alpha: 0.03),
+                              borderRadius: BorderRadius.circular(
+                                  AppDimensions.borderRadiusXLarge),
                               border: Border.all(
-                                color: theme.primaryColor.withValues(alpha: 0.5),
-                                width: 1,
+                                color: isDark
+                                    ? Colors.white.withValues(alpha: 0.2)
+                                    : Colors.black.withValues(alpha: 0.02),
+                                width: 1.0,
+                              ),
+                            ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Flexible(
+                                      child: _buildBNBItem(Icons.home_rounded,
+                                          0, 'Home', isDark)),
+                                  Flexible(
+                                      child: _buildBNBItem(Icons.group_rounded,
+                                          1, 'People', isDark)),
+                                  Flexible(
+                                      child: _buildBNBItem(
+                                          Icons.auto_graph_rounded,
+                                          2,
+                                          'Charts',
+                                          isDark)),
+                                  Flexible(
+                                      child: _buildBNBItem(
+                                          Icons.settings_rounded,
+                                          3,
+                                          'Setting',
+                                          isDark)),
+                                ],
                               ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                    Positioned(
-                      bottom: 30,
-                      left: 65,
-                      right: 60,
-                      height: 70,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        // crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          _buildBNBItem(Icons.home, 0, 'Home'),
-                          _buildBNBItem(Icons.group, 1, 'People'),
-                          _buildBNBItem(Icons.auto_graph, 2, 'Charts'),
-                          _buildBNBItem(Icons.settings_outlined, 3, 'Settings'),
-                        ],
-                      ),
-                    ),
-                  ],
-                ],
-              ),
+                  ),
+              ],
+              ],
             ),
           ),
         ],
       ),
     );
   }
-  // Widget _buildBNBItem(IconData icon, int index, String label) {
-  //   final isSelected = _selectedIndex == index;
-  //   final theme = Theme.of(context);
-  //
-  //   return ZoomTapAnimation(
-  //     onTap: () => _onItemTapped(index),
-  //     child: AnimatedContainer(
-  //       duration: const Duration(milliseconds: 300),
-  //       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-  //       decoration: BoxDecoration(
-  //         borderRadius: BorderRadius.circular(32),
-  //       ),
-  //       child: isSelected
-  //           ? LiquidGlassLayer(
-  //         settings:const LiquidGlassSettings(
-  //           thickness: 50,
-  //           blur: 2,
-  //           lightAngle: 4
-  //         ),
-  //             child: LiquidGlass(
-  //                       shape:const LiquidRoundedSuperellipse(
-  //               borderRadius: 32),
-  //                       child: Container(
-  //             padding:
-  //             const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-  //             decoration: BoxDecoration(
-  //               color:
-  //               theme.colorScheme.primary.withValues(alpha: 0.11),
-  //               // borderRadius: BorderRadius.circular(32),
-  //               // border: Border.all(
-  //               //   color: theme.colorScheme.primary.withValues(alpha: 0.4),
-  //               //   width: 0.6,
-  //               // ),
-  //             ),
-  //             child: Column(
-  //               mainAxisSize: MainAxisSize.min,
-  //               children: [
-  //                 AnimatedSwitcher(
-  //                   duration: const Duration(milliseconds: 300),
-  //                   child: Icon(
-  //                     icon,
-  //                     key: ValueKey(isSelected),
-  //                     color: isSelected
-  //                         ? theme.colorScheme.primary
-  //                         : Colors.grey.shade500,
-  //                     size: isSelected ? 22 : 20,
-  //                   ),
-  //                 ),
-  //                 SizedBox(height: 4),
-  //                 AnimatedDefaultTextStyle(
-  //                   duration: const Duration(milliseconds: 300),
-  //                   style: TextStyle(
-  //                     color: isSelected
-  //                         ? theme.colorScheme.primary
-  //                         : Colors.grey.shade600,
-  //                     fontSize: isSelected
-  //                         ?12
-  //                         :10,
-  //                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-  //                   ),
-  //                   child: Text(label),
-  //                 ),
-  //
-  //               ],
-  //             ),
-  //                       ),
-  //                     ),
-  //           )
-  //           : Column(
-  //         mainAxisSize: MainAxisSize.min,
-  //         children: [
-  //           AnimatedSwitcher(
-  //             duration: const Duration(milliseconds: 400),
-  //             child: Icon(
-  //               icon,
-  //               key: ValueKey(isSelected),
-  //               color: isSelected
-  //                   ? theme.colorScheme.primary
-  //                   : Colors.grey.shade500,
-  //               size: isSelected ? 22 : 20,
-  //             ),
-  //           ),
-  //           SizedBox(height: 4),
-  //           AnimatedDefaultTextStyle(
-  //             duration: const Duration(milliseconds: 400),
-  //             style: TextStyle(
-  //               color: isSelected
-  //                   ? theme.colorScheme.primary
-  //                   : Colors.grey.shade600,
-  //               fontSize: isSelected
-  //                   ?12
-  //                   :10,
-  //               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-  //             ),
-  //             child: Text(label),
-  //           ),
-  //
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
 
-//
-  Widget _buildBNBItem(IconData icon, int index, String label) {
+  Widget _buildBNBItem(IconData icon, int index, String label, bool isDark) {
     final isSelected = _selectedIndex == index;
-    final theme = Theme.of(context);
-    return AnimatedContainer(
-      alignment: Alignment.center,
-      padding:
-          EdgeInsets.symmetric(vertical: 6, horizontal:2),
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-      child: ZoomTapAnimation(
-        onTap: () => _onItemTapped(index),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-             borderRadius: BorderRadius.circular(36),
-            // shape: BoxShape.circle,
-            color: isSelected
-                ? theme.colorScheme.primary.withValues(alpha: 0.4)
-                : Colors.transparent,
-            border: isSelected
-                ? Border.all(
-                    color: theme.colorScheme.primary,
-                    width: 0.5,
-                  )
-                : null,
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: theme.colorScheme.surface.withValues(alpha: 0.5),
-                      blurRadius: 8,
-                      offset: const Offset(0, 5),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: Icon(
-                  icon,
-                  key: ValueKey(isSelected),
-                  color: isSelected
-                      ? theme.colorScheme.primary
-                      : Colors.grey.shade700,
-                  //size: isSelected ? 22 : 22,
-                  size: 22,
-                ),
-              ),
-                SizedBox(height: 4),
-                AnimatedDefaultTextStyle(
-                  duration: const Duration(milliseconds: 400),
-                  style: TextStyle(
-                    color: isSelected
-                        ? theme.colorScheme.primary
-                        : Colors.grey.shade600,
-                    // fontSize: isSelected
-                    // ?12
-                    // :12,
-                    fontSize: 12,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  ),
-                  child: Text(label),
-                ),
 
-            ],
-          ),
+    return ZoomTapAnimation(
+      onTap: () => _onItemTapped(index),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        // margin: const EdgeInsets.symmetric(horizontal: 2),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusXLarge),
+          color: isSelected
+              // ? theme.colorScheme.primary.withValues(alpha: 0.4)
+              ? AppColors.accentGreen.withOpacity(0.2)
+              : Colors.transparent,
+          // border: Border.all(
+          //   color: isSelected
+          //       //? theme.colorScheme.primary.withValues(alpha: 0.3)
+          //       ? AppColors.accentGreen.withOpacity(0.3)
+          //   : Colors.transparent,
+          //   width: 1,
+          // ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.accentGreen.withOpacity(
+                        0.015), //theme.colorScheme.primary.withOpacity(0.15),
+                    blurRadius: 15,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              transitionBuilder: (child, animation) =>
+                  ScaleTransition(scale: animation, child: child),
+              child: Icon(
+                icon,
+                key: ValueKey(isSelected),
+                color: isSelected
+                    ? AppColors.accentGreen
+                    : (isDark ? Colors.white54 : Colors.black54),
+                size: 24,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected
+                    ? AppColors.accentGreen
+                    : (isDark ? Colors.white54 : Colors.black54),
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textScaler: const TextScaler.linear(
+                  1.0), // Prevent drastic layout breaks on extreme font scaling
+            ),
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 }

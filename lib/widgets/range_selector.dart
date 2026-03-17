@@ -1,12 +1,12 @@
-import 'package:aspends_tracker/const/app_colors.dart';
+import 'package:aspends_tracker/core/const/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
-import '../const/app_dimensions.dart';
-import '../const/app_typography.dart';
-import '../view_models/theme_view_model.dart';
+import '../core/const/app_dimensions.dart';
+import '../core/const/app_typography.dart';
+import '../core/view_models/theme_view_model.dart';
 
 class RangeSelector extends StatelessWidget {
   final List<String> ranges;
@@ -25,7 +25,7 @@ class RangeSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    bool isDark =  context.select<ThemeViewModel, bool>((vm) => vm.isDarkMode);
+    bool isDark = context.select<ThemeViewModel, bool>((vm) => vm.isDarkMode);
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -56,14 +56,13 @@ class RangeSelector extends StatelessWidget {
                       BorderRadius.circular(AppDimensions.borderRadiusMedium),
                   border: Border.all(
                     color: isSelected
-                        ?  AppColors.balanceCardBorderDarkModePositive
+                        ? AppColors.balanceCardBorderDarkModePositive
                         : theme.dividerColor.withValues(alpha: 0.1),
                   ),
                   boxShadow: isSelected
                       ? [
                           BoxShadow(
-                            color: AppColors.accentGreen
-                                .withValues(alpha: 0.3),
+                            color: AppColors.accentGreen.withValues(alpha: 0.3),
                             blurRadius: AppDimensions.blurRadiusStandard,
                             offset: const Offset(0, 2),
                           )
@@ -76,8 +75,8 @@ class RangeSelector extends StatelessWidget {
                     fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                     color: isSelected
                         ? isDark
-                        ? Colors.white
-                        : Colors.black
+                            ? Colors.white
+                            : Colors.black
                         : theme.textTheme.bodyMedium?.color
                             ?.withValues(alpha: 0.6),
                     fontSize: AppTypography.fontSizeSmall - 1,

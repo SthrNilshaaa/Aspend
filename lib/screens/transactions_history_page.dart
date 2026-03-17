@@ -1,18 +1,21 @@
-import '../widgets/history_search_bar.dart';
+import 'dart:ui';
+import 'package:aspends_tracker/core/models/transaction.dart';
+
+import '../../widgets/history_search_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../view_models/transaction_view_model.dart';
-import '../view_models/theme_view_model.dart';
-import '../widgets/range_selector.dart';
-import '../widgets/transaction_tile.dart';
-import '../widgets/glass_app_bar.dart';
-import '../utils/transaction_utils.dart';
-import '../const/app_dimensions.dart';
-import '../const/app_typography.dart';
-import '../const/app_assets.dart';
+import '../core/view_models/transaction_view_model.dart';
+import '../core/view_models/theme_view_model.dart';
+import '../../widgets/range_selector.dart';
+import '../../widgets/transaction_tile.dart';
+import '../../widgets/glass_app_bar.dart';
+import '../core/utils/transaction_utils.dart';
+import '../core/const/app_dimensions.dart';
+import '../core/const/app_typography.dart';
+import '../core/const/app_assets.dart';
 
 class TransactionsHistoryPage extends StatefulWidget {
   const TransactionsHistoryPage({super.key});
@@ -23,6 +26,68 @@ class TransactionsHistoryPage extends StatefulWidget {
 }
 
 class _TransactionsHistoryPageState extends State<TransactionsHistoryPage> {
+  bool _isSelectionMode = false;
+  final Set<Transaction> _selectedTransactions = {};
+
+  void _toggleSelection(Transaction tx) {
+    setState(() {
+      if (_selectedTransactions.contains(tx)) {
+        _selectedTransactions.remove(tx);
+        if (_selectedTransactions.isEmpty) _isSelectionMode = false;
+      } else {
+        _selectedTransactions.add(tx);
+      }
+    });
+    HapticFeedback.lightImpact();
+  }
+
+  void _enterSelectionMode(Transaction tx) {
+    setState(() {
+      _isSelectionMode = true;
+      _selectedTransactions.add(tx);
+    });
+    HapticFeedback.mediumImpact();
+  }
+
+  void _exitSelectionMode() {
+    setState(() {
+      _isSelectionMode = false;
+      _selectedTransactions.clear();
+    });
+  }
+
+  Future<void> _deleteSelected() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Delete ${_selectedTransactions.length} transactions?'),
+        content: const Text('This action cannot be undone.'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final txsToDelete = _selectedTransactions.toList();
+      _exitSelectionMode();
+      await context
+          .read<TransactionViewModel>()
+          .deleteMultipleTransactions(txsToDelete);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Deleted ${txsToDelete.length} transactions')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -35,12 +100,18 @@ class _TransactionsHistoryPageState extends State<TransactionsHistoryPage> {
       body: CustomScrollView(
         slivers: [
           GlassAppBar(
-            title: 'Transaction History',
+            title: _isSelectionMode
+                ? '${_selectedTransactions.length} Selected'
+                : 'Transaction History',
             centerTitle: true,
             leading: GestureDetector(
               onTap: () {
                 HapticFeedback.lightImpact();
-                Navigator.pop(context);
+                if (_isSelectionMode) {
+                  _exitSelectionMode();
+                } else {
+                  Navigator.pop(context);
+                }
               },
               child: Padding(
                 padding: const EdgeInsets.only(
@@ -57,14 +128,25 @@ class _TransactionsHistoryPageState extends State<TransactionsHistoryPage> {
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(15.0),
-                      child: SvgPicture.asset(
-                        SvgAppIcons.backButtonIcon,
+                      child: Icon(
+                        _isSelectionMode ? Icons.close : Icons.arrow_back,
+                        size: 20,
                       ),
                     ),
                   ),
                 ),
               ),
             ),
+            actions: [
+              if (_isSelectionMode)
+                Padding(
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: IconButton(
+                    icon: const Icon(Icons.delete_outline, color: Colors.red),
+                    onPressed: _deleteSelected,
+                  ),
+                ),
+            ],
           ),
           SliverToBoxAdapter(
             child: HistorySearchBar(
@@ -93,47 +175,53 @@ class _TransactionsHistoryPageState extends State<TransactionsHistoryPage> {
             SliverPadding(
               padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.paddingStandard),
-              sliver: SliverToBoxAdapter(
-                child: RepaintBoundary(
-                  child: Column(
-                    children: grouped.entries.map((entry) {
-                      final dateKey = entry.key;
-                      final dayTxs = entry.value;
+              sliver: SliverList.builder(
+                itemCount: grouped.entries.length,
+                itemBuilder: (context, index) {
+                  final entry = grouped.entries.elementAt(index);
+                  final dateKey = entry.key;
+                  final dayTxs = entry.value;
 
-                      // Convert DateTime back to the format history expects or update history to handle DateTime
-                      final dateKeyStr =
-                          "${dateKey.year}-${dateKey.month.toString().padLeft(2, '0')}-${dateKey.day.toString().padLeft(2, '0')}";
-                      final relativeDate =
-                          TransactionUtils.formatRelativeDate(dateKeyStr);
+                  final dateKeyStr =
+                      "${dateKey.year}-${dateKey.month.toString().padLeft(2, '0')}-${dateKey.day.toString().padLeft(2, '0')}";
+                  final relativeDate =
+                      TransactionUtils.formatRelativeDate(dateKeyStr);
 
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 12, horizontal: 8),
-                            child: Text(
-                              relativeDate,
-                              style: GoogleFonts.dmSans(
-                                fontWeight: FontWeight.w800,
-                                color: theme.colorScheme.primary
-                                    .withValues(alpha: 0.8),
-                                fontSize: AppTypography.fontSizeSmall,
-                              ),
-                            ),
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 12, horizontal: 8),
+                        child: Text(
+                          relativeDate,
+                          style: GoogleFonts.dmSans(
+                            fontWeight: FontWeight.w800,
+                            color: theme.colorScheme.primary
+                                .withValues(alpha: 0.8),
+                            fontSize: AppTypography.fontSizeSmall,
                           ),
-                          ...dayTxs.asMap().entries.map((entry) => Padding(
-                                padding: const EdgeInsets.only(bottom: 8),
-                                child: TransactionTile(
-                                  transaction: entry.value,
-                                  index: entry.key,
-                                ),
-                              )),
-                        ],
-                      );
-                    }).toList(),
-                  ),
-                ),
+                        ),
+                      ),
+                      // Inner column is fine here since it only holds a single day's transactions (usually small)
+                      // and changing it to nested slivers is overly complex for a date-grouped list.
+                      ...dayTxs.asMap().entries.map((txEntry) => Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: TransactionTile(
+                              transaction: txEntry.value,
+                              index: txEntry.key,
+                              isSelectionMode: _isSelectionMode,
+                              isSelected:
+                                  _selectedTransactions.contains(txEntry.value),
+                              onSelectionToggled: () =>
+                                  _toggleSelection(txEntry.value),
+                              onLongPress: () =>
+                                  _enterSelectionMode(txEntry.value),
+                            ),
+                          )),
+                    ],
+                  );
+                },
               ),
             ),
         ],
@@ -158,45 +246,49 @@ class _TransactionsHistoryPageState extends State<TransactionsHistoryPage> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(AppDimensions.borderRadiusXLarge)),
-        ),
-        padding: const EdgeInsets.all(AppDimensions.paddingLarge),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: theme.dividerColor.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(2),
+      barrierColor: Colors.black.withValues(alpha: 0.3),
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(AppDimensions.borderRadiusXLarge)),
+          ),
+          padding: const EdgeInsets.all(AppDimensions.paddingLarge),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: theme.dividerColor.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Sort By',
-              style: GoogleFonts.dmSans(
-                fontSize: AppTypography.fontSizeLarge,
-                fontWeight: AppTypography.fontWeightBold,
+              const SizedBox(height: 24),
+              Text(
+                'Sort By',
+                style: GoogleFonts.dmSans(
+                  fontSize: AppTypography.fontSizeLarge,
+                  fontWeight: AppTypography.fontWeightBold,
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            _buildSortOption(context, 'Date (Newest)', SortOption.dateNewest),
-            _buildSortOption(context, 'Date (Oldest)', SortOption.dateOldest),
-            _buildSortOption(
-                context, 'Amount (Highest)', SortOption.amountHighest),
-            _buildSortOption(
-                context, 'Amount (Lowest)', SortOption.amountLowest),
-            _buildSortOption(context, 'Category', SortOption.category),
-            const SizedBox(height: 16),
-          ],
+              const SizedBox(height: 16),
+              _buildSortOption(context, 'Date (Newest)', SortOption.dateNewest),
+              _buildSortOption(context, 'Date (Oldest)', SortOption.dateOldest),
+              _buildSortOption(
+                  context, 'Amount (Highest)', SortOption.amountHighest),
+              _buildSortOption(
+                  context, 'Amount (Lowest)', SortOption.amountLowest),
+              _buildSortOption(context, 'Category', SortOption.category),
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
     );

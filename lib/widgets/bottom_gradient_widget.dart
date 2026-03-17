@@ -1,4 +1,3 @@
-
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -15,7 +14,7 @@ class GradientBlurContainer extends StatelessWidget {
     super.key,
     required this.width,
     required this.height,
-    this.blurStrength = 10.0,
+    this.blurStrength = 5.0,
     this.gradientColors = const [Colors.white24, Colors.white10],
     this.borderRadius,
     this.child,
@@ -41,7 +40,8 @@ class GradientBlurContainer extends StatelessWidget {
               },
               blendMode: BlendMode.dstIn,
               child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: blurStrength, sigmaY: blurStrength),
+                filter: ImageFilter.blur(
+                    sigmaX: blurStrength, sigmaY: blurStrength),
                 child: Container(
                   color: Colors.transparent,
                 ),
@@ -54,7 +54,8 @@ class GradientBlurContainer extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: gradientColors.map((c) => c.withOpacity(0.4)).toList(),
+                  colors:
+                      gradientColors.map((c) => c.withOpacity(0.4)).toList(),
                 ),
               ),
             ),

@@ -3,7 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
-import '../const/app_dimensions.dart';
+import '../core/const/app_dimensions.dart';
 
 class StatCard extends StatelessWidget {
   final String title;

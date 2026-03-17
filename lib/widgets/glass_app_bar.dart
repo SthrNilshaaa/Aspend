@@ -1,8 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../const/app_dimensions.dart';
-import '../utils/responsive_utils.dart';
+import '../core/const/app_dimensions.dart';
+import '../core/utils/responsive_utils.dart';
 
 class GlassAppBar extends StatelessWidget {
   final String title;
@@ -33,7 +33,6 @@ class GlassAppBar extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.paddingStandard,
-
           ),
           child: Container(
             color: theme.dividerColor.withValues(alpha: 0.1),
@@ -69,17 +68,10 @@ class GlassAppBar extends StatelessWidget {
           // Persistent Glass Effect Layer
           ClipRRect(
             child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+              filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
               child: Container(
                 decoration: BoxDecoration(
-                  // gradient: LinearGradient(
-                  //   begin: Alignment.topCenter,
-                  //   end: Alignment.bottomCenter,
-                  //   colors: [
-                  //     theme.colorScheme.primary.withValues(alpha: 0.15),
-                  //     theme.colorScheme.surface.withValues(alpha: 0.15),
-                  //   ],
-                  // ),
+                 
                   color: theme.colorScheme.surface.withValues(alpha: 0.15),
                 ),
               ),

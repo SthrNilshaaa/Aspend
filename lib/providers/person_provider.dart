@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 
-import '../models/person.dart';
-import '../models/person_transaction.dart';
+import '../core/models/person.dart';
+import '../core/models/person_transaction.dart';
 
 class PersonProvider with ChangeNotifier {
   List<Person> _people = [];

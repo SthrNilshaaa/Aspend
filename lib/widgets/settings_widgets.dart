@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../utils/responsive_utils.dart';
-import '../const/app_dimensions.dart';
-import '../const/app_typography.dart';
-import '../const/app_colors.dart';
+import '../core/utils/responsive_utils.dart';
+import '../core/const/app_dimensions.dart';
+import '../core/const/app_typography.dart';
+import '../core/const/app_colors.dart';
 
 class TitledSection extends StatelessWidget {
   final String title;

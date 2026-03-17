@@ -1,4 +1,3 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -23,7 +22,6 @@ class HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
     final theme = Theme.of(context);
 
     return Column(
-
       children: [
         /// 👇 Show blur ONLY when overlapping (scroll started)
         if (overlapsContent)

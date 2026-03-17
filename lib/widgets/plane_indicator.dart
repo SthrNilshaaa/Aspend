@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
 import 'package:flutter/material.dart';
-import '../const/app_colors.dart';
-import '../const/app_dimensions.dart';
+import '../core/const/app_colors.dart';
+import '../core/const/app_dimensions.dart';
 
 class _Cloud {
   static const _light = Color(0xFF96CDDE);

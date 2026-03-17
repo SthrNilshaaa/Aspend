@@ -55,7 +55,7 @@ class SmsReceiver : BroadcastReceiver() {
         try {
             val prefs = context.getSharedPreferences("pending_notifications", Context.MODE_PRIVATE)
             val queue = prefs.getStringSet("queue", mutableSetOf()) ?: mutableSetOf()
-            val entry = "SMS|$body|$sender|${System.currentTimeMillis()}"
+            val entry = "{\"type\":\"SMS\",\"text\":\"${body.replace("\"", "\\\"")}\",\"packageName\":\"${sender.replace("\"", "\\\"")}\",\"timestamp\":${System.currentTimeMillis()}}"
             queue.add(entry)
             prefs.edit().putStringSet("queue", queue).apply()
         } catch (e: Exception) {

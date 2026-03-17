@@ -6,24 +6,24 @@ import 'package:home_widget/home_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 
-import 'models/person.dart';
-import 'models/person_transaction.dart';
-import 'models/theme.dart';
-import 'models/transaction.dart';
-import 'models/detection_history.dart';
-import 'repositories/transaction_repository.dart';
-import 'repositories/person_repository.dart';
-import 'repositories/settings_repository.dart';
-import 'view_models/transaction_view_model.dart';
-import 'view_models/theme_view_model.dart';
-import 'view_models/person_view_model.dart';
+import 'core/models/person.dart';
+import 'core/models/person_transaction.dart';
+import 'core/models/theme.dart';
+import 'core/models/transaction.dart';
+import 'core/models/detection_history.dart';
+import 'core/repositories/transaction_repository.dart';
+import 'core/repositories/person_repository.dart';
+import 'core/repositories/settings_repository.dart';
+import 'core/view_models/transaction_view_model.dart';
+import 'core/view_models/theme_view_model.dart';
+import 'core/view_models/person_view_model.dart';
 import 'screens/splash_screen.dart';
-import 'services/transaction_detection_service.dart';
-import 'services/native_bridge.dart';
-import 'const/app_colors.dart';
-import 'const/app_strings.dart';
-import 'const/app_typography.dart';
-import 'const/app_dimensions.dart';
+import 'core/services/transaction_detection_service.dart';
+import 'core/services/native_bridge.dart';
+import 'core/const/app_colors.dart';
+import 'core/const/app_strings.dart';
+import 'core/const/app_typography.dart';
+import 'core/const/app_dimensions.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -62,7 +62,35 @@ void main() async {
     return;
   }
 
-  await FlutterDisplayMode.setHighRefreshRate();
+  // Ensure 120Hz or highest available refresh rate
+  try {
+    final List<DisplayMode> modes = await FlutterDisplayMode.supported;
+    if (modes.isNotEmpty) {
+      // Find the mode with the highest refresh rate
+      DisplayMode highestMode = modes.first;
+      for (var mode in modes) {
+        if (mode.refreshRate > highestMode.refreshRate) {
+          highestMode = mode;
+        }
+      }
+      
+      // Only set if it's better than 60Hz and not already set
+      if (highestMode.refreshRate > 60) {
+        await FlutterDisplayMode.setPreferredMode(highestMode);
+        debugPrint('Set display mode to: ${highestMode.refreshRate}Hz');
+      } else {
+        await FlutterDisplayMode.setHighRefreshRate();
+      }
+    } else {
+      await FlutterDisplayMode.setHighRefreshRate();
+    }
+  } catch (e) {
+    debugPrint('Error setting high refresh rate: $e');
+    // Fallback to basic high refresh rate if something goes wrong
+    try {
+      await FlutterDisplayMode.setHighRefreshRate();
+    } catch (_) {}
+  }
 
   try {
     await NativeBridge.initialize();
@@ -109,8 +137,9 @@ class MyApp extends StatelessWidget {
         final useAdaptive = themeViewModel.useAdaptiveColor;
         final customSeedColor =
             themeViewModel.customSeedColor ?? AppColors.primaryGreen;
-        final scaffoldBackgroundColor =
-            themeViewModel.isDarkMode ? const Color(0xFF0D0D0D) : const Color(0xFFFDFFFD);
+        final scaffoldBackgroundColor = themeViewModel.isDarkMode
+            ? const Color(0xFF0D0D0D)
+            : const Color(0xFFFDFFFD);
         final lightSchemeFinal = useAdaptive
             ? (lightDynamic ??
                 ColorScheme.fromSeed(
@@ -128,8 +157,8 @@ class MyApp extends StatelessWidget {
           return ThemeData(
             colorScheme: scheme,
             useMaterial3: true,
-            scaffoldBackgroundColor:  scaffoldBackgroundColor,
-            fontFamily: AppTypography.legacyFontFamily,
+            scaffoldBackgroundColor: scaffoldBackgroundColor,
+            fontFamily: AppTypography.fontFamily, // Move completely to DM Sans
             textTheme: GoogleFonts.dmSansTextTheme(
               scheme.brightness == Brightness.dark
                   ? ThemeData.dark().textTheme
@@ -182,7 +211,7 @@ class MyApp extends StatelessWidget {
           theme: createTheme(lightSchemeFinal),
           darkTheme: createTheme(darkSchemeFinal),
           home: SplashScreen(
-            isDarkMode:  themeViewModel.isDarkMode,
+            isDarkMode: themeViewModel.isDarkMode,
           ),
         );
       },

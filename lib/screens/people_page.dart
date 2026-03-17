@@ -9,20 +9,20 @@ import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:ui';
 import 'dart:io';
-import '../const/app_assets.dart';
-import '../models/person.dart';
-import '../view_models/person_view_model.dart';
-import '../view_models/theme_view_model.dart';
+import '../core/const/app_assets.dart';
+import '../core/models/person.dart';
+import '../core/view_models/person_view_model.dart';
+import '../core/view_models/theme_view_model.dart';
 import '../person/person_details_page.dart';
-import '../utils/responsive_utils.dart';
-import '../widgets/header_delegate.dart';
-import '../widgets/modern_card.dart';
-import '../widgets/glass_app_bar.dart';
-import '../widgets/empty_state_view.dart';
-import '../const/app_strings.dart';
-import '../const/app_colors.dart';
-import '../const/app_dimensions.dart';
-import '../const/app_typography.dart';
+import '../core/utils/responsive_utils.dart';
+import '../../widgets/header_delegate.dart';
+import '../../widgets/modern_card.dart';
+import '../../widgets/glass_app_bar.dart';
+import '../../widgets/empty_state_view.dart';
+import '../core/const/app_strings.dart';
+import '../core/const/app_colors.dart';
+import '../core/const/app_dimensions.dart';
+import '../core/const/app_typography.dart';
 
 class PeopleTab extends StatefulWidget {
   const PeopleTab({super.key});
@@ -44,7 +44,7 @@ class _PeopleTabState extends State<PeopleTab> {
     _searchController = TextEditingController();
 
     _scrollController.addListener(() {
-      if (!_scrollController.hasClients) return;
+      if (!_scrollController.hasClients || !mounted) return;
 
       final position = _scrollController.position;
       final atTop = position.pixels <= 0;
@@ -84,168 +84,172 @@ class _PeopleTabState extends State<PeopleTab> {
 
     showDialog(
       context: context,
-      builder: (_) => StatefulBuilder(
-        builder: (context, setStateDialog) => AlertDialog(
-          shape: RoundedRectangleBorder(
-              borderRadius:
-                  BorderRadius.circular(AppDimensions.borderRadiusLarge)),
-          title: Text(
-            existingPerson == null
-                ? AppStrings.addNewPerson
-                : AppStrings.editPerson,
-            style: GoogleFonts.dmSans(
-              fontSize: AppTypography.fontSizeLarge,
-              fontWeight: AppTypography.fontWeightBold,
-              color: theme.colorScheme.primary,
+      builder: (_) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: StatefulBuilder(
+          builder: (context, setStateDialog) => AlertDialog(
+            shape: RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadiusLarge)),
+            title: Text(
+              existingPerson == null
+                  ? AppStrings.addNewPerson
+                  : AppStrings.editPerson,
+              style: GoogleFonts.dmSans(
+                fontSize: AppTypography.fontSizeLarge,
+                fontWeight: AppTypography.fontWeightBold,
+                color: theme.colorScheme.primary,
+              ),
             ),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Photo Selection
-              GestureDetector(
-                onTap: () async {
-                  final ImagePicker picker = ImagePicker();
-                  final XFile? image = await picker.pickImage(
-                    source: ImageSource.gallery,
-                  );
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Photo Selection
+                GestureDetector(
+                  onTap: () async {
+                    final ImagePicker picker = ImagePicker();
+                    final XFile? image = await picker.pickImage(
+                      source: ImageSource.gallery,
+                    );
 
-                  if (image != null) {
-                    setStateDialog(() {
-                      selectedPhotoPath = image.path;
-                    });
-                  }
-                },
-                child: Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: selectedPhotoPath != null
-                        ? theme.colorScheme.primary.withValues(alpha: 0.1)
-                        : theme.colorScheme.surface,
-                    borderRadius:
-                        BorderRadius.circular(AppDimensions.borderRadiusLarge),
-                    border: Border.all(
+                    if (image != null) {
+                      setStateDialog(() {
+                        selectedPhotoPath = image.path;
+                      });
+                    }
+                  },
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
                       color: selectedPhotoPath != null
-                          ? theme.colorScheme.primary
-                          : theme.colorScheme.outline.withValues(alpha: 0.3),
-                      width: 1,
+                          ? theme.colorScheme.primary.withValues(alpha: 0.1)
+                          : theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(
+                          AppDimensions.borderRadiusLarge),
+                      border: Border.all(
+                        color: selectedPhotoPath != null
+                            ? theme.colorScheme.primary
+                            : theme.colorScheme.outline.withValues(alpha: 0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(2.0),
+                      child: selectedPhotoPath != null
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(
+                                  AppDimensions.borderRadiusFull),
+                              child: selectedPhotoPath!.startsWith('assets/')
+                                  ? Image.asset(selectedPhotoPath!,
+                                      width: 96, height: 96, fit: BoxFit.cover)
+                                  : Image.file(
+                                      File(selectedPhotoPath!),
+                                      width: 96,
+                                      height: 96,
+                                      fit: BoxFit.cover,
+                                    ),
+                            )
+                          : Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.add_a_photo,
+                                  size: AppDimensions.iconSizeXLarge + 2,
+                                  color: theme.colorScheme.primary,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  AppStrings.addPhoto,
+                                  style: GoogleFonts.dmSans(
+                                    fontSize: AppTypography.fontSizeXSmall,
+                                    color: theme.colorScheme.primary,
+                                    fontWeight:
+                                        AppTypography.fontWeightSemiBold,
+                                  ),
+                                ),
+                              ],
+                            ),
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(2.0),
-                    child: selectedPhotoPath != null
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(
-                                AppDimensions.borderRadiusFull),
-                            child: selectedPhotoPath!.startsWith('assets/')
-                                ? Image.asset(selectedPhotoPath!,
-                                    width: 96, height: 96, fit: BoxFit.cover)
-                                : Image.file(
-                                    File(selectedPhotoPath!),
-                                    width: 96,
-                                    height: 96,
-                                    fit: BoxFit.cover,
-                                  ),
-                          )
-                        : Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.add_a_photo,
-                                size: AppDimensions.iconSizeXLarge + 2,
-                                color: theme.colorScheme.primary,
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                AppStrings.addPhoto,
-                                style: GoogleFonts.dmSans(
-                                  fontSize: AppTypography.fontSizeXSmall,
-                                  color: theme.colorScheme.primary,
-                                  fontWeight: AppTypography.fontWeightSemiBold,
-                                ),
-                              ),
-                            ],
-                          ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  existingPerson == null
+                      ? AppStrings.enterNameHint
+                      : AppStrings.updateDetailsHint,
+                  style: GoogleFonts.dmSans(
+                    fontSize: AppTypography.fontSizeSmall,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                   ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: controller,
+                  decoration: InputDecoration(
+                    labelText: AppStrings.personName,
+                    labelStyle: GoogleFonts.dmSans(
+                        fontSize: AppTypography.fontSizeSmall),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
+                          AppDimensions.borderRadiusSmall),
+                    ),
+                    filled: true,
+                    fillColor: theme.colorScheme.surface,
+                    prefixIcon: Icon(Icons.person_outline,
+                        color: theme.colorScheme.primary),
+                  ),
+                  style: GoogleFonts.dmSans(fontSize: 16),
+                  autofocus: true,
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  'Cancel',
+                  style: GoogleFonts.dmSans(
+                      fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ),
-              const SizedBox(height: 20),
-              Text(
-                existingPerson == null
-                    ? AppStrings.enterNameHint
-                    : AppStrings.updateDetailsHint,
-                style: GoogleFonts.dmSans(
-                  fontSize: AppTypography.fontSizeSmall,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+              ElevatedButton(
+                onPressed: () {
+                  final name = controller.text.trim();
+                  if (name.isNotEmpty) {
+                    HapticFeedback.lightImpact();
+                    if (existingPerson == null) {
+                      final person =
+                          Person(name: name, photoPath: selectedPhotoPath);
+                      context.read<PersonViewModel>().addPerson(person);
+                    } else {
+                      final updatedPerson = Person(
+                        name: name,
+                        photoPath: selectedPhotoPath,
+                      );
+                      context
+                          .read<PersonViewModel>()
+                          .updatePerson(existingPerson, updatedPerson);
+                    }
+                    Navigator.pop(context);
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: theme.colorScheme.primary,
+                  foregroundColor: theme.colorScheme.onPrimary,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                          AppDimensions.borderRadiusSmall)),
                 ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: controller,
-                decoration: InputDecoration(
-                  labelText: AppStrings.personName,
-                  labelStyle:
-                      GoogleFonts.dmSans(fontSize: AppTypography.fontSizeSmall),
-                  border: OutlineInputBorder(
-                    borderRadius:
-                        BorderRadius.circular(AppDimensions.borderRadiusSmall),
-                  ),
-                  filled: true,
-                  fillColor: theme.colorScheme.surface,
-                  prefixIcon: Icon(Icons.person_outline,
-                      color: theme.colorScheme.primary),
+                child: Text(
+                  existingPerson == null ? 'Add' : 'Update',
+                  style: GoogleFonts.dmSans(
+                      fontSize: 16, fontWeight: FontWeight.w600),
                 ),
-                style: GoogleFonts.dmSans(fontSize: 16),
-                autofocus: true,
               ),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                'Cancel',
-                style: GoogleFonts.dmSans(
-                    fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final name = controller.text.trim();
-                if (name.isNotEmpty) {
-                  HapticFeedback.lightImpact();
-                  if (existingPerson == null) {
-                    final person =
-                        Person(name: name, photoPath: selectedPhotoPath);
-                    context.read<PersonViewModel>().addPerson(person);
-                  } else {
-                    final updatedPerson = Person(
-                      name: name,
-                      photoPath: selectedPhotoPath,
-                    );
-                    context
-                        .read<PersonViewModel>()
-                        .updatePerson(existingPerson, updatedPerson);
-                  }
-                  Navigator.pop(context);
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: theme.colorScheme.primary,
-                foregroundColor: theme.colorScheme.onPrimary,
-                shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(AppDimensions.borderRadiusSmall)),
-              ),
-              child: Text(
-                existingPerson == null ? 'Add' : 'Update',
-                style: GoogleFonts.dmSans(
-                    fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-            ),
-          ],
         ),
       ),
     );
@@ -649,9 +653,9 @@ class _PeopleTabState extends State<PeopleTab> {
               ),
             ),
           SliverToBoxAdapter(
-              child: SizedBox(
-                  height: people.isEmpty ? 100 : 80,
-              ),
+            child: SizedBox(
+              height: people.isEmpty ? 100 : 80,
+            ),
           ), // Your existing SizedBox
         ],
       ),
@@ -679,7 +683,7 @@ class _PeopleTabState extends State<PeopleTab> {
     final theme = Theme.of(context);
     return ClipRRect(
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
         child: Container(
           decoration: BoxDecoration(
             color: theme.colorScheme.surface.withValues(alpha: 0.15),

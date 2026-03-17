@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import '../const/app_dimensions.dart';
+import '../core/const/app_dimensions.dart';
 
 class ImagePreviewWithInteraction extends StatefulWidget {
   final String imagePath;

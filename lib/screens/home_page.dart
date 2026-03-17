@@ -1,39 +1,38 @@
 import 'dart:ui';
+import 'dart:async';
 
-import 'package:aspends_tracker/screens/detection_history_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:gradient_blur/gradient_blur.dart';
 import 'package:provider/provider.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-import '../models/transaction.dart';
-import '../view_models/theme_view_model.dart';
-import '../view_models/transaction_view_model.dart';
-import '../widgets/bottom_gradient_widget.dart';
-import '../widgets/header_delegate.dart';
-import '../widgets/transaction_tile.dart';
-import '../widgets/balance_card.dart';
-import '../widgets/add_transaction_dialog.dart';
-import '../widgets/glass_app_bar.dart';
-import '../widgets/empty_state_view.dart';
-import '../widgets/glass_action_button.dart';
-import '../utils/responsive_utils.dart';
-import '../utils/transaction_utils.dart';
+import '../core/view_models/theme_view_model.dart';
+import '../core/view_models/transaction_view_model.dart';
+import '../core/services/native_bridge.dart';
+import '../core/services/transaction_detection_service.dart';
+import '../../core/const/app_strings.dart';
+import '../core/const/app_constants.dart';
+import '../core/const/app_colors.dart';
+import '../../core/const/app_dimensions.dart';
+import '../core/const/app_typography.dart';
+import '../../core/const/app_assets.dart';
+
+import '../../widgets/header_delegate.dart';
+import '../../widgets/add_transaction_dialog.dart';
+import '../../widgets/empty_state_view.dart';
+import '../../widgets/glass_action_button.dart';
+import '../../widgets/floating_action_button.dart';
+import '../../widgets/glass_app_bar.dart';
+
+import '../shared/widgets/home_app_bar.dart';
+import '../shared/widgets/home_balance_section.dart';
+import '../shared/widgets/home_search_bar.dart';
+import '../shared/widgets/home_transaction_list.dart';
+
 import 'settings_page.dart';
 import 'transactions_history_page.dart';
-import '../services/native_bridge.dart';
-import '../services/transaction_detection_service.dart';
-import '../const/app_assets.dart';
-import '../const/app_strings.dart';
-import '../const/app_constants.dart';
-import '../const/app_colors.dart';
-import '../const/app_dimensions.dart';
-import '../const/app_typography.dart';
-import 'dart:async';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -52,48 +51,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _scrollController = ScrollController();
-    _scrollController.addListener(() {
-      if (!_scrollController.hasClients) return;
+    _scrollController.addListener(_scrollListener);
 
-      final position = _scrollController.position;
-      final atTop = position.pixels <= 0;
+    _uiEventSubscription = NativeBridge.uiEvents.listen(_handleUiEvent);
 
-      // Pull to rotate leading icon proportionally
-      // if (position.pixels < 0) {
-      //   setState(() {
-      //     _turns = -position.pixels / 100; // Direct mapping instead of -=
-      //   });
-      // } else if (_turns != 0) {
-      //   setState(() {
-      //     _turns = 0;
-      //   });
-      // }
-
-      final scrollingUp =
-          position.userScrollDirection == ScrollDirection.forward;
-      final scrollingDown =
-          position.userScrollDirection == ScrollDirection.reverse;
-      final isEmpty = context.read<TransactionViewModel>().transactions.isEmpty;
-
-      bool nextShowFab = _showFab;
-
-      if (isEmpty || atTop || scrollingUp) {
-        nextShowFab = true;
-      } else if (scrollingDown) {
-        nextShowFab = false;
-      }
-
-      if (nextShowFab != _showFab) {
-        setState(() => _showFab = nextShowFab);
-      }
-    });
-
-    // Handle incoming events from NativeBridge
-    _uiEventSubscription = NativeBridge.uiEvents.listen((event) {
-      _handleUiEvent(event);
-    });
-
-    // Check for any events that were missed during Splash screen
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final pendingEvent = NativeBridge.consumePendingEvent();
       if (pendingEvent != null) {
@@ -102,15 +63,41 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     });
   }
 
+  void _scrollListener() {
+    if (!_scrollController.hasClients || !mounted) return;
+
+    final position = _scrollController.position;
+    final atTop = position.pixels <= 0;
+
+    final scrollingUp = position.userScrollDirection == ScrollDirection.forward;
+    final scrollingDown =
+        position.userScrollDirection == ScrollDirection.reverse;
+    final isEmpty = context.read<TransactionViewModel>().transactions.isEmpty;
+
+    bool nextShowFab = _showFab;
+
+    if (isEmpty || atTop || scrollingUp) {
+      nextShowFab = true;
+    } else if (scrollingDown) {
+      nextShowFab = false;
+    }
+
+    if (nextShowFab != _showFab) {
+      setState(() => _showFab = nextShowFab);
+    }
+  }
+
   void _handleUiEvent(String event) {
-    // Solid delay to ensure: Splash is gone (1.5s) -> Transition finished (0.3s) -> Home visible (0.4s)
-    // 2200ms ensures the user feels they have correctly "arrived" at the home screen.
     Future.delayed(AppConstants.homeArrivalDelay, () {
       if (!mounted) return;
       if (event == 'SHOW_ADD_INCOME') {
         _showAddTransactionDialog(isIncome: true);
       } else if (event == 'SHOW_ADD_EXPENSE') {
         _showAddTransactionDialog(isIncome: false);
+      } else if (event == 'SYNC_STARTED') {
+        context.read<TransactionViewModel>().setSyncing(true);
+      } else if (event == 'SYNC_FINISHED') {
+        context.read<TransactionViewModel>().setSyncing(false);
       }
     });
   }
@@ -122,14 +109,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  void _restorePosistion() {}
-
   void _showAddTransactionDialog({required bool isIncome}) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => AddTransactionDialog(isIncome: isIncome),
+      barrierColor: Colors.black.withValues(alpha: 0.3),
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: AddTransactionDialog(isIncome: isIncome),
+      ),
     );
   }
 
@@ -138,192 +127,60 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     final theme = Theme.of(context);
     final transactionViewModel = context.watch<TransactionViewModel>();
     final isDark = context.select<ThemeViewModel, bool>((vm) => vm.isDarkMode);
-    final useAdaptive =
-        context.select<ThemeViewModel, bool>((vm) => vm.useAdaptiveColor);
 
     final grouped = transactionViewModel.groupedFilteredTransactions;
     final txns = transactionViewModel.filteredTransactions;
 
     return Scaffold(
-        extendBody: true,
-        body: CustomScrollView(
-          controller: _scrollController,
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            GlassAppBar(
-              automaticallyImplyLeading: false,
-              centerTitle: false,
-              floating: false,
-              title: AppStrings.appNameShort,
-              leading: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _turns += 4;
-                  });
-                },
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                      left: AppDimensions.paddingSmall +
-                          AppDimensions.paddingSmall),
-                  child: AnimatedRotation(
-                    turns: _turns,
-                    onEnd: _restorePosistion,
-                    duration: const Duration(seconds: 1),
-                    child: Center(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: theme.dividerColor.withValues(alpha: 0.1),
-                            width: 1,
-                          ),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: SvgPicture.asset(
-                            isDark
-                                ? SvgAppIcons.appBarIcon
-                                : SvgAppIcons.appBarIcon,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              actions: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 16.0),
-                  child: GestureDetector(
-                    //navigate to notification page
-                    onTap: () {
-                      HapticFeedback.lightImpact();
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const DetectionHistoryPage()),
-                      );
-                    },
-                    child: Stack(
-                      alignment: Alignment.topRight,
-                      children: [
-                        Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.surface
-                                .withValues(alpha: 0.1),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: theme.dividerColor.withValues(alpha: 0.1),
-                              width: 1.3,
-                            ),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(13.0),
-                            child: SvgPicture.asset(
-                              SvgAppIcons.notificationLogoIcon,
-                              colorFilter: ColorFilter.mode(
-                                  theme.colorScheme.onSurface, BlendMode.srcIn),
-                            ),
-                          ),
-                        ),
-                        // Positioned(
-                        //   top: 4,
-                        //   right: 4,
-                        //   child: Container(
-                        //     width: 12,
-                        //     height: 12,
-                        //     decoration: BoxDecoration(
-                        //       color: AppColors.accentGreen,
-                        //       shape: BoxShape.circle,
-                        //       border: Border.all(
-                        //           color: theme.colorScheme.surface, width: 2),
-                        //     ),
-                        //   ),
-                        // ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            _buildBalanceSection(context, transactionViewModel),
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: HomeHeaderDelegate(
-                // minHeight: 150,
-                // maxHeight: 150,
-                height: 160,
-                child: _buildPinnedHeader(context),
-              ),
-            ),
-            if (txns.isNotEmpty)
-              _buildTransactionList(grouped, theme, useAdaptive)
-            else
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: _buildEmptyState(),
-              ),
-            SliverToBoxAdapter(
-              child: RepaintBoundary(
-                child: SizedBox(
-                  height: txns.isNotEmpty
-                      ? MediaQuery.of(context).padding.bottom +
-                          AppDimensions.paddingXLarge * 2.5
-                      : MediaQuery.of(context).padding.bottom +
-                          AppDimensions.paddingXLarge * 3,
-                ),
-              ),
-            ),
-          ],
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        floatingActionButton: AnimatedSlide(
-          offset: _showFab ? Offset.zero : const Offset(0, 2),
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-          child: AnimatedOpacity(
-            opacity: _showFab ? 1.0 : 0.5,
-            duration: const Duration(milliseconds: 300),
-            child: _buildDualFab(theme),
+      extendBody: true,
+      body: CustomScrollView(
+        controller: _scrollController,
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          HomeAppBar(
+            isDark: isDark,
+            turns: _turns,
+            isSyncing: transactionViewModel.isSyncing,
+            onLeadingTap: () => setState(() => _turns += 4),
           ),
+          HomeBalanceSection(viewModel: transactionViewModel),
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: HomeHeaderDelegate(
+              height: 140 * MediaQuery.textScalerOf(context).scale(1) +
+                  20, // Dynamic height prevents overflow when system font size is increased
+              child: _buildPinnedHeader(context),
+            ),
+          ),
+          if (txns.isNotEmpty)
+            HomeTransactionList(grouped: grouped)
+          else
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: _buildEmptyState(),
+            ),
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height: txns.isNotEmpty
+                  ? MediaQuery.of(context).padding.bottom +
+                      AppDimensions.paddingXLarge * 2.5
+                  : MediaQuery.of(context).padding.bottom +
+                      AppDimensions.paddingXLarge * 3,
+            ),
+          ),
+        ],
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: AnimatedSlide(
+        offset: _showFab ? Offset.zero : const Offset(0, 2),
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        child: AnimatedOpacity(
+          opacity: _showFab ? 1.0 : 0.5,
+          duration: const Duration(milliseconds: 300),
+          child: _buildDualFab(theme),
         ),
-        // Add the gradient and blur effect under the bottom navbar
-      // bottomNavigationBar: Stack(
-      //   children:[
-      //     Positioned(
-      //       bottom: 0,
-      //       left: 0,
-      //       right: 0,
-      //     child: GradientBlur(
-      //       maxBlur: 5.0,
-      //       minBlur: 0.0,
-      //       slices: 100,
-      //       curve: Curves.easeInOut,
-      //       edgeBlur: null,
-      //       direction: GradientBlurDirection.bottomToTop,
-      //       gradient: LinearGradient(
-      //         colors: [
-      //           Theme.of(
-      //             context,
-      //           ).scaffoldBackgroundColor.withValues(alpha: 0.8),
-      //           Colors.transparent,
-      //         ],
-      //         end: Alignment.bottomCenter,
-      //         begin: Alignment.topCenter,
-      //
-      //         stops: const [0.7, 0.0],
-      //
-      //       ),
-      //       child: SizedBox(
-      //         height: 150,
-      //
-      //       ),
-      //     ),
-      //   ),
-      // ],
-      // ),
+      ),
     );
   }
 
@@ -331,17 +188,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     final theme = Theme.of(context);
     return ClipRRect(
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
         child: Container(
           decoration: BoxDecoration(
-            // gradient: LinearGradient(
-            //   begin: Alignment.topCenter,
-            //   end: Alignment.bottomCenter,
-            //   colors: [
-            //     theme.colorScheme.primary.withValues(alpha: 0.15),
-            //     theme.colorScheme.surface.withValues(alpha: 0.15),
-            //   ],
-            // ),
             color: theme.colorScheme.surface.withValues(alpha: 0.15),
           ),
           child: Column(
@@ -349,7 +198,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               const SizedBox(height: 10),
               _buildDragHandle(context),
               const SizedBox(height: AppDimensions.paddingXSmall),
-              _buildSearchSection(context),
+              HomeSearchBar(onFilterTap: () {
+                HapticFeedback.mediumImpact();
+                _showSortDialog(context);
+              }),
               const SizedBox(height: AppDimensions.paddingXSmall),
               Padding(
                 padding: const EdgeInsets.symmetric(
@@ -360,7 +212,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ),
             ],
           ),
-        ),
+      ),
       ),
     );
   }
@@ -374,8 +226,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           Text(
             AppStrings.transactionsTitle,
             style: GoogleFonts.dmSans(
-              fontSize: AppTypography.fontSizeSubHeader,
-              fontWeight: AppTypography.fontWeightBold,
+              fontSize: AppTypography.fontSizeSubHeader +
+                  2, // Slightly larger for section header
+              fontWeight: AppTypography
+                  .fontWeightBlack, // Stronger weight for premium feel
+              letterSpacing: -0.5,
             ),
           ),
           TextButton(
@@ -387,255 +242,30 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 ),
               );
             },
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.circular(AppDimensions.borderRadiusMedium),
+              ),
+            ),
             child: Row(
               children: [
                 Text(
                   AppStrings.viewAllLabel,
                   style: GoogleFonts.dmSans(
-                    fontSize: AppTypography.fontSizeSmall,
-                    fontWeight: AppTypography.fontWeightSemiBold,
+                    fontSize: AppTypography.fontSizeSmall + 1,
+                    fontWeight: AppTypography.fontWeightBold,
                     color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
-                SizedBox(
-                  width: 2,
-                ),
-                Icon(Icons.arrow_forward_rounded)
+                const SizedBox(width: 4),
+                Icon(
+                  Icons.arrow_forward_rounded,
+                  size: 18,
+                  color: Theme.of(context).colorScheme.primary,
+                )
               ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBalanceSection(
-      BuildContext context, TransactionViewModel viewModel) {
-    final isLargeScreen = !ResponsiveUtils.isMobile(context);
-    return SliverToBoxAdapter(
-      child: Column(
-        children: [
-          const SizedBox(
-            height: AppDimensions.paddingSmall,
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.paddingStandard,
-              // vertical:
-              //     AppDimensions.paddingSmall + AppDimensions.paddingXSmall
-            ),
-            child: isLargeScreen
-                ? Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        flex: 2,
-                        child: BalanceCard(
-                          balance: viewModel.totalBalance,
-                          onBalanceUpdate: (newBalance) =>
-                              viewModel.updateBalance(newBalance),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 1,
-                        child: _buildBudgetProgress(context, viewModel,
-                            isCompact: true),
-                      ),
-                    ],
-                  )
-                : Column(
-                    children: [
-                      BalanceCard(
-                        balance: viewModel.totalBalance,
-                        onBalanceUpdate: (newBalance) =>
-                            viewModel.updateBalance(newBalance),
-                      ),
-                      _buildBudgetProgress(context, viewModel),
-                    ],
-                  ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSearchSection(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = context.select<ThemeViewModel, bool>((vm) => vm.isDarkMode);
-    final searchQuery =
-        context.select<TransactionViewModel, String?>((vm) => vm.searchQuery);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingStandard,
-          vertical: AppDimensions.paddingSmall),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              height: 56,
-              decoration: BoxDecoration(
-                color: isDark
-                    ? theme.primaryColor.withValues(alpha: 0.05)
-                    // : Colors.black.withValues(alpha: 0.05),
-                    : Colors.white.withValues(alpha: 0.2),
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadiusMinLarge),
-                border: Border.all(
-                  color: theme.dividerColor.withValues(alpha: 0.2),
-                  width: 1.4,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    child: Container(
-                      width: 42,
-                      height: 42,
-                      decoration: BoxDecoration(
-                          color: isDark
-                              ? AppColors.balanceCardDarkModePositive
-                              : AppColors.balanceCardLightModePositive,
-                          // color: theme.colorScheme.primary.withValues(alpha: 0.05),
-                          border: Border.all(
-                              color: theme.colorScheme.primary
-                                  .withValues(alpha: 0.15),
-                              width: 1.4),
-                          borderRadius: BorderRadius.circular(
-                              AppDimensions.borderRadiusRegular)),
-                      child: Padding(
-                        padding: const EdgeInsets.all(2.0),
-                        child: Container(
-                          width: 42,
-                          height: 42,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(
-                                AppDimensions.borderRadiusMedium),
-                          ),
-                          child: Center(
-                            child: SvgPicture.asset(
-                              SvgAppIcons.searchIcon,
-                              colorFilter: const ColorFilter.mode(
-                                  // theme.colorScheme.primary,
-                                  AppColors.accentGreen,
-                                  BlendMode.srcIn),
-                              width: 16,
-                              height: 16,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Container(
-                    width: 1,
-                    height: 24,
-                    color: theme.dividerColor.withValues(alpha: 0.2),
-                  ),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: TextField(
-                      controller: TextEditingController(text: searchQuery)
-                        ..selection = TextSelection.fromPosition(
-                            TextPosition(offset: searchQuery?.length ?? 0)),
-                      onChanged: (val) {
-                        context
-                            .read<TransactionViewModel>()
-                            .setSearchQuery(val);
-                      },
-                      //transaparnt search bar
-                      decoration: InputDecoration(
-                        hintText: AppStrings.searchHint,
-                        hintStyle: GoogleFonts.dmSans(
-                          color: theme.colorScheme.onSurface
-                              .withValues(alpha: 0.4),
-                          fontSize: AppTypography.fontSizeSmall,
-                        ),
-                        border: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        disabledBorder: InputBorder.none,
-                        filled: true,
-                        fillColor: Colors.transparent,
-                        contentPadding:
-                            const EdgeInsets.symmetric(vertical: 12),
-                        suffixIcon: searchQuery != null
-                            ? IconButton(
-                                icon: const Icon(Icons.clear, size: 18),
-                                onPressed: () {
-                                  context
-                                      .read<TransactionViewModel>()
-                                      .setSearchQuery(null);
-                                },
-                              )
-                            : null,
-                      ),
-                      style: GoogleFonts.dmSans(
-                          fontSize: AppTypography.fontSizeRegular,
-                          color: theme.colorScheme.onSurface,
-                          letterSpacing: -0.1),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(width: 6),
-          ZoomTapAnimation(
-            onTap: () {
-              HapticFeedback.mediumImpact();
-              _showSortDialog(context);
-            },
-            child: Container(
-              width: 54,
-              height: 54,
-              decoration: BoxDecoration(
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadiusMinLarge),
-                border: Border.all(
-                  color: theme.dividerColor.withValues(alpha: 0.2),
-                  width: 1.4,
-                ),
-              ),
-              child: Center(
-                child: Container(
-                  width: 42,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? AppColors.balanceCardDarkModePositive
-                        : AppColors.balanceCardLightModePositive,
-                    // color: theme.colorScheme.primary.withValues(alpha: 0.05),
-                    border: Border.all(
-                        color:
-                            theme.colorScheme.primary.withValues(alpha: 0.15),
-                        width: 1.4),
-                    borderRadius: BorderRadius.circular(
-                        AppDimensions.borderRadiusRegular),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(2.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(
-                            AppDimensions.borderRadiusMedium),
-                      ),
-                      child: Center(
-                        child: SvgPicture.asset(
-                          SvgAppIcons.filterIcon,
-                          colorFilter: const ColorFilter.mode(
-                              // theme.colorScheme.primary,
-                              AppColors.accentGreen,
-                              BlendMode.srcIn),
-                          width: 16,
-                          height: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
             ),
           ),
         ],
@@ -650,7 +280,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
+      barrierColor: Colors.black.withValues(alpha: 0.3),
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
           borderRadius: const BorderRadius.vertical(
@@ -693,6 +326,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ],
         ),
       ),
+      )
     );
   }
 
@@ -719,63 +353,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         vm.setSortOption(option);
         Navigator.pop(context);
       },
-    );
-  }
-
-  Widget _buildTransactionList(Map<DateTime, List<Transaction>> grouped,
-      ThemeData theme, bool useAdaptive) {
-    return SliverPadding(
-      padding:
-          const EdgeInsets.symmetric(horizontal: AppDimensions.paddingStandard),
-      sliver: SliverToBoxAdapter(
-        child: RepaintBoundary(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: grouped.entries.map((entry) {
-              final dateKey = entry.key;
-              final dayTxs = entry.value;
-              final dateStr =
-                  "${dateKey.year}-${dateKey.month.toString().padLeft(2, '0')}-${dateKey.day.toString().padLeft(2, '0')}";
-              final relativeDate = TransactionUtils.formatRelativeDate(dateStr);
-
-              return Padding(
-                padding:
-                    const EdgeInsets.only(bottom: AppDimensions.paddingXLarge),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          left: AppDimensions.paddingXSmall,
-                          bottom: AppDimensions.paddingXSmall),
-                      child: Text(
-                        relativeDate,
-                        style: GoogleFonts.dmSans(
-                          fontWeight: FontWeight.w800,
-                          color:
-                              theme.colorScheme.primary.withValues(alpha: 0.8),
-                          fontSize: ResponsiveUtils.getResponsiveFontSize(
-                              context,
-                              mobile: AppTypography.fontSizeSmall,
-                              tablet: AppTypography.fontSizeMedium,
-                              desktop: AppTypography.fontSizeSmall + 4),
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                    ...dayTxs.asMap().entries.map(
-                          (entry) => TransactionTile(
-                            transaction: entry.value,
-                            index: entry.key,
-                          ),
-                        ),
-                  ],
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-      ),
     );
   }
 
@@ -856,7 +433,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Widget _buildDualFab(ThemeData theme) {
     return GlassFab(
-      marginBottom: 75,
+      marginBottom: 65,
       children: [
         ClipOval(
           child: GlassActionButton(
@@ -876,134 +453,4 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       ],
     );
   }
-
-  Widget _buildBudgetProgress(
-      BuildContext context, TransactionViewModel viewModel,
-      {bool isCompact = false}) {
-    final themeViewModel = context.watch<ThemeViewModel>();
-    final budget = themeViewModel.monthlyBudget;
-    if (budget <= 0) return const SizedBox.shrink();
-
-    final now = DateTime.now();
-    final startOfMonth = DateTime(now.year, now.month, 1);
-    final endOfMonth = DateTime(now.year, now.month + 1, 0);
-
-    final monthlyTxs =
-        viewModel.getTransactionsInRange(startOfMonth, endOfMonth);
-    final spent = monthlyTxs
-        .where((t) => !t.isIncome)
-        .fold(0.0, (sum, t) => sum + t.amount);
-
-    final percentage = (spent / budget).clamp(0.0, 1.0);
-    final isOverBudget = spent > budget;
-    final theme = Theme.of(context);
-
-    return Padding(
-      padding: EdgeInsets.symmetric(
-          horizontal: isCompact ? 8 : 16, vertical: isCompact ? 8 : 8),
-      child: Container(
-        padding: EdgeInsets.all(isCompact ? 16 : 20),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusLarge),
-          border: Border.all(
-            color: isOverBudget
-                ? Colors.redAccent.withValues(alpha: 0.3)
-                : theme.dividerColor.withValues(alpha: 0.1),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: AppDimensions.spacingStandard - 6,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    AppStrings.budget,
-                    style: GoogleFonts.dmSans(
-                      fontWeight: AppTypography.fontWeightExtraBold,
-                      fontSize: isCompact
-                          ? AppTypography.fontSizeSmall
-                          : AppTypography.fontSizeMedium,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Text(
-                  '₹${spent.toStringAsFixed(0)}',
-                  style: GoogleFonts.dmSans(
-                    fontWeight: FontWeight.w700,
-                    fontSize: isCompact ? 13 : 14,
-                    color: isOverBudget ? Colors.redAccent : Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(AppDimensions.paddingSmall),
-              child: LinearProgressIndicator(
-                value: percentage,
-                minHeight: isCompact ? 8 : 10,
-                backgroundColor: theme.dividerColor.withValues(alpha: 0.1),
-                valueColor: AlwaysStoppedAnimation(
-                  isOverBudget
-                      ? AppColors.accentRed
-                      : theme.colorScheme.primary,
-                ),
-              ),
-            ),
-            if (!isCompact && isOverBudget) ...[
-              const SizedBox(height: AppDimensions.paddingLarge),
-              Text(
-                '⚠️ Over by ₹${(spent - budget).toStringAsFixed(0)}',
-                style: GoogleFonts.dmSans(
-                  fontSize: AppTypography.fontSizeXSmall,
-                  color: AppColors.accentRed,
-                  fontWeight: AppTypography.fontWeightSemiBold,
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
 }
-// class HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
-//   final double minHeight;
-//   final double maxHeight;
-//   final Widget child;
-//
-//   HomeHeaderDelegate({
-//     required this.minHeight,
-//     required this.maxHeight,
-//     required this.child,
-//   });
-//
-//   @override
-//   double get minExtent => minHeight;
-//
-//   @override
-//   double get maxExtent => maxHeight;
-//
-//   @override
-//   Widget build(
-//       BuildContext context, double shrinkOffset, bool overlapsContent) {
-//     return SizedBox.expand(child: child);
-//   }
-//
-//   @override
-//   bool shouldRebuild(HomeHeaderDelegate oldDelegate) {
-//     return maxHeight != oldDelegate.maxHeight ||
-//         minHeight != oldDelegate.minHeight ||
-//         child != oldDelegate.child;
-//   }
-// }

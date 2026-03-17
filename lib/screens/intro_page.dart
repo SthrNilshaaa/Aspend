@@ -5,11 +5,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui';
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
-import '../view_models/theme_view_model.dart';
-import '../services/transaction_detection_service.dart';
-import '../services/native_bridge.dart';
-import '../const/app_strings.dart';
-import '../const/app_constants.dart';
+import '../core/view_models/theme_view_model.dart';
+import '../core/services/transaction_detection_service.dart';
+import '../core/services/native_bridge.dart';
+import '../core/const/app_strings.dart';
+import '../core/const/app_constants.dart';
 
 class IntroPage extends StatefulWidget {
   const IntroPage({super.key});
@@ -287,10 +287,12 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
                 // Enable auto-detection
                 await TransactionDetectionService.setEnabled(true);
 
+                if (!context.mounted) return;
                 Navigator.pop(context);
                 _navigateToMainApp();
               } catch (e) {
                 // If there's an error, still proceed to main app
+                if (!context.mounted) return;
                 Navigator.pop(context);
                 _navigateToMainApp();
               }
@@ -513,7 +515,7 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(58),
               child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
                 child: Container(
                   decoration: BoxDecoration(
                     color: useAdaptive

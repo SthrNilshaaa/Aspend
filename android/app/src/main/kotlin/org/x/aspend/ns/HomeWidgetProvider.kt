@@ -51,26 +51,34 @@ class HomeWidgetProvider : AppWidgetProvider() {
         // Get widget data
         val widgetData = HomeWidgetPlugin.getData(context)
         val balance = widgetData.getString("balance", "₹0.00")
-        val income = widgetData.getString("total_income", "0.0")
-        val expense = widgetData.getString("total_expenses", "0.0")
+        val income = widgetData.getString("total_income", "0")
+        val expense = widgetData.getString("total_expenses", "0")
+        val lastTx = widgetData.getString("last_transaction", "")
 
-        // Update basic views
+        // Update views
         views.setTextViewText(R.id.widget_balance, balance)
-        views.setTextViewText(R.id.widget_income, "₹${formatAmount(income)}")
-        views.setTextViewText(R.id.widget_expense, "₹${formatAmount(expense)}")
+        views.setTextViewText(R.id.widget_income, "+₹${formatCompact(income)}")
+        views.setTextViewText(R.id.widget_expense, "-₹${formatCompact(expense)}")
 
-        // Optional: Hide stats if widget is too small
+        // Last Transaction
+        if (lastTx.isNullOrEmpty()) {
+            views.setViewVisibility(R.id.widget_last_tx, View.GONE)
+        } else {
+            views.setViewVisibility(R.id.widget_last_tx, View.VISIBLE)
+            views.setTextViewText(R.id.widget_last_tx, "Recent: $lastTx")
+        }
+
+        // Logic for hiding stats based on height
         if (options != null) {
             val minHeight = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT)
-            val minWidth = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)
-            
-            Log.d(TAG, "Widget ID: $appWidgetId, Size: ${minWidth}x${minHeight}")
-
-            // If height is small, hide stats to save space for buttons and balance
-            if (minHeight < 100) {
+            if (minHeight < 110) {
                 views.setViewVisibility(R.id.stats_container, View.GONE)
+                views.setViewVisibility(R.id.widget_last_tx, View.GONE)
             } else {
                 views.setViewVisibility(R.id.stats_container, View.VISIBLE)
+                if (!lastTx.isNullOrEmpty()) {
+                    views.setViewVisibility(R.id.widget_last_tx, View.VISIBLE)
+                }
             }
         }
 
@@ -80,6 +88,21 @@ class HomeWidgetProvider : AppWidgetProvider() {
 
         // Update the widget
         appWidgetManager.updateAppWidget(appWidgetId, views)
+    }
+
+    private fun formatCompact(amountStr: String?): String {
+        return try {
+            val amount = amountStr?.toDouble() ?: 0.0
+            if (amount >= 100000) {
+                String.format("%.1fL", amount / 100000)
+            } else if (amount >= 1000) {
+                String.format("%.1fk", amount / 1000)
+            } else {
+                String.format("%.0f", amount)
+            }
+        } catch (e: Exception) {
+            "0"
+        }
     }
 
     private fun setupButton(context: Context, views: RemoteViews, viewId: Int, actionStr: String, reqCode: Int) {
@@ -95,15 +118,6 @@ class HomeWidgetProvider : AppWidgetProvider() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         views.setOnClickPendingIntent(viewId, pendingIntent)
-    }
-
-    private fun formatAmount(amountStr: String?): String {
-        return try {
-            val amount = amountStr?.toDouble() ?: 0.0
-            String.format("%.2f", amount)
-        } catch (e: Exception) {
-            "0.00"
-        }
     }
 
     override fun onReceive(context: Context, intent: Intent) {

@@ -1,5 +1,5 @@
 import 'dart:ui';
-import 'package:aspends_tracker/const/app_colors.dart';
+import 'package:aspends_tracker/core/const/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class FloatingActionBar extends StatelessWidget {
@@ -78,24 +78,24 @@ class FloatingActionBar extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(40),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-        child: Container(
-          height: 65,
-          width: 215,
-          decoration: BoxDecoration(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+      child: Container(
+        height: 65,
+        width: 215,
+        decoration: BoxDecoration(
             // color: AppColors.accentGreen.withOpacity(0.06),
-            borderRadius: BorderRadius.circular(40),
+          borderRadius: BorderRadius.circular(40),
             // border: Border.all(
             //   color: AppColors.accentGreen.withOpacity(0.15),
             // ),
-            color: color.withOpacity(0.15),
+            color: color.withValues(alpha: 0.15),
 
-            border: Border.all(
-              color: color.withOpacity(0.5),
-            ),
+          border: Border.all(
+            color: color.withValues(alpha: 0.5),
           ),
-          child: child,
         ),
+        child: child,
+      ),
       ),
     );
   }
@@ -109,23 +109,23 @@ class FloatingActionBar extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(50),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(50),
-          child: Container(
-            height: 65,
-            width: 65,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: color.withOpacity(0.5),
-              ),
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(50),
+        child: Container(
+          height: 65,
+          width: 65,
+          decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.15),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: color.withValues(alpha: 0.5),
             ),
-            child: Icon(icon, color: color),
           ),
+          child: Icon(icon, color: color),
         ),
+      ),
       ),
     );
   }

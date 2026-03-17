@@ -3,10 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
-import '../const/app_dimensions.dart';
-import '../const/app_typography.dart';
+import '../core/const/app_dimensions.dart';
+import '../core/const/app_typography.dart';
 
 class GlassActionButton extends StatelessWidget {
   final dynamic icon;
@@ -32,18 +31,18 @@ class GlassActionButton extends StatelessWidget {
       },
       child: ClipRRect(
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
           child: Container(
-            width: 64,
-            height: 64,
+            width: 60,
+            height: 60,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 18),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.15),
-               shape: BoxShape.circle,
+              shape: BoxShape.circle,
               // borderRadius: BorderRadius.circular(AppDimensions.borderRadiusLarge),
               border: Border.all(
                 color: color.withValues(alpha: 0.5),
-                width: 0.5,
+                width: 0.8,
               ),
             ),
             child: Row(
@@ -53,8 +52,8 @@ class GlassActionButton extends StatelessWidget {
                     ? SvgPicture.asset(
                         icon,
                         colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
-                        width: 22,
-                        height: 22,
+                        width: 20,
+                        height: 20,
                       )
                     : Icon(icon, color: color, size: 22),
                 if (label != null && label!.isNotEmpty) ...[

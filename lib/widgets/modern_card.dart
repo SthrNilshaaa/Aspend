@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../const/app_dimensions.dart';
+import '../core/const/app_dimensions.dart';
 
 class ModernCard extends StatelessWidget {
   final Widget child;

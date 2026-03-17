@@ -1,5 +1,6 @@
-import 'package:aspends_tracker/const/app_colors.dart';
-import 'package:aspends_tracker/const/app_dimensions.dart';
+import 'dart:ui';
+import 'package:aspends_tracker/core/const/app_colors.dart';
+import 'package:aspends_tracker/core/const/app_dimensions.dart';
 import 'package:aspends_tracker/widgets/floating_action_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,17 +9,17 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-import '../const/app_assets.dart';
-import '../models/person.dart';
-import '../models/person_transaction.dart';
-import '../view_models/person_view_model.dart';
-import '../widgets/header_delegate.dart';
-import '../widgets/add_transaction_dialog.dart';
-import '../widgets/glass_app_bar.dart';
-import '../widgets/empty_state_view.dart';
-import '../widgets/person_transaction_item.dart';
-import '../widgets/person_detail_header.dart';
-import '../const/app_typography.dart';
+import '../core/const/app_assets.dart';
+import '../core/models/person.dart';
+import '../core/models/person_transaction.dart';
+import '../core/view_models/person_view_model.dart';
+import '../../widgets/header_delegate.dart';
+import '../../widgets/add_transaction_dialog.dart';
+import '../../widgets/glass_app_bar.dart';
+import '../../widgets/empty_state_view.dart';
+import '../../widgets/person_transaction_item.dart';
+import '../../widgets/person_detail_header.dart';
+import '../core/const/app_typography.dart';
 
 class PersonDetailPage extends StatefulWidget {
   final Person person;
@@ -68,7 +69,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
     _slideController.forward();
     _scrollController = ScrollController();
     _scrollController.addListener(() {
-      if (!_scrollController.hasClients) return;
+      if (!_scrollController.hasClients || !mounted) return;
       final atTop = _scrollController.position.pixels <= 0;
       final txs =
           context.read<PersonViewModel>().transactionsFor(widget.person.name);
@@ -128,9 +129,13 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                 context: context,
                 isScrollControlled: true,
                 backgroundColor: Colors.transparent,
-                builder: (context) => AddTransactionDialog(
-                  isIncome: false,
-                  initialNote: widget.person.name,
+                barrierColor: Colors.black.withValues(alpha: 0.3),
+                builder: (context) => BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: AddTransactionDialog(
+                    isIncome: false,
+                    initialNote: widget.person.name,
+                  ),
                 ),
               );
             },
@@ -139,9 +144,13 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                 context: context,
                 isScrollControlled: true,
                 backgroundColor: Colors.transparent,
-                builder: (context) => AddTransactionDialog(
-                  isIncome: true,
-                  initialNote: widget.person.name,
+                barrierColor: Colors.black.withValues(alpha: 0.3),
+                builder: (context) => BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: AddTransactionDialog(
+                    isIncome: true,
+                    initialNote: widget.person.name,
+                  ),
                 ),
               );
             },
@@ -319,36 +328,43 @@ class _PersonDetailPageState extends State<PersonDetailPage>
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Settle Balance',
-            style: GoogleFonts.dmSans(fontWeight: FontWeight.bold)),
-        content: Text(
-          'This will add a transaction of ₹${currentTotal.abs().toStringAsFixed(2)} to bring the balance to zero. Continue?',
-          style: GoogleFonts.dmSans(),
+      builder: (ctx) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: AlertDialog(
+          title: Text('Settle Balance',
+              style: GoogleFonts.dmSans(fontWeight: FontWeight.bold)),
+          content: Text(
+            'This will add a transaction of ₹${currentTotal.abs().toStringAsFixed(2)} to bring the balance to zero. Continue?',
+            style: GoogleFonts.dmSans(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text('Cancel', style: GoogleFonts.dmSans()),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(ctx);
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  barrierColor: Colors.black.withValues(alpha: 0.3),
+                  builder: (context) => BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: AddTransactionDialog(
+                      isIncome: currentTotal < 0,
+                      initialAmount: currentTotal.abs(),
+                      initialNote: '${currentPerson.name} - Settled balance',
+                    ),
+                  ),
+                );
+                HapticFeedback.mediumImpact();
+              },
+              child: Text('Settle', style: GoogleFonts.dmSans()),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel', style: GoogleFonts.dmSans()),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (context) => AddTransactionDialog(
-                  isIncome: currentTotal < 0,
-                  initialAmount: currentTotal.abs(),
-                  initialNote: '${currentPerson.name} - Settled balance',
-                ),
-              );
-              HapticFeedback.mediumImpact();
-            },
-            child: Text('Settle', style: GoogleFonts.dmSans()),
-          ),
-        ],
       ),
     );
   }
@@ -356,216 +372,22 @@ class _PersonDetailPageState extends State<PersonDetailPage>
   void _showDeleteConfirmation(BuildContext context, Person currentPerson) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          'Delete Person',
-          style: GoogleFonts.dmSans(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Colors.red,
-          ),
-        ),
-        content: Text(
-          'Are you sure you want to delete ${currentPerson.name}? This action cannot be undone.',
-          style: GoogleFonts.dmSans(fontSize: 16),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style:
-                  GoogleFonts.dmSans(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              context.read<PersonViewModel>().deletePerson(currentPerson);
-              HapticFeedback.lightImpact();
-              Navigator.pop(context);
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-            ),
-            child: Text(
-              'Delete',
-              style:
-                  GoogleFonts.dmSans(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showDeleteTransactionDialog(
-      BuildContext context, PersonTransaction tx) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          'Delete Transaction',
-          style: GoogleFonts.dmSans(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Colors.red,
-          ),
-        ),
-        content: Text(
-          'Are you sure you want to delete this transaction?',
-          style: GoogleFonts.dmSans(fontSize: 16),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style:
-                  GoogleFonts.dmSans(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              context.read<PersonViewModel>().deleteTransaction(tx);
-              HapticFeedback.lightImpact();
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-            ),
-            child: Text(
-              'Delete',
-              style:
-                  GoogleFonts.dmSans(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showEditPersonDialog(BuildContext context, Person person) {
-    final controller = TextEditingController(text: person.name);
-    final theme = Theme.of(context);
-    String? selectedPhotoPath = person.photoPath;
-
-    showDialog(
-      context: context,
-      builder: (_) => StatefulBuilder(
-        builder: (context, setStateDialog) => AlertDialog(
+      builder: (_) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: AlertDialog(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Text(
-            'Edit Person',
+            'Delete Person',
             style: GoogleFonts.dmSans(
               fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: theme.colorScheme.primary,
+              color: Colors.red,
             ),
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Photo Selection
-              GestureDetector(
-                onTap: () async {
-                  final ImagePicker picker = ImagePicker();
-                  final XFile? image = await picker.pickImage(
-                    source: ImageSource.gallery,
-                  );
-
-                  if (image != null) {
-                    setStateDialog(() {
-                      selectedPhotoPath = image.path;
-                    });
-                  }
-                },
-                child: Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: selectedPhotoPath != null
-                        ? theme.colorScheme.primary.withValues(alpha: 0.1)
-                        : theme.colorScheme.surface,
-                    borderRadius: BorderRadius.circular(50),
-                    border: Border.all(
-                      color: selectedPhotoPath != null
-                          ? theme.colorScheme.primary
-                          : theme.colorScheme.outline.withValues(alpha: 0.3),
-                      width: 2,
-                    ),
-                  ),
-                  child: selectedPhotoPath != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(48),
-                          child: (selectedPhotoPath!.startsWith('assets/') ||
-                                  selectedPhotoPath!.startsWith('http'))
-                              ? Image.asset(selectedPhotoPath!,
-                                  width: 96, height: 96, fit: BoxFit.cover)
-                              : Image.file(
-                                  File(selectedPhotoPath!),
-                                  width: 96,
-                                  height: 96,
-                                  fit: BoxFit.cover,
-                                ),
-                        )
-                      : Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.add_a_photo,
-                              size: 30,
-                              color: theme.colorScheme.primary,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Add Photo',
-                              style: GoogleFonts.dmSans(
-                                fontSize: 12,
-                                color: theme.colorScheme.primary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'Update the details for this person',
-                style: GoogleFonts.dmSans(
-                  fontSize: 14,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: controller,
-                decoration: InputDecoration(
-                  labelText: 'Person Name',
-                  labelStyle: GoogleFonts.dmSans(fontSize: 16),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  filled: true,
-                  fillColor: theme.colorScheme.surface,
-                  prefixIcon: Icon(Icons.person_outline,
-                      color: theme.colorScheme.primary),
-                ),
-                style: GoogleFonts.dmSans(fontSize: 16),
-                autofocus: true,
-              ),
-            ],
+          content: Text(
+            'Are you sure you want to delete ${currentPerson.name}? This action cannot be undone.',
+            style: GoogleFonts.dmSans(fontSize: 16),
           ),
           actions: [
             TextButton(
@@ -578,32 +400,237 @@ class _PersonDetailPageState extends State<PersonDetailPage>
             ),
             ElevatedButton(
               onPressed: () {
-                final name = controller.text.trim();
-                if (name.isNotEmpty) {
-                  HapticFeedback.lightImpact();
-                  final updatedPerson = Person(
-                    name: name,
-                    photoPath: selectedPhotoPath,
-                  );
-                  context
-                      .read<PersonViewModel>()
-                      .updatePerson(person, updatedPerson);
-                  Navigator.pop(context);
-                }
+                context.read<PersonViewModel>().deletePerson(currentPerson);
+                HapticFeedback.lightImpact();
+                Navigator.pop(context);
+                Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: theme.colorScheme.primary,
-                foregroundColor: theme.colorScheme.onPrimary,
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
               ),
               child: Text(
-                'Update',
+                'Delete',
                 style: GoogleFonts.dmSans(
                     fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  void _showDeleteTransactionDialog(
+      BuildContext context, PersonTransaction tx) {
+    showDialog(
+      context: context,
+      builder: (_) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(
+            'Delete Transaction',
+            style: GoogleFonts.dmSans(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.red,
+            ),
+          ),
+          content: Text(
+            'Are you sure you want to delete this transaction?',
+            style: GoogleFonts.dmSans(fontSize: 16),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.dmSans(
+                    fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                context.read<PersonViewModel>().deleteTransaction(tx);
+                HapticFeedback.lightImpact();
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+              child: Text(
+                'Delete',
+                style: GoogleFonts.dmSans(
+                    fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showEditPersonDialog(BuildContext context, Person person) {
+    final controller = TextEditingController(text: person.name);
+    final theme = Theme.of(context);
+    String? selectedPhotoPath = person.photoPath;
+
+    showDialog(
+      context: context,
+      builder: (_) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: StatefulBuilder(
+          builder: (context, setStateDialog) => AlertDialog(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Text(
+              'Edit Person',
+              style: GoogleFonts.dmSans(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Photo Selection
+                GestureDetector(
+                  onTap: () async {
+                    final ImagePicker picker = ImagePicker();
+                    final XFile? image = await picker.pickImage(
+                      source: ImageSource.gallery,
+                    );
+
+                    if (image != null) {
+                      setStateDialog(() {
+                        selectedPhotoPath = image.path;
+                      });
+                    }
+                  },
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: selectedPhotoPath != null
+                          ? theme.colorScheme.primary.withValues(alpha: 0.1)
+                          : theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(50),
+                      border: Border.all(
+                        color: selectedPhotoPath != null
+                            ? theme.colorScheme.primary
+                            : theme.colorScheme.outline.withValues(alpha: 0.3),
+                        width: 2,
+                      ),
+                    ),
+                    child: selectedPhotoPath != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(48),
+                            child: (selectedPhotoPath!.startsWith('assets/') ||
+                                    selectedPhotoPath!.startsWith('http'))
+                                ? Image.asset(selectedPhotoPath!,
+                                    width: 96, height: 96, fit: BoxFit.cover)
+                                : Image.file(
+                                    File(selectedPhotoPath!),
+                                    width: 96,
+                                    height: 96,
+                                    fit: BoxFit.cover,
+                                  ),
+                          )
+                        : Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.add_a_photo,
+                                size: 30,
+                                color: theme.colorScheme.primary,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Add Photo',
+                                style: GoogleFonts.dmSans(
+                                  fontSize: 12,
+                                  color: theme.colorScheme.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'Update the details for this person',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 14,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: controller,
+                  decoration: InputDecoration(
+                    labelText: 'Person Name',
+                    labelStyle: GoogleFonts.dmSans(fontSize: 16),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: true,
+                    fillColor: theme.colorScheme.surface,
+                    prefixIcon: Icon(Icons.person_outline,
+                        color: theme.colorScheme.primary),
+                  ),
+                  style: GoogleFonts.dmSans(fontSize: 16),
+                  autofocus: true,
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  'Cancel',
+                  style: GoogleFonts.dmSans(
+                      fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  final name = controller.text.trim();
+                  if (name.isNotEmpty) {
+                    HapticFeedback.lightImpact();
+                    final updatedPerson = Person(
+                      name: name,
+                      photoPath: selectedPhotoPath,
+                    );
+                    context
+                        .read<PersonViewModel>()
+                        .updatePerson(person, updatedPerson);
+                    Navigator.pop(context);
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: theme.colorScheme.primary,
+                  foregroundColor: theme.colorScheme.onPrimary,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+                child: Text(
+                  'Update',
+                  style: GoogleFonts.dmSans(
+                      fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -615,46 +642,50 @@ class _PersonDetailPageState extends State<PersonDetailPage>
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(AppDimensions.borderRadiusXLarge)),
-        ),
-        padding: const EdgeInsets.all(AppDimensions.paddingLarge),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: theme.dividerColor.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(2),
+      barrierColor: Colors.black.withValues(alpha: 0.3),
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(AppDimensions.borderRadiusXLarge)),
+          ),
+          padding: const EdgeInsets.all(AppDimensions.paddingLarge),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: theme.dividerColor.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Sort Transactions By',
-              style: GoogleFonts.dmSans(
-                fontSize: AppTypography.fontSizeLarge,
-                fontWeight: AppTypography.fontWeightBold,
+              const SizedBox(height: 24),
+              Text(
+                'Sort Transactions By',
+                style: GoogleFonts.dmSans(
+                  fontSize: AppTypography.fontSizeLarge,
+                  fontWeight: AppTypography.fontWeightBold,
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            _buildSortOption(context, 'Date (Recent)',
-                PersonTransactionSortOption.dateNewest),
-            _buildSortOption(context, 'Date (Oldest)',
-                PersonTransactionSortOption.dateOldest),
-            _buildSortOption(context, 'Amount (Highest)',
-                PersonTransactionSortOption.amountHighest),
-            _buildSortOption(context, 'Amount (Lowest)',
-                PersonTransactionSortOption.amountLowest),
-            const SizedBox(height: 16),
-          ],
+              const SizedBox(height: 16),
+              _buildSortOption(context, 'Date (Recent)',
+                  PersonTransactionSortOption.dateNewest),
+              _buildSortOption(context, 'Date (Oldest)',
+                  PersonTransactionSortOption.dateOldest),
+              _buildSortOption(context, 'Amount (Highest)',
+                  PersonTransactionSortOption.amountHighest),
+              _buildSortOption(context, 'Amount (Lowest)',
+                  PersonTransactionSortOption.amountLowest),
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
     );

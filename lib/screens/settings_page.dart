@@ -1,11 +1,10 @@
 import 'dart:ui';
-import 'package:url_launcher/url_launcher.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:local_auth/local_auth.dart';
-import '../view_models/theme_view_model.dart';
+import '../core/view_models/theme_view_model.dart';
 import 'package:flutter/services.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
@@ -13,22 +12,24 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 //import 'dart:io';
 
-import '../services/backup_service.dart';
-import '../view_models/transaction_view_model.dart';
-import '../view_models/person_view_model.dart';
-import '../services/pdf_service.dart';
-import '../services/transaction_detection_service.dart';
-import '../services/native_bridge.dart';
-import '../utils/responsive_utils.dart';
-import '../utils/error_handler.dart';
+import '../core/services/backup_service.dart';
+import '../core/view_models/transaction_view_model.dart';
+import '../core/view_models/person_view_model.dart';
+import '../core/services/pdf_service.dart';
+import '../core/services/transaction_detection_service.dart';
+import '../core/services/native_bridge.dart';
+import '../core/utils/transaction_parser.dart';
+import '../core/utils/responsive_utils.dart';
+import '../core/utils/error_handler.dart';
 import 'detection_history_page.dart';
-import '../widgets/glass_app_bar.dart';
-import '../widgets/settings_widgets.dart';
-import '../widgets/transaction_tile.dart';
-import '../utils/transaction_utils.dart';
-import '../const/app_assets.dart';
-import '../const/app_strings.dart';
-import '../const/app_constants.dart';
+import 'app_selection_page.dart';
+import 'about_page.dart';
+import '../../widgets/glass_app_bar.dart';
+import '../../widgets/settings_widgets.dart';
+import '../../widgets/monitoring_setup_dialog.dart';
+import '../core/utils/transaction_utils.dart';
+import '../core/const/app_strings.dart';
+import '../core/const/app_constants.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -48,6 +49,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _loadAppLockSetting() async {
     final box = await Hive.openBox(AppConstants.settingsBox);
+    if (!mounted) return;
     setState(() {
       _appLockEnabled = box.get('appLockEnabled', defaultValue: false);
     });
@@ -61,12 +63,14 @@ class _SettingsPageState extends State<SettingsPage> {
         final canCheckDeviceSupport = await localAuth.isDeviceSupported();
 
         if (!canCheckDeviceSupport) {
+          if (!mounted) return;
           ErrorHandler.showErrorSnackBar(context,
               'Biometric authentication is not supported on this device');
           return;
         }
 
         if (!canCheckBiometrics) {
+          if (!mounted) return;
           ErrorHandler.showErrorSnackBar(
               context, 'No biometric authentication methods available');
           return;
@@ -79,6 +83,7 @@ class _SettingsPageState extends State<SettingsPage> {
         );
 
         if (!didAuthenticate) {
+          if (!mounted) return;
           ErrorHandler.showErrorSnackBar(
               context, 'Authentication failed. App lock not enabled.');
           return;
@@ -87,16 +92,19 @@ class _SettingsPageState extends State<SettingsPage> {
 
       final box = await Hive.openBox(AppConstants.settingsBox);
       await box.put('appLockEnabled', enabled);
+      if (!mounted) return;
       setState(() {
         _appLockEnabled = enabled;
       });
 
+      if (!mounted) return;
       ErrorHandler.showSuccessSnackBar(
           context,
           enabled
               ? 'App lock enabled successfully'
               : 'App lock disabled successfully');
     } catch (e) {
+      if (!mounted) return;
       ErrorHandler.handleError(context, e,
           customMessage:
               'Failed to ${enabled ? 'enable' : 'disable'} app lock');
@@ -216,27 +224,32 @@ class _SettingsPageState extends State<SettingsPage> {
                           _buildAppInfoSection(context, isDark),
                         ],
                       ),
-                      const SizedBox(height: 8),
-                      // Add developer credit at the very bottom
-                      Center(
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 16, bottom: 8),
-                          child: Text(
-                            AppStrings.developedBy,
-                            style: GoogleFonts.dmSans(
-                              fontSize: 12,
-                              color: Colors.grey,
-                              fontWeight: FontWeight.w500,
-                              letterSpacing: 0.2,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
+                      // const SizedBox(height: 8),
+                      // // Add developer credit at the very bottom
+                      // Center(
+                      //   child: Padding(
+                      //     padding: const EdgeInsets.only(top: 16, bottom: 8),
+                      //     child: Text(
+                      //       AppStrings.developedBy,
+                      //       style: GoogleFonts.dmSans(
+                      //         fontSize: 12,
+                      //         color: Colors.grey,
+                      //         fontWeight: FontWeight.w500,
+                      //         letterSpacing: 0.2,
+                      //       ),
+                      //       textAlign: TextAlign.center,
+                      //     ),
+                      //   ),
+                      // ),
                     ],
                   ),
                 ),
               ),
+            ),
+          ),
+          const SliverToBoxAdapter(
+            child: SizedBox(
+              height:  80,
             ),
           ),
         ],
@@ -353,38 +366,41 @@ class _SettingsPageState extends State<SettingsPage> {
         await showDialog(
           context: context,
           builder: (context) {
-            return AlertDialog(
-              title: const Text('Pick App Color'),
-              content: SingleChildScrollView(
-                child: BlockPicker(
-                  pickerColor: selectedColor,
-                  onColorChanged: (color) {
-                    selectedColor = color;
-                  },
+            return BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+              child: AlertDialog(
+                title: const Text('Pick App Color'),
+                content: SingleChildScrollView(
+                  child: BlockPicker(
+                    pickerColor: selectedColor,
+                    onColorChanged: (color) {
+                      selectedColor = color;
+                    },
+                  ),
                 ),
+                actions: [
+                  TextButton(
+                    child: const Text('Reset'),
+                    onPressed: () {
+                      viewModel.setCustomSeedColor(null);
+                      Navigator.of(context).pop();
+                      _showSnackBar(context, 'App color reset to default!');
+                    },
+                  ),
+                  TextButton(
+                    child: const Text('Cancel'),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                  ElevatedButton(
+                    child: const Text('Select'),
+                    onPressed: () {
+                      viewModel.setCustomSeedColor(selectedColor);
+                      Navigator.of(context).pop();
+                      // Removed snackbar as it might trigger lint and is redundant with the UI update
+                    },
+                  ),
+                ],
               ),
-              actions: [
-                TextButton(
-                  child: const Text('Reset'),
-                  onPressed: () {
-                    viewModel.setCustomSeedColor(null);
-                    Navigator.of(context).pop();
-                    _showSnackBar(context, 'App color reset to default!');
-                  },
-                ),
-                TextButton(
-                  child: const Text('Cancel'),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-                ElevatedButton(
-                  child: const Text('Select'),
-                  onPressed: () {
-                    viewModel.setCustomSeedColor(selectedColor);
-                    Navigator.of(context).pop();
-                    _showSnackBar(context, 'App color updated!');
-                  },
-                ),
-              ],
             );
           },
         );
@@ -405,6 +421,7 @@ class _SettingsPageState extends State<SettingsPage> {
             if (value) {
               final canCheck = await localAuth.canCheckBiometrics ||
                   await localAuth.isDeviceSupported();
+              if (!mounted) return;
               if (!canCheck) {
                 _showSnackBar(context,
                     'Device does not support biometrics or device authentication.');
@@ -415,6 +432,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 biometricOnly: false,
                 persistAcrossBackgrounding: true,
               );
+              if (!mounted) return;
               if (!didAuthenticate) {
                 _showSnackBar(
                     context, 'Authentication failed. App lock not enabled.');
@@ -422,9 +440,11 @@ class _SettingsPageState extends State<SettingsPage> {
               }
             }
             await _setAppLockEnabled(value);
+            if (!mounted) return;
             _showSnackBar(
                 context, value ? 'App lock enabled.' : 'App lock disabled.');
           } catch (e) {
+            if (!mounted) return;
             _showSnackBar(context, 'Error: \n$e');
           }
         },
@@ -466,13 +486,17 @@ class _SettingsPageState extends State<SettingsPage> {
                               await NativeBridge.checkNotificationPermission();
 
                           if (!hasPermission) {
-                            final confirmed =
-                                await _showAutoDetectionInfoDialog(context);
+                            final confirmed = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => BackdropFilter(
+                                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                                child: const MonitoringSetupDialog(),
+                              ),
+                            );
                             if (confirmed != true) {
-                              setState(() {});
+                              if (mounted) setState(() {});
                               return;
                             }
-                            await NativeBridge.requestNotificationPermission();
                           }
 
                           final notificationAccess =
@@ -487,13 +511,15 @@ class _SettingsPageState extends State<SettingsPage> {
 
                         await TransactionDetectionService.setEnabled(value);
 
-                        if (mounted) {
-                          ErrorHandler.showSuccessSnackBar(
-                              context,
-                              value
-                                  ? 'Auto-detection enabled!'
-                                  : 'Auto-detection disabled!');
-                        }
+                        if (!mounted) return;
+
+                        if (!mounted) return;
+
+                        ErrorHandler.showSuccessSnackBar(
+                            context,
+                            value
+                                ? 'Auto-detection enabled!'
+                                : 'Auto-detection disabled!');
 
                         setState(() {});
                       } catch (e) {
@@ -522,18 +548,76 @@ class _SettingsPageState extends State<SettingsPage> {
                     context, 'Recent data processed successfully!');
               }
             } catch (e) {
-              if (mounted) {
-                ErrorHandler.handleError(context, e,
-                    customMessage: 'Error processing data');
-              }
+              if (!mounted) return;
+              ErrorHandler.handleError(context, e,
+                  customMessage: 'Error processing data');
             }
           },
+        ),
+        SettingTile(
+          icon: Icons.monitor_heart_outlined,
+          title: 'Screen Activity Monitoring',
+          subtitle: 'Detect transactions in real-time from payment apps',
+          trailing: FutureBuilder<bool>(
+            future: NativeBridge.checkAccessibilityPermission(),
+            builder: (context, snapshot) {
+              final isEnabled = snapshot.data ?? false;
+              return Switch(
+                value: isEnabled,
+                onChanged: (value) async {
+                  HapticFeedback.lightImpact();
+                  if (value) {
+                    final confirmed = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                        child: AlertDialog(
+                          title: const Text('Enable Screen Monitoring?'),
+                          content: const Text(
+                              'This allows Aspend to detect transactions as you make them in apps like GPay, PhonePe, and Paytm. Your data remains private and stays on your device.'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, false),
+                              child: const Text('Cancel'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () => Navigator.pop(context, true),
+                              child: const Text('Enable'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                    if (confirmed == true) {
+                      await NativeBridge.requestAccessibilityPermission();
+                    }
+                  } else {
+                    await NativeBridge
+                        .requestAccessibilityPermission(); // Opens settings to disable
+                  }
+                  if (mounted) setState(() {});
+                },
+              );
+            },
+          ),
         ),
         SettingTile(
           icon: Icons.bug_report_outlined,
           title: 'Test Detection Logic',
           subtitle: 'Simulate a notification to verify parsing',
           onTap: () => _showTestDetectionDialog(context),
+        ),
+        SettingTile(
+          icon: Icons.app_registration_rounded,
+          title: 'Monitored Apps',
+          subtitle: 'Choose which apps to monitor for transactions',
+          onTap: () {
+            HapticFeedback.lightImpact();
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AppSelectionPage()),
+            );
+          },
         ),
         SettingTile(
           icon: Icons.manage_history,
@@ -548,6 +632,18 @@ class _SettingsPageState extends State<SettingsPage> {
             );
           },
         ),
+        SettingTile(
+          icon: Icons.auto_delete_outlined,
+          title: 'Auto-delete undetected history',
+          subtitle: 'Delete undetected items after 24 hours',
+          trailing: Switch(
+            value: context.watch<ThemeViewModel>().autoDeleteUndetected,
+            onChanged: (value) {
+              HapticFeedback.lightImpact();
+              context.read<ThemeViewModel>().setAutoDeleteUndetected(value);
+            },
+          ),
+        ),
       ],
     );
   }
@@ -557,183 +653,98 @@ class _SettingsPageState extends State<SettingsPage> {
       text:
           'Alert: Your account XX1234 has been debited by Rs. 500.00 for a purchase at AMAZON. Ref: 12345678.',
     );
+    
+    ParsedTransaction? result;
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Simulate Notification'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Enter a sample notification message to see how our AI parser handles it.',
-              style: TextStyle(fontSize: 13),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: controller,
-              maxLines: 3,
-              decoration: const InputDecoration(
-                hintText: 'Paste notification text here...',
-                border: OutlineInputBorder(),
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: StatefulBuilder(
+          builder: (context, setDialogState) => AlertDialog(
+            title: const Text('Test Parser Diagnostic'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Enter a sample notification message to see how our parser handles it.',
+                    style: TextStyle(fontSize: 13),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: controller,
+                    maxLines: 3,
+                    decoration: const InputDecoration(
+                      hintText: 'Paste notification text here...',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  if (result != null) ...[
+                    const SizedBox(height: 20),
+                    const Divider(),
+                    const SizedBox(height: 10),
+                    Text(
+                        'Status: ${result!.isBalanceUpdate ? 'Balance Sync' : result!.amount > 0 ? 'Transaction Detected' : 'No Action Detected'}',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: result!.amount > 0 || result!.isBalanceUpdate
+                                ? Colors.green
+                                : Colors.orange)),
+                    const SizedBox(height: 8),
+                    _resultItem(
+                        'Amount', '₹${result!.amount.toStringAsFixed(2)}'),
+                    _resultItem(
+                        'Type', result!.isIncome ? 'Income' : 'Expense'),
+                    _resultItem('Merchant', result!.merchant ?? 'Unknown'),
+                    _resultItem('Category', result!.category ?? 'General'),
+                    _resultItem('Bank', result!.bank ?? 'Unknown'),
+                    _resultItem('Account', result!.account ?? 'N/A'),
+                    _resultItem('Balance',
+                        result!.balance != null ? '₹${result!.balance}' : 'N/A'),
+                    _resultItem(
+                        'Confidence', '${(result!.confidence * 100).toInt()}%'),
+                  ],
+                ],
               ),
             ),
-          ],
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  final text = controller.text;
+                  final parsed = TransactionParser.parse(text,
+                      packageName: 'com.test.bank');
+                  setDialogState(() {
+                    result = parsed;
+                  });
+
+                  if (parsed == null) {
+                    ErrorHandler.showErrorSnackBar(
+                        context, 'Pattern not recognized');
+                  }
+                },
+                child: const Text('Parse Text'),
+              ),
+            ],
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final text = controller.text;
-              Navigator.pop(context);
-
-              // Directly call the service logic
-              await TransactionDetectionService.processNotification(
-                  'Test', text,
-                  packageName: 'com.test.bank');
-
-              if (mounted) {
-                ErrorHandler.showInfoSnackBar(
-                    context, 'Test processed. Check History for results.');
-              }
-            },
-            child: const Text('Run Test'),
-          ),
-        ],
       ),
     );
   }
 
-  Future<bool?> _showAutoDetectionInfoDialog(BuildContext context) async {
-    final theme = Theme.of(context);
-    final isDark = context.read<ThemeViewModel>().isDarkMode;
-
-    return showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: theme.colorScheme.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            const Icon(Icons.auto_awesome, color: Colors.blue, size: 24),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                'Auto Transaction \n Detection',
-                style: GoogleFonts.dmSans(
-                  fontWeight: FontWeight.bold,
-                  // fontSize: 20,
-                  color: isDark ? Colors.white : Colors.black,
-                ),
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'This feature will automatically detect transactions from:',
-              style: GoogleFonts.dmSans(
-                fontWeight: FontWeight.w600,
-                color: isDark ? Colors.white70 : Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 12),
-            _buildInfoItem(
-                '🔔 App notifications', 'Monitors payment app notifications'),
-            _buildInfoItem('📱 Banking notifications',
-                'Detects UPI, ATM, and banking transactions'),
-            _buildInfoItem('💰 Automatic categorization',
-                'Categorizes transactions based on bank keywords'),
-            const SizedBox(height: 12),
-            Text(
-              'Required permissions:',
-              style: GoogleFonts.dmSans(
-                fontWeight: FontWeight.w600,
-                color: isDark ? Colors.white70 : Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 8),
-            _buildInfoItem(
-                '🔔 Notification access', 'To monitor payment notifications'),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.blue.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
-              ),
-              child: Text(
-                "💡 Tip: The app will only process messages that contain transaction amounts and keywords like 'credited', 'debited', 'paid', etc.",
-                style: GoogleFonts.dmSans(
-                  fontSize: 12,
-                  color: Colors.blue.shade700,
-                ),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: theme.colorScheme.primary),
-            ),
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              Navigator.pop(context, false);
-            },
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              foregroundColor: Colors.white,
-            ),
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              Navigator.pop(context, true);
-            },
-            child: const Text("Enable"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoItem(String title, String subtitle) {
+  Widget _resultItem(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: GoogleFonts.dmSans(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                ),
-                Text(
-                  subtitle,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          Text('$label:', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+          Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
         ],
       ),
     );
@@ -750,8 +761,10 @@ class _SettingsPageState extends State<SettingsPage> {
             HapticFeedback.lightImpact();
             try {
               await BackupService.exportToCsvAndShare();
+              if (!mounted) return;
               _showSnackBar(context, 'Export completed successfully!');
             } catch (e) {
+              if (!mounted) return;
               _showSnackBar(context, 'Export failed: $e');
             }
           },
@@ -764,8 +777,10 @@ class _SettingsPageState extends State<SettingsPage> {
             HapticFeedback.lightImpact();
             try {
               await BackupService.exportAllDataJsonAndShare();
+              if (!mounted) return;
               _showSnackBar(context, 'Backup completed!');
             } catch (e) {
+              if (!mounted) return;
               _showSnackBar(context, 'Backup failed: $e');
             }
           },
@@ -778,6 +793,7 @@ class _SettingsPageState extends State<SettingsPage> {
             HapticFeedback.lightImpact();
             try {
               final success = await BackupService.importDataFromJson(context);
+              if (!mounted) return;
               if (success) {
                 _showSnackBar(context, 'Data restored successfully!');
                 // Restart app or reload all data might be needed,
@@ -786,6 +802,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 _showSnackBar(context, 'Restore failed or cancelled');
               }
             } catch (e) {
+              if (!mounted) return;
               _showSnackBar(context, 'Restore failed: $e');
             }
           },
@@ -798,11 +815,14 @@ class _SettingsPageState extends State<SettingsPage> {
             HapticFeedback.lightImpact();
             try {
               final file = await PDFService.generateHomeTransactionPDF();
+              if (!mounted) return;
               await Printing.sharePdf(
                   bytes: await file.readAsBytes(),
                   filename: 'home_transactions.pdf');
+              if (!mounted) return;
               _showSnackBar(context, 'PDF exported successfully!');
             } catch (e) {
+              if (!mounted) return;
               _showSnackBar(context, 'PDF export failed: $e');
             }
           },
@@ -815,11 +835,14 @@ class _SettingsPageState extends State<SettingsPage> {
             HapticFeedback.lightImpact();
             try {
               final file = await PDFService.generatePeopleTransactionPDF();
+              if (!mounted) return;
               await Printing.sharePdf(
                   bytes: await file.readAsBytes(),
                   filename: 'person_transactions.pdf');
+              if (!mounted) return;
               _showSnackBar(context, 'People data exported!');
             } catch (e) {
+              if (!mounted) return;
               _showSnackBar(context, 'People data export failed: $e');
             }
           },
@@ -884,8 +907,10 @@ class _SettingsPageState extends State<SettingsPage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) {
-        return StatefulBuilder(
+      barrierColor: Colors.black.withValues(alpha: 0.3),
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: StatefulBuilder(
           builder: (context, setStateDialog) {
             final themeViewModel = context.watch<ThemeViewModel>();
             final items = (type == 'Income')
@@ -990,8 +1015,8 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             );
           },
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -1003,68 +1028,74 @@ class _SettingsPageState extends State<SettingsPage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Padding(
-        padding:
-            EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('${old == null ? 'Add' : 'Edit'} $type',
-                  style: GoogleFonts.dmSans(
-                      fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 24),
-              TextField(
-                controller: controller,
-                autofocus: true,
-                decoration: InputDecoration(
-                  hintText: 'Enter name...',
-                  labelText: '$type Name',
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12)),
+      barrierColor: Colors.black.withValues(alpha: 0.3),
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Padding(
+          padding:
+              EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('${old == null ? 'Add' : 'Edit'} $type',
+                    style: GoogleFonts.dmSans(
+                        fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 24),
+                TextField(
+                  controller: controller,
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    hintText: 'Enter name...',
+                    labelText: '$type Name',
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                  textCapitalization: TextCapitalization.words,
                 ),
-                textCapitalization: TextCapitalization.words,
-              ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Cancel'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Cancel'),
                       ),
-                      onPressed: () {
-                        final val = controller.text.trim();
-                        if (val.isNotEmpty) {
-                          final themeViewModel = context.read<ThemeViewModel>();
-                          if (old == null)
-                            themeViewModel.addItem(val, type);
-                          else
-                            themeViewModel.updateItem(old, val, type);
-                          onDone(val);
-                          Navigator.pop(context);
-                        }
-                      },
-                      child: const Text('Save'),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                        onPressed: () {
+                          final val = controller.text.trim();
+                          if (val.isNotEmpty) {
+                            final themeViewModel =
+                                context.read<ThemeViewModel>();
+                            if (old == null)
+                              themeViewModel.addItem(val, type);
+                            else
+                              themeViewModel.updateItem(old, val, type);
+                            onDone(val);
+                            Navigator.pop(context);
+                          }
+                        },
+                        child: const Text('Save'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -1076,44 +1107,18 @@ class _SettingsPageState extends State<SettingsPage> {
       children: [
         SettingTile(
           icon: Icons.info_outline,
-          title: 'Version',
-          subtitle: '5.9.1',
-          onTap: null,
-        ),
-        SettingTile(
-          icon: Icons.description,
-          title: 'Privacy Policy',
-          subtitle: 'Read our privacy policy',
-          onTap: () =>
-              _launchExternalUrl(context, AppConstants.privacyPolicyUrl),
-        ),
-        SettingTile(
-          icon: Icons.help_outline,
-          title: 'Help & Support',
-          subtitle: 'Get help and contact support',
-          onTap: () =>
-              _launchExternalUrl(context, AppConstants.supportTelegramUrl),
+          title: 'About ${AppStrings.appNameShort}',
+          subtitle: 'Developer, Privacy, Support & More',
+          onTap: () {
+            HapticFeedback.lightImpact();
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AboutPage()),
+            );
+          },
         ),
       ],
     );
-  }
-
-  Future<void> _launchExternalUrl(
-      BuildContext context, String urlString) async {
-    HapticFeedback.lightImpact();
-    final url = Uri.parse(urlString);
-    try {
-      // Use externalApplication mode for better reliability with universal links
-      final launched =
-          await launchUrl(url, mode: LaunchMode.externalApplication);
-      if (!launched && context.mounted) {
-        _showSnackBar(context, 'Could not launch URL');
-      }
-    } catch (e) {
-      if (context.mounted) {
-        _showSnackBar(context, 'Error: $e');
-      }
-    }
   }
 
   Widget _buildBudgetSection(BuildContext context) {
@@ -1152,36 +1157,41 @@ class _SettingsPageState extends State<SettingsPage> {
         TextEditingController(text: viewModel.monthlyBudget.toString());
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Set Monthly Budget'),
-        content: TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-            labelText: 'Budget Amount',
-            prefixText: '₹ ',
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: AlertDialog(
+          title: const Text('Set Monthly Budget'),
+          content: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: 'Budget Amount',
+              prefixText: '₹ ',
+            ),
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final val = double.tryParse(controller.text) ?? 0.0;
+                viewModel.setMonthlyBudget(val);
+                if (!mounted) return;
+                Navigator.pop(context);
+                ErrorHandler.showSuccessSnackBar(context, 'Budget updated!');
+              },
+              child: const Text('Save'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final val = double.tryParse(controller.text) ?? 0.0;
-              viewModel.setMonthlyBudget(val);
-              Navigator.pop(context);
-              ErrorHandler.showSuccessSnackBar(context, 'Budget updated!');
-            },
-            child: const Text('Save'),
-          ),
-        ],
       ),
     );
   }
 
   void _showSnackBar(BuildContext context, String message) {
+    if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -1202,68 +1212,73 @@ class _SettingsPageState extends State<SettingsPage> {
 
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: theme.colorScheme.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            const Icon(Icons.warning, color: Colors.red, size: 24),
-            const SizedBox(width: 8),
-            Text(
-              'Confirm Delete',
-              style: GoogleFonts.dmSans(
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.black,
+      builder: (_) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: AlertDialog(
+          backgroundColor: theme.colorScheme.surface,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              const Icon(Icons.warning, color: Colors.red, size: 24),
+              const SizedBox(width: 8),
+              Text(
+                'Confirm Delete',
+                style: GoogleFonts.dmSans(
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : Colors.black,
+                ),
               ),
+            ],
+          ),
+          content: Text(
+            'Are you sure you want to delete all transactions and reset your balance? This action cannot be undone.',
+            style: GoogleFonts.dmSans(
+              color: isDark ? Colors.white70 : Colors.black87,
+            ),
+          ),
+          actions: [
+            TextButton(
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: theme.colorScheme.primary),
+              ),
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                Navigator.pop(context);
+              },
+            ),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.delete),
+              label: const Text('Delete All'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () async {
+                HapticFeedback.lightImpact();
+                try {
+                  final box = await Hive.openBox<double>('balanceBox');
+                  await box.clear();
+                  if (!context.mounted) return;
+                  await Provider.of<TransactionViewModel>(context,
+                          listen: false)
+                      .deleteAllData();
+                  await Provider.of<PersonViewModel>(context, listen: false)
+                      .deleteAllData();
+                  if (!context.mounted) return;
+                  Navigator.pop(context);
+                  _showSnackBar(context, 'All data deleted successfully!');
+                } catch (e) {
+                  if (!context.mounted) return;
+                  Navigator.pop(context);
+                  _showSnackBar(
+                      context, 'Failed to delete all data. Please try again.');
+                }
+              },
             ),
           ],
         ),
-        content: Text(
-          'Are you sure you want to delete all transactions and reset your balance? This action cannot be undone.',
-          style: GoogleFonts.dmSans(
-            color: isDark ? Colors.white70 : Colors.black87,
-          ),
-        ),
-        actions: [
-          TextButton(
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: theme.colorScheme.primary),
-            ),
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              Navigator.pop(context);
-            },
-          ),
-          ElevatedButton.icon(
-            icon: const Icon(Icons.delete),
-            label: const Text('Delete All'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            onPressed: () async {
-              HapticFeedback.lightImpact();
-              try {
-                final box = await Hive.openBox<double>('balanceBox');
-                await box.clear();
-                if (!context.mounted) return;
-                await Provider.of<TransactionViewModel>(context, listen: false)
-                    .deleteAllData();
-                await Provider.of<PersonViewModel>(context, listen: false)
-                    .deleteAllData();
-                if (!context.mounted) return;
-                Navigator.pop(context);
-                _showSnackBar(context, 'All data deleted successfully!');
-              } catch (e) {
-                if (!context.mounted) return;
-                Navigator.pop(context);
-                _showSnackBar(
-                    context, 'Failed to delete all data. Please try again.');
-              }
-            },
-          ),
-        ],
       ),
     );
   }
@@ -1275,66 +1290,70 @@ class _SettingsPageState extends State<SettingsPage> {
 
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: theme.colorScheme.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            const Icon(Icons.refresh, color: Colors.orange, size: 24),
-            const SizedBox(width: 8),
-            Text(
-              'Reset Intro',
-              style: GoogleFonts.dmSans(
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.black,
+      builder: (_) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: AlertDialog(
+          backgroundColor: theme.colorScheme.surface,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              const Icon(Icons.refresh, color: Colors.orange, size: 24),
+              const SizedBox(width: 8),
+              Text(
+                'Reset Intro',
+                style: GoogleFonts.dmSans(
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : Colors.black,
+                ),
               ),
+            ],
+          ),
+          content: Text(
+            'This will show the intro screens again the next time you open the app. Your data will remain unchanged.',
+            style: GoogleFonts.dmSans(
+              color: isDark ? Colors.white70 : Colors.black87,
+            ),
+          ),
+          actions: [
+            TextButton(
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: theme.colorScheme.primary),
+              ),
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                Navigator.pop(context);
+              },
+            ),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.refresh),
+              label: const Text('Reset'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () async {
+                HapticFeedback.lightImpact();
+                try {
+                  final box = await Hive.openBox<double>('balanceBox');
+                  await box.clear();
+                  // Reset introCompleted flag in settings box
+                  final settingsBox = await Hive.openBox('settings');
+                  await settingsBox.put('introCompleted', false);
+                  if (!context.mounted) return;
+                  Navigator.pop(context);
+                  _showSnackBar(context, 'Intro reset successfully!');
+                } catch (e) {
+                  if (!context.mounted) return;
+                  Navigator.pop(context);
+                  _showSnackBar(
+                      context, 'Failed to reset intro. Please try again.\n$e');
+                }
+              },
             ),
           ],
         ),
-        content: Text(
-          'This will show the intro screens again the next time you open the app. Your data will remain unchanged.',
-          style: GoogleFonts.dmSans(
-            color: isDark ? Colors.white70 : Colors.black87,
-          ),
-        ),
-        actions: [
-          TextButton(
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: theme.colorScheme.primary),
-            ),
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              Navigator.pop(context);
-            },
-          ),
-          ElevatedButton.icon(
-            icon: const Icon(Icons.refresh),
-            label: const Text('Reset'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange,
-              foregroundColor: Colors.white,
-            ),
-            onPressed: () async {
-              HapticFeedback.lightImpact();
-              try {
-                final box = await Hive.openBox<double>('balanceBox');
-                await box.clear();
-                // Reset introCompleted flag in settings box
-                final settingsBox = await Hive.openBox('settings');
-                await settingsBox.put('introCompleted', false);
-                if (!context.mounted) return;
-                Navigator.pop(context);
-                _showSnackBar(context, 'Intro reset successfully!');
-              } catch (e) {
-                if (!context.mounted) return;
-                Navigator.pop(context);
-                _showSnackBar(
-                    context, 'Failed to reset intro. Please try again.\n$e');
-              }
-            },
-          ),
-        ],
       ),
     );
   }

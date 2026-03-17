@@ -66,7 +66,7 @@ class TransactionDetectionService : NotificationListenerService() {
         try {
             val prefs = getSharedPreferences("pending_notifications", Context.MODE_PRIVATE)
             val queue = prefs.getStringSet("queue", mutableSetOf()) ?: mutableSetOf()
-            val entry = "$title|$text|$packageName|${System.currentTimeMillis()}"
+            val entry = "{\"type\":\"NOTIFICATION\",\"title\":\"${title.replace("\"", "\\\"")}\",\"text\":\"${text.replace("\"", "\\\"")}\",\"packageName\":\"${packageName.replace("\"", "\\\"")}\",\"timestamp\":${System.currentTimeMillis()}}"
             queue.add(entry)
             prefs.edit().putStringSet("queue", queue).apply()
         } catch (e: Exception) {

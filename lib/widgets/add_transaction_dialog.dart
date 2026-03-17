@@ -1,21 +1,22 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import '../models/transaction.dart';
-import '../view_models/transaction_view_model.dart';
-import '../view_models/theme_view_model.dart';
-import '../view_models/person_view_model.dart';
-import '../models/person_transaction.dart';
+import '../core/models/transaction.dart';
+import '../core/view_models/transaction_view_model.dart';
+import '../core/view_models/theme_view_model.dart';
+import '../core/view_models/person_view_model.dart';
+import '../core/models/person_transaction.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
-import '../const/app_colors.dart';
-import '../const/app_dimensions.dart';
-import '../const/app_typography.dart';
-import '../const/app_assets.dart';
-import '../utils/transaction_utils.dart';
+import '../core/const/app_colors.dart';
+import '../core/const/app_dimensions.dart';
+import '../core/const/app_typography.dart';
+import '../core/const/app_assets.dart';
+import '../core/utils/transaction_utils.dart';
 
 class AddTransactionDialog extends StatefulWidget {
   final bool isIncome;
@@ -165,73 +166,176 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Pill-shaped Header for Amount
+                // Stylized Amount Header
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      vertical: AppDimensions.paddingLarge,
+                      vertical: AppDimensions.paddingLarge + 8,
                       horizontal: AppDimensions.paddingXLarge),
                   decoration: BoxDecoration(
-                    color: (widget.isIncome
-                            ? AppColors.accentGreen
-                            : AppColors.accentRed)
-                        .withValues(alpha: isDark ? 0.1 : 0.05),
-                    borderRadius: BorderRadius.circular(
-                        AppDimensions.borderRadiusXLarge + 8),
+                    gradient: LinearGradient(
+                      colors: [
+                        (widget.isIncome
+                                ? AppColors.accentGreen
+                                : AppColors.accentRed)
+                            .withValues(alpha: isDark ? 0.15 : 0.08),
+                        (widget.isIncome
+                                ? AppColors.accentGreen
+                                : AppColors.accentRed)
+                            .withValues(alpha: isDark ? 0.05 : 0.02),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius:
+                        BorderRadius.circular(AppDimensions.borderRadiusXLarge),
                     border: Border.all(
                       color: (widget.isIncome
                               ? AppColors.accentGreen
                               : AppColors.accentRed)
-                          .withValues(alpha: 0.15),
+                          .withValues(alpha: isDark ? 0.2 : 0.1),
+                      width: 1.5,
                     ),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  child: Column(
                     children: [
                       Text(
-                        '₹',
+                        'Amount in INR',
                         style: GoogleFonts.dmSans(
-                          fontSize: AppTypography.fontSizeXLarge,
-                          fontWeight: AppTypography.fontWeightBlack,
-                          color: widget.isIncome
-                              ? AppColors.accentGreen
-                              : AppColors.accentRed,
+                          fontSize: AppTypography.fontSizeXSmall,
+                          fontWeight: FontWeight.bold,
+                          color: (widget.isIncome
+                                  ? AppColors.accentGreen
+                                  : AppColors.accentRed)
+                              .withValues(alpha: 0.6),
+                          letterSpacing: 2,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: TextFormField(
-                          controller: _amount,
-                          keyboardType: TextInputType.number,
-                          style: GoogleFonts.dmSans(
-                            fontSize: AppTypography.fontSizeGigantic - 4,
-                            fontWeight: AppTypography.fontWeightBlack,
-                            color: widget.isIncome
-                                ? AppColors.accentGreen
-                                : AppColors.accentRed,
-                            letterSpacing: -1,
-                          ),
-                          decoration: InputDecoration(
-                            hintText: '0',
-                            hintStyle: TextStyle(
-                              color: (widget.isIncome
-                                      ? AppColors.accentGreen
-                                      : AppColors.accentRed)
-                                  .withValues(alpha: 0.3),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.baseline,
+                        textBaseline: TextBaseline.alphabetic,
+                        children: [
+                          Text(
+                            '₹',
+                            style: GoogleFonts.dmSans(
+                              fontSize: AppTypography.fontSizeXXLarge,
+                              fontWeight: AppTypography.fontWeightBlack,
+                              color: widget.isIncome
+                                  ? AppColors.accentGreen
+                                  : AppColors.accentRed,
                             ),
-                            border: InputBorder.none,
-                            enabledBorder: InputBorder.none,
-                            focusedBorder: InputBorder.none,
-                            disabledBorder: InputBorder.none,
-                            filled: true,
-                            fillColor: Colors.transparent,
-                            contentPadding: EdgeInsets.zero,
                           ),
-                          textAlign: TextAlign.start,
-                          validator: (v) =>
-                              (v?.isEmpty ?? true) ? 'Required' : null,
-                        ),
+                          const SizedBox(width: 8),
+                          IntrinsicWidth(
+                            child: TextFormField(
+                              controller: _amount,
+                              keyboardType: TextInputType.number,
+                              style: GoogleFonts.bayon(
+                                fontSize: AppTypography.fontSizeGigantic + 10,
+                                color: widget.isIncome
+                                    ? AppColors.accentGreen
+                                    : AppColors.accentRed,
+                                letterSpacing: 0,
+                                height: 1,
+                              ),
+                              decoration: InputDecoration(
+                                hintText: '0',
+                                hintStyle: GoogleFonts.bayon(
+                                  color: (widget.isIncome
+                                          ? AppColors.accentGreen
+                                          : AppColors.accentRed)
+                                      .withValues(alpha: 0.2),
+                                ),
+                                border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                filled: false,
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                              textAlign: TextAlign.center,
+                              validator: (v) =>
+                                  (v?.isEmpty ?? true) ? 'Required' : null,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const SizedBox(height: 16),
+                // Quick Category Scroll
+                Text(
+                  'Quick Categories',
+                  style: GoogleFonts.dmSans(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: cats.map((cat) {
+                      final isSelected = _category == cat;
+                      final color = TransactionUtils.getCategoryColor(cat);
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 10),
+                        child: ZoomTapAnimation(
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            setState(() => _category = cat);
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? color.withValues(alpha: 0.15)
+                                  : isDark
+                                      ? Colors.white.withValues(alpha: 0.05)
+                                      : Colors.black.withValues(alpha: 0.03),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isSelected
+                                    ? color.withValues(alpha: 0.4)
+                                    : Colors.transparent,
+                                width: 1.5,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                SvgPicture.asset(
+                                  TransactionUtils.getCategorySvg(cat),
+                                  colorFilter: ColorFilter.mode(
+                                      isSelected ? color : Colors.grey,
+                                      BlendMode.srcIn),
+                                  width: 16,
+                                  height: 16,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  cat,
+                                  style: GoogleFonts.dmSans(
+                                    fontSize: 13,
+                                    fontWeight: isSelected
+                                        ? FontWeight.bold
+                                        : FontWeight.w500,
+                                    color: isSelected
+                                        ? color
+                                        : theme.colorScheme.onSurface
+                                            .withValues(alpha: 0.6),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -399,6 +503,8 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                 lastDate: DateTime.now().add(const Duration(days: 365)),
               );
               if (date != null) setState(() => _selectedDate = date);
+            } else if (type == 'Category') {
+              _showCategoryGrid(context, items, val, onDone);
             } else {
               _showManageItems(context, type, items, val, onDone);
             }
@@ -435,6 +541,121 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
     );
   }
 
+  void _showCategoryGrid(BuildContext context, List<String> items, String val,
+      ValueChanged<String> onDone) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        ),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 24),
+              decoration: BoxDecoration(
+                color: theme.dividerColor.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Text(
+              'Select Category',
+              style: GoogleFonts.dmSans(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Expanded(
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 16,
+                  crossAxisSpacing: 16,
+                  childAspectRatio: 0.9,
+                ),
+                itemCount: items.length,
+                itemBuilder: (context, index) {
+                  final category = items[index];
+                  final isSelected = category == val;
+                  final color = TransactionUtils.getCategoryColor(category);
+                  final iconSvg = TransactionUtils.getCategorySvg(category);
+
+                  return ZoomTapAnimation(
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      onDone(category);
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? color.withValues(alpha: 0.1)
+                            : isDark
+                                ? Colors.white.withValues(alpha: 0.05)
+                                : Colors.black.withValues(alpha: 0.03),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isSelected
+                              ? color.withValues(alpha: 0.5)
+                              : Colors.transparent,
+                          width: 2,
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: color.withValues(alpha: 0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: SvgPicture.asset(
+                              iconSvg,
+                              colorFilter:
+                                  ColorFilter.mode(color, BlendMode.srcIn),
+                              width: 24,
+                              height: 24,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            category,
+                            style: GoogleFonts.dmSans(
+                              fontSize: 12,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                              color: isSelected ? color : null,
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _showManageItems(BuildContext context, String type, List<String> items,
       String selected, ValueChanged<String> onDone) {
     showModalBottomSheet(
@@ -455,7 +676,7 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
               borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(AppDimensions.borderRadiusLarge))),
           padding: const EdgeInsets.all(24),
-          height: MediaQuery.of(c).size.height * 0.7,
+          height: MediaQuery.of(c).size.height * 0.5,
           child: Column(
             children: [
               Text('Select $type',

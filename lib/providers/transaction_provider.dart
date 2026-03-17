@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:home_widget/home_widget.dart';
-import '../models/transaction.dart';
+import '../core/models/transaction.dart';
 
 class TransactionProvider with ChangeNotifier {
   List<Transaction> _transactions = [];
@@ -117,9 +117,9 @@ class TransactionProvider with ChangeNotifier {
       print('Error loading transactions: $e');
       // Fallback to direct Hive access
       try {
-      final txBox = Hive.box<Transaction>('transactions');
-      final balanceBox = Hive.box<double>('balanceBox');
-      _transactions = txBox.values.toList();
+        final txBox = Hive.box<Transaction>('transactions');
+        final balanceBox = Hive.box<double>('balanceBox');
+        _transactions = txBox.values.toList();
         _currentBalance =
             balanceBox.get('currentBalance', defaultValue: 0.0) ?? 0.0;
         _markDirty();
@@ -130,7 +130,7 @@ class TransactionProvider with ChangeNotifier {
         _transactions = [];
         _currentBalance = 0.0;
         _markDirty();
-      notifyListeners();
+        notifyListeners();
       }
     }
   }
@@ -140,29 +140,29 @@ class TransactionProvider with ChangeNotifier {
       // Add to Hive first
       final txBox = Hive.box<Transaction>('transactions');
       await txBox.add(tx);
-      
+
       // Add to local list
       _transactions.add(tx);
       _markDirty();
-      
+
       // Update balance and persist
       addOrMinusBalance(tx.amount, tx.isIncome);
-      
+
       // Update home widget
       _updateHomeWidget();
-      
+
       notifyListeners();
     } catch (e) {
       print('Error adding transaction: $e');
       // Fallback to direct Hive access
       try {
-      final txBox = Hive.box<Transaction>('transactions');
-      txBox.add(tx);
-      _transactions.add(tx);
+        final txBox = Hive.box<Transaction>('transactions');
+        txBox.add(tx);
+        _transactions.add(tx);
         _markDirty();
-      addOrMinusBalance(tx.amount, tx.isIncome);
-      _updateHomeWidget();
-      notifyListeners();
+        addOrMinusBalance(tx.amount, tx.isIncome);
+        _updateHomeWidget();
+        notifyListeners();
       } catch (fallbackError) {
         print('Fallback error adding transaction: $fallbackError');
       }
@@ -171,22 +171,22 @@ class TransactionProvider with ChangeNotifier {
 
   void deleteTransaction(Transaction transaction) async {
     try {
-    final txBox = Hive.box<Transaction>('transactions');
+      final txBox = Hive.box<Transaction>('transactions');
 
-    // Update balance before deletion
-    addOrMinusBalance(-transaction.amount, transaction.isIncome);
+      // Update balance before deletion
+      addOrMinusBalance(-transaction.amount, transaction.isIncome);
 
       // Delete from Hive
-    await txBox.delete(transaction.key);
-      
+      await txBox.delete(transaction.key);
+
       // Remove from local list
-    _transactions.removeWhere((tx) => tx.key == transaction.key);
+      _transactions.removeWhere((tx) => tx.key == transaction.key);
       _markDirty();
 
-    // Update home widget
-    _updateHomeWidget();
-    
-    notifyListeners();
+      // Update home widget
+      _updateHomeWidget();
+
+      notifyListeners();
     } catch (e) {
       print('Error deleting transaction: $e');
       // Fallback to direct Hive access
@@ -206,12 +206,12 @@ class TransactionProvider with ChangeNotifier {
 
   void updateBalance(double newBalance) {
     try {
-    _currentBalance = newBalance;
+      _currentBalance = newBalance;
 
-    final balanceBox = Hive.box<double>('balanceBox');
-    balanceBox.put('currentBalance', newBalance);
+      final balanceBox = Hive.box<double>('balanceBox');
+      balanceBox.put('currentBalance', newBalance);
 
-    notifyListeners();
+      notifyListeners();
     } catch (e) {
       print('Error updating balance: $e');
       // Fallback to direct Hive access
@@ -228,12 +228,12 @@ class TransactionProvider with ChangeNotifier {
 
   void addOrMinusBalance(double amount, bool isIncome) {
     try {
-    _currentBalance += isIncome ? amount : -amount;
+      _currentBalance += isIncome ? amount : -amount;
 
-    final balanceBox = Hive.box<double>('balanceBox');
-    balanceBox.put('currentBalance', _currentBalance);
+      final balanceBox = Hive.box<double>('balanceBox');
+      balanceBox.put('currentBalance', _currentBalance);
 
-    notifyListeners();
+      notifyListeners();
     } catch (e) {
       print('Error updating balance: $e');
       // Fallback to direct Hive access
@@ -250,19 +250,19 @@ class TransactionProvider with ChangeNotifier {
 
   Future<void> deleteAllData() async {
     try {
-    final txBox = Hive.box<Transaction>('transactions');
-    await txBox.clear();
-    _transactions.clear();
+      final txBox = Hive.box<Transaction>('transactions');
+      await txBox.clear();
+      _transactions.clear();
       _markDirty();
 
-    final balanceBox = Hive.box<double>('balanceBox');
-    await balanceBox.put('currentBalance', 0.0);
-    _currentBalance = 0.0;
+      final balanceBox = Hive.box<double>('balanceBox');
+      await balanceBox.put('currentBalance', 0.0);
+      _currentBalance = 0.0;
 
-    // Update home widget
-    _updateHomeWidget();
-    
-    notifyListeners();
+      // Update home widget
+      _updateHomeWidget();
+
+      notifyListeners();
     } catch (e) {
       print('Error deleting all data: $e');
       // Fallback to direct Hive access
@@ -321,12 +321,12 @@ class TransactionProvider with ChangeNotifier {
     final DateTime now = DateTime.now();
     final DateTime today = DateTime(now.year, now.month, now.day);
     final DateTime yesterday = today.subtract(const Duration(days: 1));
-    
+
     for (var tx in transactions) {
       final DateTime txDate =
           DateTime(tx.date.year, tx.date.month, tx.date.day);
       String formattedDate;
-      
+
       if (txDate == today) {
         formattedDate = "Today";
       } else if (txDate == yesterday) {
@@ -334,7 +334,7 @@ class TransactionProvider with ChangeNotifier {
       } else {
         formattedDate = _formatDate(tx.date);
       }
-      
+
       grouped.putIfAbsent(formattedDate, () => []).add(tx);
     }
     return grouped;
