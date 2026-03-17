@@ -30,7 +30,7 @@ class _RootNavigationState extends State<RootNavigation>
   final List<Widget> _screens = [
     const HomePage(),
     const PeopleTab(),
-    ChartPage(),
+    const ChartPage(),
     const SettingsPage(),
   ];
 

@@ -124,7 +124,7 @@ class _SettingsPageState extends State<SettingsPage> {
         //controller: _scrollController,
         physics: const BouncingScrollPhysics(),
         slivers: [
-          GlassAppBar(
+          const GlassAppBar(
             title: AppStrings.settings,
             centerTitle: true,
           ),
@@ -615,7 +615,7 @@ class _SettingsPageState extends State<SettingsPage> {
             HapticFeedback.lightImpact();
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => AppSelectionPage()),
+              MaterialPageRoute(builder: (context) => const AppSelectionPage()),
             );
           },
         ),
@@ -1081,10 +1081,11 @@ class _SettingsPageState extends State<SettingsPage> {
                           if (val.isNotEmpty) {
                             final themeViewModel =
                                 context.read<ThemeViewModel>();
-                            if (old == null)
+                            if (old == null) {
                               themeViewModel.addItem(val, type);
-                            else
+                            } else {
                               themeViewModel.updateItem(old, val, type);
+                            }
                             onDone(val);
                             Navigator.pop(context);
                           }

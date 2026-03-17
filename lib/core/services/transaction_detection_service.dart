@@ -19,7 +19,7 @@ class TransactionDetectionService {
   static Future<void> initialize() async {
     try {
       // Check if auto-detection is enabled
-      final isEnabled = await _settingsRepo.getUseAutoDetection();
+      final isEnabled = _settingsRepo.getUseAutoDetection();
 
       if (isEnabled) {
         await startMonitoring();
@@ -27,7 +27,7 @@ class TransactionDetectionService {
       }
 
       // Load ignored patterns into parser
-      final ignored = await _settingsRepo.getIgnoredPatterns();
+      final ignored = _settingsRepo.getIgnoredPatterns();
       TransactionParser.dynamicIgnoredPatterns = List<String>.from(ignored);
 
       // Run auto-delete if enabled
@@ -201,7 +201,7 @@ class TransactionDetectionService {
   static Future<bool> _isDuplicateHash(String text) async {
     try {
       final hash = text.trim().hashCode.toString();
-      final history = await _transactionRepo.getDetectionHistory();
+      final history = _transactionRepo.getDetectionHistory();
       
       // Check if this exact text hash exists in recent history (last 100 items)
       final recent = history.length > 100 
@@ -217,7 +217,7 @@ class TransactionDetectionService {
 
   static Future<void> _handleBalanceUpdate(double balance, String source, String? packageName) async {
     try {
-      final currentBal = await _transactionRepo.getCurrentBalance();
+      final currentBal = _transactionRepo.getCurrentBalance();
       if ((currentBal - balance).abs() < 0.01) return; // No change
 
       await _transactionRepo.updateBalance(balance);
@@ -254,7 +254,7 @@ class TransactionDetectionService {
 
   static Future<void> _addDetectedTransaction(Transaction transaction, String source) async {
     try {
-      final transactions = await _transactionRepo.getAllTransactions();
+      final transactions = _transactionRepo.getAllTransactions();
       final now = DateTime.now();
 
       bool isDuplicate = false;
@@ -292,7 +292,7 @@ class TransactionDetectionService {
       transaction.source = source;
       await _transactionRepo.addTransaction(transaction);
 
-      final currentBal = await _transactionRepo.getCurrentBalance();
+      final currentBal = _transactionRepo.getCurrentBalance();
       final newBal = transaction.isIncome ? currentBal + transaction.amount : currentBal - transaction.amount;
       await _transactionRepo.updateBalance(newBal);
 
@@ -356,7 +356,7 @@ class TransactionDetectionService {
   static Future<void> recheckSkippedTransactions() async {
     try {
       NativeBridge.notifySyncStatus(true);
-      final history = await _transactionRepo.getDetectionHistory();
+      final history = _transactionRepo.getDetectionHistory();
       final now = DateTime.now();
       int count = 0;
 
@@ -398,7 +398,7 @@ class TransactionDetectionService {
 
   static Future<void> deleteOldUndetectedHistory() async {
     try {
-      if (!(await _settingsRepo.getAutoDeleteUndetected())) return;
+      if (!(_settingsRepo.getAutoDeleteUndetected())) return;
       await _transactionRepo.clearOldDetectionHistory(const Duration(hours: 2));
     } catch (e) {
       debugPrint('Error clearing old history: $e');
@@ -417,7 +417,7 @@ class TransactionDetectionService {
 
   static Future<void> _autoSelectPaymentApps() async {
     try {
-      if (!(await _settingsRepo.isFirstTimeAutoSelection())) return;
+      if (!(_settingsRepo.isFirstTimeAutoSelection())) return;
 
       debugPrint('First time auto-detection enabled, auto-selecting payment apps...');
 

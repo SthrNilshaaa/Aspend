@@ -1,5 +1,5 @@
 import 'dart:io';
-import '../lib/core/utils/transaction_parser.dart';
+import 'package:aspends_tracker/core/utils/transaction_parser.dart';
 
 void main() {
   print('--- TransactionParser Standalone Tests ---');

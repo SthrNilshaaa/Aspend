@@ -1,5 +1,4 @@
 import 'dart:ui';
-import 'package:aspends_tracker/core/const/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class FloatingActionBar extends StatelessWidget {
@@ -29,10 +28,10 @@ class FloatingActionBar extends StatelessWidget {
             child: InkWell(
               onTap: onSettle,
               borderRadius: BorderRadius.circular(40),
-              child: Row(
+              child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
+                children: [
                   Icon(Icons.account_balance_wallet_outlined,
                       color: Colors.greenAccent, size: 20),
                   SizedBox(width: 8),

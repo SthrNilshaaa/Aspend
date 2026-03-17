@@ -331,8 +331,9 @@ class TransactionParser {
 
     // 1. Transaction Validity Filter (Early exits for speed)
     if (_isPromotional(lower)) return null;
-    if (lower.contains('otp') || lower.contains('verification code'))
+    if (lower.contains('otp') || lower.contains('verification code')) {
       return null;
+    }
     if (lower.contains('declined') || lower.contains('failed')) return null;
     if (!_amountMarkerPattern.hasMatch(lower)) return null;
 
@@ -356,10 +357,12 @@ class TransactionParser {
     // 4. Direction & Priority Keywords
     bool isIncome = _incomeKW.any((kw) => lower.contains(kw));
     if (_expenseKW.any((kw) => lower.contains(kw))) isIncome = false;
-    if (lower.contains('received from') || lower.contains('credited by'))
+    if (lower.contains('received from') || lower.contains('credited by')) {
       isIncome = true;
-    if (lower.contains('sent to') || lower.contains('paid to'))
+    }
+    if (lower.contains('sent to') || lower.contains('paid to')) {
       isIncome = false;
+    }
 
     // Pick the best amount based on proximity to action keywords
     final double amount = _prioritizeAmount(text, amounts, isIncome);
@@ -457,8 +460,9 @@ class TransactionParser {
     });
     if (category == null && merchant != null) {
       _catKW.forEach((k, keywords) {
-        if (keywords.any((kw) => merchant.toLowerCase().contains(kw)))
+        if (keywords.any((kw) => merchant.toLowerCase().contains(kw))) {
           category = k;
+        }
       });
     }
 
@@ -593,8 +597,9 @@ class TransactionParser {
   }
 
   static bool _isLikelyTransaction(String lower) {
-    if (lower.contains('otp') || lower.contains('verification code'))
+    if (lower.contains('otp') || lower.contains('verification code')) {
       return false;
+    }
     if (lower.contains('declined') || lower.contains('failed')) return false;
 
     final hasAmountMarker = _amountMarkerPattern.hasMatch(lower);
@@ -616,8 +621,9 @@ class TransactionParser {
       }
     }
 
-    if (dynamicIgnoredPatterns.any((kw) => lower.contains(kw.toLowerCase())))
+    if (dynamicIgnoredPatterns.any((kw) => lower.contains(kw.toLowerCase()))) {
       return true;
+    }
 
     return _promoKeywords.any((kw) => lower.contains(kw));
   }
@@ -701,8 +707,9 @@ class TransactionParser {
       'completed'
     ];
     if (noise.any((n) =>
-        name.toLowerCase() == n || name.toLowerCase().startsWith(n + ' ')))
+        name.toLowerCase() == n || name.toLowerCase().startsWith('$n '))) {
       return null;
+    }
 
     var cleaned = name
         .replaceAll(_cleanupDatePattern1, '')

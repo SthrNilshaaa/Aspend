@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../core/view_models/transaction_view_model.dart';
 import '../core/view_models/theme_view_model.dart';
 import '../../widgets/range_selector.dart';
@@ -15,7 +14,6 @@ import '../../widgets/glass_app_bar.dart';
 import '../core/utils/transaction_utils.dart';
 import '../core/const/app_dimensions.dart';
 import '../core/const/app_typography.dart';
-import '../core/const/app_assets.dart';
 
 class TransactionsHistoryPage extends StatefulWidget {
   const TransactionsHistoryPage({super.key});

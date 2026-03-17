@@ -455,7 +455,7 @@ class _PeopleTabState extends State<PeopleTab> {
         controller: _scrollController,
         physics: const BouncingScrollPhysics(),
         slivers: [
-          GlassAppBar(
+          const GlassAppBar(
             title: AppStrings.people,
             centerTitle: true,
           ),
@@ -728,7 +728,7 @@ class _PeopleTabState extends State<PeopleTab> {
                   ],
                 ),
                 //sizebox
-                SizedBox(
+                const SizedBox(
                   height: 12,
                 ),
                 _buildSearchSection(context),
@@ -902,7 +902,7 @@ class _PeopleTabState extends State<PeopleTab> {
                       child: Center(
                         child: SvgPicture.asset(
                           SvgAppIcons.filterIcon,
-                          colorFilter: ColorFilter.mode(
+                          colorFilter: const ColorFilter.mode(
                               AppColors.accentGreen, BlendMode.srcIn),
                           width: 16,
                           height: 16,

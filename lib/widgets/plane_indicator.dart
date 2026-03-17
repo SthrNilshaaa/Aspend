@@ -184,7 +184,7 @@ class _PlaneIndicatorState extends State<PlaneIndicator>
               color: AppColors.primaryGreen,
               borderRadius: BorderRadius.circular(25),
             ),
-            child: Icon(
+            child: const Icon(
               Icons.flight,
               color: Colors.white,
               size: AppDimensions.iconSizeXLarge + 2,

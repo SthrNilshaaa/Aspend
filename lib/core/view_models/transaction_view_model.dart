@@ -183,8 +183,9 @@ class TransactionViewModel with ChangeNotifier {
   }
 
   List<Transaction> get filteredTransactions {
-    if (_cachedFilteredTransactions != null)
+    if (_cachedFilteredTransactions != null) {
       return _cachedFilteredTransactions!;
+    }
 
     final allSorted = sortedTransactions;
     DateTime? startDate;
@@ -296,7 +297,7 @@ class TransactionViewModel with ChangeNotifier {
     if (_txs.isNotEmpty) {
       final last = sortedTransactions.first;
       lastTxText = "${last.isIncome ? '+' : '-'}${last.amount.toStringAsFixed(0)} ${last.note}";
-      if (lastTxText.length > 25) lastTxText = lastTxText.substring(0, 22) + "...";
+      if (lastTxText.length > 25) lastTxText = "${lastTxText.substring(0, 22)}...";
     }
 
     await HomeWidget.saveWidgetData('balance', '₹${totalBalance.toStringAsFixed(2)}');

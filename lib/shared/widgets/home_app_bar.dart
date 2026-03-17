@@ -6,8 +6,6 @@ import '../../core/const/app_assets.dart';
 import '../../core/const/app_strings.dart';
 import '../../widgets/glass_app_bar.dart';
 import '../../screens/detection_history_page.dart';
-import '../../core/services/transaction_detection_service.dart';
-import 'package:image_picker/image_picker.dart';
 
 class HomeAppBar extends StatelessWidget {
   final bool isDark;

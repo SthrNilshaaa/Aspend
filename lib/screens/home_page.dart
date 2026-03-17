@@ -23,8 +23,6 @@ import '../../widgets/header_delegate.dart';
 import '../../widgets/add_transaction_dialog.dart';
 import '../../widgets/empty_state_view.dart';
 import '../../widgets/glass_action_button.dart';
-import '../../widgets/floating_action_button.dart';
-import '../../widgets/glass_app_bar.dart';
 
 import '../shared/widgets/home_app_bar.dart';
 import '../shared/widgets/home_balance_section.dart';

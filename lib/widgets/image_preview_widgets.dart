@@ -105,7 +105,7 @@ class FullScreenImageDialog extends StatelessWidget {
             top: 40,
             right: 20,
             child: IconButton(
-              icon: Icon(Icons.close,
+              icon: const Icon(Icons.close,
                   color: Colors.white, size: AppDimensions.iconSizeXLarge + 2),
               onPressed: () => Navigator.pop(context),
             ),

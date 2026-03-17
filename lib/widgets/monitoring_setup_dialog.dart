@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
 import '../core/services/native_bridge.dart';
 import '../screens/app_selection_page.dart';
 

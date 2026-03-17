@@ -7,7 +7,6 @@ import '../../core/const/app_strings.dart';
 import '../../core/const/app_typography.dart';
 import '../../core/view_models/theme_view_model.dart';
 import '../../core/view_models/transaction_view_model.dart';
-import '../../core/models/transaction.dart';
 
 class HomeBudgetProgress extends StatelessWidget {
   final TransactionViewModel viewModel;
@@ -32,8 +31,8 @@ class HomeBudgetProgress extends StatelessWidget {
     final monthlyTxs =
         viewModel.getTransactionsInRange(startOfMonth, endOfMonth);
     final spent = monthlyTxs
-        .where((t) => t != null && !t!.isIncome)
-        .fold(0.0, (sum, t) => sum + (t?.amount ?? 0.0));
+        .where((t) => !t.isIncome)
+        .fold(0.0, (sum, t) => sum + (t.amount ?? 0.0));
 
     final percentage = (spent / budget).clamp(0.0, 1.0);
     final isOverBudget = spent > budget;
