@@ -1,6 +1,7 @@
 name: Flutter Android Release Build
 
 on:
+<<<<<<< HEAD
   workflow_dispatch:  # Allows manual trigger
   push:
     branches:
@@ -8,6 +9,15 @@ on:
 
 permissions:
   contents: write  # Required to create GitHub Release and upload assets
+=======
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+>>>>>>> master
 
 jobs:
   build:
@@ -15,12 +25,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+<<<<<<< HEAD
       - name: Checkout code
         uses: actions/checkout@v4
+=======
+      - name: Checkout code with full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for changelog
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+>>>>>>> master
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
+<<<<<<< HEAD
           flutter-version: '3.32.4'  # Set your Flutter version
 
       # 🔓 Step 1: Re-create the keystore from secret
@@ -57,9 +81,172 @@ jobs:
         with:
           tag_name: v8 # Change version tag as needed
           name: Release v8
+=======
+          channel: stable
+          cache: true
+          cache-key: flutter-cache
+
+      - name: Restore keystore
+        run: |
+          mkdir -p android/app
+          echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > android/app/release.keystore
+          echo "✅ Keystore saved to: $(pwd)/android/app/release.keystore"
+          ls -lh android/app/release.keystore
+
+      - name: Verify keystore
+        run: |
+          keytool -list \
+            -keystore android/app/release.keystore \
+            -storepass "${{ secrets.KEYSTORE_PASSWORD }}" \
+           # -alias "${{ secrets.KEY_ALIAS }}"
+
+      - name: Create key.properties
+        run: |
+          KEYSTORE_ABS_PATH="$(pwd)/android/app/release.keystore"
+          
+          cat <<EOF > key.properties
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          storeFile=$KEYSTORE_ABS_PATH
+          EOF
+          
+          echo "✅ key.properties created at: $(pwd)/android/key.properties"
+          echo "Keystore path: $KEYSTORE_ABS_PATH"
+
+      - name: Clean workspace
+        run: flutter clean
+
+      - name: Get dependencies
+        run: |
+          flutter pub get
+          flutter pub upgrade --major-versions
+
+      - name: Generate version info
+        id: version
+        run: |
+          # Extract version from pubspec.yaml
+          VERSION=$(grep "version:" pubspec.yaml | head -1 | awk '{print $2}')
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "BUILD_NUMBER=${{ github.run_number }}" >> $GITHUB_OUTPUT
+          
+          # Generate changelog since last tag
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "LAST_TAG=$LAST_TAG" >> $GITHUB_OUTPUT
+          
+          echo "Current version: $VERSION"
+          echo "Build number: ${{ github.run_number }}"
+          echo "Last tag: $LAST_TAG"
+
+      - name: Generate release notes
+        id: changelog
+        run: |
+          # Generate changelog since last tag
+          LAST_TAG="${{ steps.version.outputs.LAST_TAG }}"
+          CHANGELOG=""
+          
+          if [ "$LAST_TAG" != "v0.0.0" ]; then
+            echo "Generating changelog from $LAST_TAG to HEAD..."
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges $LAST_TAG..HEAD)
+          else
+            echo "No previous tag found. Showing recent commits..."
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges -20)
+          fi
+          
+          if [ -z "$CHANGELOG" ]; then
+            CHANGELOG="No changes detected since last release."
+          fi
+          
+          # Escape newlines for GitHub Actions
+          CHANGELOG="${CHANGELOG//$'\n'/'%0A'}"
+          echo "changelog=$CHANGELOG" >> $GITHUB_OUTPUT
+
+      # - name: Build launcher icons
+      #   run: |
+      #     flutter pub run flutter_launcher_icons:main
+
+      - name: Build release APKs
+        run: |
+          echo "=== Building release APKs ==="
+          
+          # Build appbundle (optional, uncomment if needed)
+          # flutter build appbundle --release
+          
+          # Build split APKs for different architectures
+          echo "Building APK..."
+          flutter build apk --release --split-per-abi
+          
+          echo "=== Build artifacts ==="
+          ls -la build/app/outputs/flutter-apk/
+          
+          # Get APK sizes
+          echo "APK Sizes:"
+          du -h build/app/outputs/flutter-apk/*.apk | sort -hr
+
+      - name: Upload APKs to artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: split-apks-v${{ steps.version.outputs.VERSION }}-${{ github.run_number }}
+          path: build/app/outputs/flutter-apk/*.apk
+          retention-days: 30
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: success()
+        with:
+          tag_name: v${{ steps.version.outputs.VERSION }}-${{ github.run_number }}
+          name: Aspend v${{ steps.version.outputs.VERSION }} (Build ${{ github.run_number }})
+          body: |
+            ## 🚀 Release v${{ steps.version.outputs.VERSION }}
+            **Build Number:** ${{ github.run_number }}
+            **Commit:** [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
+            
+            ## 📱 APK Files
+            This release contains split APKs for different CPU architectures:
+            - **app-armeabi-v7a-release.apk** - ARM 32-bit
+            - **app-arm64-v8a-release.apk** - ARM 64-bit (Recommended for modern devices)
+            - **app-x86_64-release.apk** - x86_64 emulators
+            - **app-release.apk** - Universal APK (larger size, all architectures)
+            
+            ## 📋 Changes
+            ${{ steps.changelog.outputs.changelog }}
+            
+            ## 🔧 Build Information
+            - **Flutter:** $(flutter --version | grep "Flutter")
+            - **Dart:** $(flutter --version | grep "Dart")
+            - **Build Date:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')
+            
+            ## 📝 Installation
+            1. Download the appropriate APK for your device (arm64-v8a for most modern phones)
+            2. Enable "Install from unknown sources" in Android settings
+            3. Install the APK
+            
+            ## 🐛 Reporting Issues
+            Please report any issues on our [GitHub repository](https://github.com/${{ github.repository }}/issues).
+            
+            ---
+            
+            *Automatically built and released by GitHub Actions*
+>>>>>>> master
           files: |
             build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
             build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
             build/app/outputs/flutter-apk/app-x86_64-release.apk
+<<<<<<< HEAD
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+=======
+            build/app/outputs/flutter-apk/app-release.apk
+          draft: false
+          prerelease: false
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Send build notification (Optional)
+        if: success()
+        run: |
+          echo "✅ Release v${{ steps.version.outputs.VERSION }}-${{ github.run_number }} created successfully!"
+          echo "📱 APKs available in GitHub Releases"
+          echo "🔗 https://github.com/${{ github.repository }}/releases/tag/v${{ steps.version.outputs.VERSION }}-${{ github.run_number }}"
+>>>>>>> master

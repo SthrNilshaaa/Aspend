@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Miscellaneous
 *.class
 *.log
@@ -43,3 +44,12 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+=======
+build/
+.code-review-graph/
+.dart_tool/
+.claude/
+.idea/
+android/
+.vscode/
+>>>>>>> master

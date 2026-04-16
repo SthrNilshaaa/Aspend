@@ -3,12 +3,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:ui';
+<<<<<<< HEAD
 import '../main.dart';
 import 'package:hive/hive.dart';
 import 'package:provider/provider.dart';
 import '../view_models/theme_view_model.dart';
 import '../services/transaction_detection_service.dart';
 import '../services/native_bridge.dart';
+=======
+import 'package:hive/hive.dart';
+import 'package:provider/provider.dart';
+import '../core/view_models/theme_view_model.dart';
+import '../core/services/transaction_detection_service.dart';
+import '../core/services/native_bridge.dart';
+import '../core/const/app_strings.dart';
+import '../core/const/app_constants.dart';
+>>>>>>> master
 
 class IntroPage extends StatefulWidget {
   const IntroPage({super.key});
@@ -22,6 +32,7 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   int _currentPage = 0;
+<<<<<<< HEAD
   String _selectedTheme = 'Default';
 
   final List<IntroSlide> _slides = [
@@ -38,46 +49,91 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
       subtitle: "Organize your finances",
       description:
           "Categorize transactions, add notes, and get detailed insights into your spending patterns.",
+=======
+
+  final List<IntroSlide> _slides = [
+    IntroSlide(
+      title: AppStrings.welcomeTitle,
+      subtitle: AppStrings.welcomeSubtitle,
+      description: AppStrings.welcomeDesc,
+      icon: Icons.account_balance_wallet,
+      color: Colors.green,
+    ),
+    IntroSlide(
+      title: AppStrings.smartTrackingTitle,
+      subtitle: AppStrings.smartTrackingSubtitle,
+      description: AppStrings.smartTrackingDesc,
+>>>>>>> master
       icon: Icons.analytics,
       color: Colors.blue,
     ),
     IntroSlide(
+<<<<<<< HEAD
       title: "Person-to-Person Tracking",
       subtitle: "Manage shared expenses",
       description:
           "Track money you owe or are owed by others. Perfect for roommates, friends, and family.",
+=======
+      title: AppStrings.peopleTrackingTitle,
+      subtitle: AppStrings.peopleTrackingSubtitle,
+      description: AppStrings.peopleTrackingDesc,
+>>>>>>> master
       icon: Icons.people,
       color: Colors.green,
     ),
     IntroSlide(
+<<<<<<< HEAD
       title: "Beautiful Analytics",
       subtitle: "Visualize your data",
       description:
           "Charts and graphs help you understand your spending habits and financial trends.",
+=======
+      title: AppStrings.analyticsTitle,
+      subtitle: AppStrings.analyticsSubtitle,
+      description: AppStrings.analyticsDesc,
+>>>>>>> master
       icon: Icons.pie_chart,
       color: Colors.orange,
     ),
     IntroSlide(
+<<<<<<< HEAD
       title: "Fully Offline",
       subtitle: "Your data stays private",
       description:
           "All your financial data is stored locally on your device. No internet required, complete privacy.",
+=======
+      title: AppStrings.offlineTitle,
+      subtitle: AppStrings.offlineSubtitle,
+      description: AppStrings.offlineDesc,
+>>>>>>> master
       icon: Icons.security,
       color: Colors.purple,
     ),
     IntroSlide(
+<<<<<<< HEAD
       title: "Auto Transaction Detection",
       subtitle: "Smart & Automated",
       description:
           "Automatically detect transactions from banking notifications. No more manual entry - your transactions are captured instantly!",
+=======
+      title: AppStrings.autoDetectTitle,
+      subtitle: AppStrings.autoDetectSubtitle,
+      description: AppStrings.autoDetectDesc,
+>>>>>>> master
       icon: Icons.auto_awesome,
       color: Colors.amber,
     ),
     IntroSlide(
+<<<<<<< HEAD
       title: "Ready to Start?",
       subtitle: "Let's begin your journey",
       description:
           "You're all set! Start tracking your finances and take control of your money today.",
+=======
+      title: AppStrings.readyTitle,
+      subtitle: AppStrings.readySubtitle,
+      description: AppStrings.readyDesc,
+>>>>>>> master
       icon: Icons.rocket_launch,
       color: Colors.indigo,
     ),
@@ -119,8 +175,13 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
         context: context,
         barrierDismissible: false,
         builder: (BuildContext context) {
+<<<<<<< HEAD
           return WillPopScope(
             onWillPop: () async => false,
+=======
+          return PopScope(
+            canPop: false,
+>>>>>>> master
             child: Dialog(
               backgroundColor: Colors.transparent,
               child: Container(
@@ -139,8 +200,13 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
                     ),
                     const SizedBox(height: 16),
                     Text(
+<<<<<<< HEAD
                       'Setting up your app...',
                       style: GoogleFonts.nunito(
+=======
+                      AppStrings.settingUpApp,
+                      style: GoogleFonts.dmSans(
+>>>>>>> master
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
@@ -154,8 +220,13 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
       );
 
       // Use Hive to mark intro as completed
+<<<<<<< HEAD
       final box = await Hive.openBox('settings');
       await box.put('introCompleted', true);
+=======
+      final box = await Hive.openBox(AppConstants.settingsBox);
+      await box.put(AppConstants.introCompletedKey, true);
+>>>>>>> master
       await box.put('introCompletedAt', DateTime.now().millisecondsSinceEpoch);
 
       // Show auto-detection setup dialog
@@ -179,13 +250,21 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
             return AlertDialog(
               title: Text(
                 'Error',
+<<<<<<< HEAD
                 style: GoogleFonts.nunito(
+=======
+                style: GoogleFonts.dmSans(
+>>>>>>> master
                   fontWeight: FontWeight.bold,
                 ),
               ),
               content: Text(
                 'Failed to complete setup. Please try again.',
+<<<<<<< HEAD
                 style: GoogleFonts.nunito(),
+=======
+                style: GoogleFonts.dmSans(),
+>>>>>>> master
               ),
               actions: [
                 TextButton(
@@ -195,7 +274,11 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
                   },
                   child: Text(
                     'Retry',
+<<<<<<< HEAD
                     style: GoogleFonts.nunito(
+=======
+                    style: GoogleFonts.dmSans(
+>>>>>>> master
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -216,6 +299,7 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
+<<<<<<< HEAD
         backgroundColor: theme.dialogBackgroundColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
@@ -225,6 +309,17 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
             Text(
               "Enable Auto Detection?",
               style: GoogleFonts.nunito(
+=======
+        backgroundColor: theme.colorScheme.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(Icons.auto_awesome, color: Colors.amber, size: 24),
+            const SizedBox(width: 8),
+            Text(
+              'Enable Auto Detection?',
+              style: GoogleFonts.dmSans(
+>>>>>>> master
                 fontWeight: FontWeight.bold,
                 color: isDark ? Colors.white : Colors.black,
               ),
@@ -236,23 +331,38 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
+<<<<<<< HEAD
               "Would you like to enable automatic transaction detection?",
               style: GoogleFonts.nunito(
+=======
+              'Would you like to enable automatic transaction detection?',
+              style: GoogleFonts.dmSans(
+>>>>>>> master
                 fontWeight: FontWeight.w600,
                 color: isDark ? Colors.white70 : Colors.black87,
               ),
             ),
             const SizedBox(height: 12),
+<<<<<<< HEAD
             _buildFeatureItem("🔔 Monitor notifications",
                 "Detects banking transactions automatically"),
             _buildFeatureItem("💰 Smart categorization",
                 "Categorizes transactions based on bank keywords"),
             _buildFeatureItem("⚡ Real-time detection",
                 "Captures transactions as they happen"),
+=======
+            _buildFeatureItem('🔔 Monitor notifications',
+                'Detects banking transactions automatically'),
+            _buildFeatureItem('💰 Smart categorization',
+                'Categorizes transactions based on bank keywords'),
+            _buildFeatureItem('⚡ Real-time detection',
+                'Captures transactions as they happen'),
+>>>>>>> master
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
+<<<<<<< HEAD
                 color: Colors.amber.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: Colors.amber.withOpacity(0.3)),
@@ -260,6 +370,15 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
               child: Text(
                 "💡 You can enable this later in Settings if you skip now.",
                 style: GoogleFonts.nunito(
+=======
+                color: Colors.amber.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+              ),
+              child: Text(
+                '💡 You can enable this later in Settings if you skip now.',
+                style: GoogleFonts.dmSans(
+>>>>>>> master
                   fontSize: 12,
                   color: Colors.amber.shade700,
                 ),
@@ -270,7 +389,11 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
         actions: [
           TextButton(
             child: Text(
+<<<<<<< HEAD
               "Skip for now",
+=======
+              'Skip for now',
+>>>>>>> master
               style: TextStyle(color: theme.colorScheme.primary),
             ),
             onPressed: () {
@@ -280,7 +403,10 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
             },
           ),
           ElevatedButton(
+<<<<<<< HEAD
             child: const Text("Enable"),
+=======
+>>>>>>> master
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.amber,
               foregroundColor: Colors.white,
@@ -289,20 +415,37 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
               HapticFeedback.lightImpact();
               try {
                 // Request permissions
+<<<<<<< HEAD
                 await NativeBridge.requestNotificationPermission();
                 await NativeBridge.requestBatteryOptimization();
+=======
+                await NativeBridge.requestBatteryOptimization();
+                await NativeBridge.requestNotificationPermission();
+>>>>>>> master
 
                 // Enable auto-detection
                 await TransactionDetectionService.setEnabled(true);
 
+<<<<<<< HEAD
+=======
+                if (!context.mounted) return;
+>>>>>>> master
                 Navigator.pop(context);
                 _navigateToMainApp();
               } catch (e) {
                 // If there's an error, still proceed to main app
+<<<<<<< HEAD
+=======
+                if (!context.mounted) return;
+>>>>>>> master
                 Navigator.pop(context);
                 _navigateToMainApp();
               }
             },
+<<<<<<< HEAD
+=======
+            child: const Text("Enable"),
+>>>>>>> master
           ),
         ],
       ),
@@ -322,14 +465,22 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
               children: [
                 Text(
                   title,
+<<<<<<< HEAD
                   style: GoogleFonts.nunito(
+=======
+                  style: GoogleFonts.dmSans(
+>>>>>>> master
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                   ),
                 ),
                 Text(
                   subtitle,
+<<<<<<< HEAD
                   style: GoogleFonts.nunito(
+=======
+                  style: GoogleFonts.dmSans(
+>>>>>>> master
                     fontSize: 12,
                     color: Colors.grey.shade600,
                   ),
@@ -353,7 +504,10 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+<<<<<<< HEAD
     final useAdaptive = context.watch<ThemeViewModel>().useAdaptiveColor;
+=======
+>>>>>>> master
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -372,8 +526,13 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
                     _completeIntro();
                   },
                   child: Text(
+<<<<<<< HEAD
                     'Skip',
                     style: GoogleFonts.nunito(
+=======
+                    AppStrings.skip,
+                    style: GoogleFonts.dmSans(
+>>>>>>> master
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: theme.colorScheme.primary,
@@ -414,7 +573,12 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
                         decoration: BoxDecoration(
                           color: _currentPage == index
                               ? _slides[index].color
+<<<<<<< HEAD
                               : theme.colorScheme.outline.withOpacity(0.3),
+=======
+                              : theme.colorScheme.outline
+                                  .withValues(alpha: 0.3),
+>>>>>>> master
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
@@ -439,7 +603,11 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
                           },
                           child: Text(
                             'Back',
+<<<<<<< HEAD
                             style: GoogleFonts.nunito(
+=======
+                            style: GoogleFonts.dmSans(
+>>>>>>> master
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: theme.colorScheme.primary,
@@ -474,9 +642,15 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
                         ),
                         child: Text(
                           _currentPage < _slides.length - 1
+<<<<<<< HEAD
                               ? 'Next'
                               : 'Get Started',
                           style: GoogleFonts.nunito(
+=======
+                              ? AppStrings.next
+                              : AppStrings.getStarted,
+                          style: GoogleFonts.dmSans(
+>>>>>>> master
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -496,7 +670,10 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
   Widget _buildSlide(IntroSlide slide, ThemeData theme, bool isDark) {
     final useAdaptive = context.watch<ThemeViewModel>().useAdaptiveColor;
     final primary = theme.colorScheme.primary;
+<<<<<<< HEAD
     final primaryContainer = theme.colorScheme.primaryContainer;
+=======
+>>>>>>> master
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -508,6 +685,7 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
             height: 120,
             decoration: BoxDecoration(
               color: useAdaptive
+<<<<<<< HEAD
                   ? primary.withOpacity(0.1)
                   : slide.color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(60),
@@ -515,18 +693,36 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
                 color: useAdaptive
                     ? primary.withOpacity(0.3)
                     : slide.color.withOpacity(0.3),
+=======
+                  ? primary.withValues(alpha: 0.1)
+                  : slide.color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(60),
+              border: Border.all(
+                color: useAdaptive
+                    ? primary.withValues(alpha: 0.3)
+                    : slide.color.withValues(alpha: 0.3),
+>>>>>>> master
                 width: 2,
               ),
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(58),
               child: BackdropFilter(
+<<<<<<< HEAD
                 filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                 child: Container(
                   decoration: BoxDecoration(
                     color: useAdaptive
                         ? primary.withOpacity(0.1)
                         : slide.color.withOpacity(0.1),
+=======
+                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: useAdaptive
+                        ? primary.withValues(alpha: 0.1)
+                        : slide.color.withValues(alpha: 0.1),
+>>>>>>> master
                     borderRadius: BorderRadius.circular(58),
                   ),
                   child: Icon(
@@ -544,7 +740,11 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
           // Title
           Text(
             slide.title,
+<<<<<<< HEAD
             style: GoogleFonts.nunito(
+=======
+            style: GoogleFonts.dmSans(
+>>>>>>> master
               fontSize: 28,
               fontWeight: FontWeight.bold,
               color: theme.colorScheme.onSurface,
@@ -557,7 +757,11 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
           // Subtitle
           Text(
             slide.subtitle,
+<<<<<<< HEAD
             style: GoogleFonts.nunito(
+=======
+            style: GoogleFonts.dmSans(
+>>>>>>> master
               fontSize: 18,
               fontWeight: FontWeight.w600,
               color: slide.color,
@@ -570,9 +774,15 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
           // Description
           Text(
             slide.description,
+<<<<<<< HEAD
             style: GoogleFonts.nunito(
               fontSize: 16,
               color: theme.colorScheme.onSurface.withOpacity(0.8),
+=======
+            style: GoogleFonts.dmSans(
+              fontSize: 16,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+>>>>>>> master
               height: 1.5,
             ),
             textAlign: TextAlign.center,

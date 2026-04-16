@@ -34,8 +34,11 @@ flutter pub get
 flutter run
 ````
 
+<<<<<<< HEAD
 ---
 
+=======
+>>>>>>> master
 ## 📚 Flutter Resources
 
 If you're new to Flutter, here are some helpful links:
@@ -46,6 +49,7 @@ If you're new to Flutter, here are some helpful links:
 
 ---
 
+<<<<<<< HEAD
 ## 🖼️ Screenshots *(Optional)*
 
 | Light Mode                        | Dark Mode                       |
@@ -54,6 +58,11 @@ If you're new to Flutter, here are some helpful links:
 
 > 💡 Tip: Add screenshots under a `/screenshots` folder in your repo for better visuals.
 
+=======
+## 🖼️ Screenshots
+ ![image](assets/screenshot/Screenshot_light_home.png)![image](assets/screenshot/Screenshot_dark_home.png)
+ ![image](assets/screenshot/Screenshot_analysis.png)![image](assets/screenshot/Screenshot_setings.png)
+>>>>>>> master
 ---
 
 ## 🤝 Contributing

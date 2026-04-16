@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+<<<<<<< HEAD
+=======
+import 'package:flutter_svg/flutter_svg.dart';
+>>>>>>> master
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:local_auth/local_auth.dart';
+<<<<<<< HEAD
 import 'package:provider/provider.dart';
 import '../view_models/theme_view_model.dart';
 import '../utils/responsive_utils.dart';
@@ -12,22 +17,48 @@ import 'root_navigation.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
+=======
+import 'intro_page.dart';
+import 'root_navigation.dart';
+import '../core/utils/responsive_utils.dart';
+import '../core/const/app_assets.dart';
+import '../core/const/app_strings.dart';
+import '../core/const/app_constants.dart';
+import '../core/const/app_dimensions.dart';
+import '../core/const/app_typography.dart';
+
+class SplashScreen extends StatefulWidget {
+  final bool isDarkMode;
+  const SplashScreen({
+    super.key,
+    required this.isDarkMode,
+  });
+>>>>>>> master
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen>
+<<<<<<< HEAD
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fade;
   late Animation<double> _scale;
   late Animation<Offset> _slide;
+=======
+    with TickerProviderStateMixin {
+  // Entry Animation Controllers
+  late AnimationController _entryController;
+  late Animation<double> _entryFade;
+
+>>>>>>> master
   bool _isNavigated = false;
 
   @override
   void initState() {
     super.initState();
+<<<<<<< HEAD
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
@@ -43,11 +74,23 @@ class _SplashScreenState extends State<SplashScreen>
       CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
     );
     _controller.forward();
+=======
+    // Initialize Entry Animation
+    _entryController = AnimationController(
+      vsync: this,
+      duration: AppConstants.splashEntryDuration,
+    );
+    _entryFade = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _entryController, curve: Curves.easeIn),
+    );
+    _entryController.forward();
+>>>>>>> master
 
     _checkInitialLaunch();
   }
 
   Future<void> _checkInitialLaunch() async {
+<<<<<<< HEAD
     final Uri? uri = await HomeWidget.initiallyLaunchedFromHomeWidget();
     bool isWidgetLaunch = uri != null && uri.host == 'addTransaction';
 
@@ -61,6 +104,26 @@ class _SplashScreenState extends State<SplashScreen>
 
     // If widget launch, we might want to skip app lock for convenience,
     // but the user's flow says Splash > Home > Sheet, so standard auth is safer.
+=======
+    Uri? uri;
+    try {
+      uri = await HomeWidget.initiallyLaunchedFromHomeWidget()
+          .timeout(const Duration(seconds: 2));
+    } catch (e) {
+      debugPrint('SplashScreen: HomeWidget init error: $e');
+    }
+    bool isWidgetLaunch = uri != null && uri.host == 'addTransaction';
+
+    final box = await Hive.openBox(AppConstants.settingsBox);
+    final introCompleted = box.get('introCompleted', defaultValue: false);
+    final appLockEnabled = box.get('appLockEnabled', defaultValue: false);
+
+    // Minimum wait for entry animation partial completion + loading feel
+    await Future.delayed(isWidgetLaunch
+        ? AppConstants.widgetWaitDuration
+        : AppConstants.splashWaitDuration);
+
+>>>>>>> master
     if (appLockEnabled && !isWidgetLaunch) {
       try {
         final localAuth = LocalAuthentication();
@@ -69,8 +132,13 @@ class _SplashScreenState extends State<SplashScreen>
         if (canCheckDeviceSupport) {
           final didAuthenticate = await localAuth.authenticate(
             localizedReason: 'Authenticate to access Aspends Tracker',
+<<<<<<< HEAD
             options: const AuthenticationOptions(
                 biometricOnly: false, stickyAuth: true),
+=======
+            biometricOnly: false,
+            persistAcrossBackgrounding: true,
+>>>>>>> master
           );
           if (!didAuthenticate) {
             return;
@@ -82,23 +150,49 @@ class _SplashScreenState extends State<SplashScreen>
     }
 
     if (mounted) {
+<<<<<<< HEAD
       _navigateToTarget(
           introCompleted ? const RootNavigation() : const IntroPage());
     }
   }
 
   void _navigateToTarget(Widget target) {
+=======
+
+      if (mounted) {
+        _navigateToTarget(
+            introCompleted ? const RootNavigation() : const IntroPage());
+      }
+    }
+  }
+
+    void _navigateToTarget(Widget target) {
+>>>>>>> master
     if (_isNavigated) return;
     _isNavigated = true;
 
     Navigator.pushReplacement(
       context,
+<<<<<<< HEAD
       MaterialPageRoute(builder: (_) => target),
+=======
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => target,
+        transitionDuration: AppConstants.splashExitDuration,
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
+      ),
+>>>>>>> master
     );
   }
 
   @override
   Widget build(BuildContext context) {
+<<<<<<< HEAD
     ThemeData theme = Theme.of(context);
     final themeViewModel = Provider.of<ThemeViewModel>(context);
     final useAdaptive = themeViewModel.useAdaptiveColor;
@@ -195,13 +289,123 @@ class _SplashScreenState extends State<SplashScreen>
             ),
           ),
         ),
+=======
+    final scaffoldBackgroundColor =
+        widget.isDarkMode ? const Color(0xFF0D0D0D) : const Color(0xFFFDFFFD);
+
+    return Scaffold(
+      backgroundColor: scaffoldBackgroundColor,
+      body: AnimatedBuilder(
+        animation: _entryController,
+        builder: (context, child) {
+          return Stack(
+            children: [
+              Positioned.fill(
+                child: Container(color: scaffoldBackgroundColor),
+              ),
+              Positioned.fill(
+                child: Opacity(
+                  opacity: _entryFade.value,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Center(
+                        child: SvgPicture.asset(
+                          SvgAppIcons.darkLogoIconSplash,
+                          height: ResponsiveUtils.getResponsiveIconSize(
+                              context,
+                              mobile: AppDimensions.splashLogoMobile,
+                              tablet: AppDimensions.splashLogoTablet,
+                              desktop: AppDimensions.splashLogoDesktop),
+                          width: ResponsiveUtils.getResponsiveIconSize(
+                              context,
+                              mobile: AppDimensions.splashLogoMobile,
+                              tablet: AppDimensions.splashLogoTablet,
+                              desktop: AppDimensions.splashLogoDesktop),
+                        ),
+                      ),
+                      Positioned(
+                        top: (MediaQuery.of(context).size.height / 2) +
+                            (ResponsiveUtils.getResponsiveIconSize(context,
+                                    mobile:
+                                        AppDimensions.splashLogoOffsetMobile,
+                                    tablet:
+                                        AppDimensions.splashLogoOffsetTablet,
+                                    desktop:
+                                        AppDimensions.splashLogoOffsetDesktop) /
+                                2) +
+                            AppDimensions.paddingLarge,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              AppStrings.appName,
+                              style: GoogleFonts.dmSans(
+                                fontSize: ResponsiveUtils.getResponsiveFontSize(
+                                    context,
+                                    mobile: AppTypography.fontSizeXLarge + 8,
+                                    tablet: AppTypography.fontSizeHuge,
+                                    desktop:
+                                        AppTypography.fontSizeXXLarge + 12),
+                                color: Colors.white,
+                                fontWeight: AppTypography.fontWeightBold,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                            SizedBox(
+                                height: ResponsiveUtils.getResponsiveSpacing(
+                                    context,
+                                    mobile: AppDimensions.paddingSmall,
+                                    tablet: AppDimensions.borderRadiusSmall,
+                                    desktop: AppDimensions.paddingStandard)),
+                            Text(
+                              AppStrings.splashTagline,
+                              style: GoogleFonts.dmSans(
+                                fontSize: ResponsiveUtils.getResponsiveFontSize(
+                                    context,
+                                    mobile: AppTypography.fontSizeMedium,
+                                    tablet: AppTypography.fontSizeSmall + 4,
+                                    desktop: AppTypography.fontSizeLarge),
+                                color: Colors.white.withValues(alpha: 0.9),
+                                fontWeight: AppTypography.fontWeightMedium,
+                              ),
+                            ),
+                            const SizedBox(
+                                height: AppDimensions.avatarSizeStandard),
+                            SizedBox(
+                              width: AppDimensions.avatarSizeStandard,
+                              height: AppDimensions.avatarSizeStandard,
+                              child: LoadingAnimationWidget.halfTriangleDot(
+                                color: Colors.white.withValues(alpha: 0.8),
+                                size: AppDimensions.avatarSizeStandard,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+>>>>>>> master
       ),
     );
   }
 
   @override
   void dispose() {
+<<<<<<< HEAD
     _controller.dispose();
     super.dispose();
   }
 }
+=======
+    _entryController.dispose();
+    super.dispose();
+  }
+}
+
+>>>>>>> master
