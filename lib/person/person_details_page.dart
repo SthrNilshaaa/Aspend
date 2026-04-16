@@ -20,6 +20,7 @@ import '../../widgets/empty_state_view.dart';
 import '../../widgets/person_transaction_item.dart';
 import '../../widgets/person_detail_header.dart';
 import '../core/const/app_typography.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PersonDetailPage extends StatefulWidget {
   final Person person;
@@ -89,6 +90,36 @@ class _PersonDetailPageState extends State<PersonDetailPage>
     _slideController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  Future<void> _payNow(double total, Person person) async {
+    if (person.upiId == null || person.upiId!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('UPI ID not set for this person. please add it from edit.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    final amount = total.abs();
+    final uri = Uri.parse(
+        'upi://pay?pa=${person.upiId}&pn=${Uri.encodeComponent(person.name)}&am=${amount.toStringAsFixed(2)}&cu=INR');
+
+    if (await canLaunchUrl(uri)) {
+      HapticFeedback.mediumImpact();
+      await launchUrl(uri);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not find a UPI payment app'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -193,42 +224,62 @@ class _PersonDetailPageState extends State<PersonDetailPage>
               ),
             ),
             actions: [
+              if (!isPositive)
+                Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: GestureDetector(
+                    onTap: () => _payNow(total, person),
+                    child: Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: AppColors.accentRed.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: AppColors.accentRed.withValues(alpha: 0.2),
+                          width: 1,
+                        ),
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.payment_rounded,
+                          color: AppColors.accentRed,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               Padding(
                 padding: const EdgeInsets.only(right: 16.0),
                 child: GestureDetector(
-                  //navigate to notification page
                   onTap: () {
                     HapticFeedback.lightImpact();
                     _showEditPersonDialog(context, person);
                   },
-                  child: Stack(
-                    alignment: Alignment.topRight,
-                    children: [
-                      Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color:
-                              theme.colorScheme.surface.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: theme.dividerColor.withValues(alpha: 0.1),
-                            width: 1,
-                          ),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(15.0),
-                          child: SvgPicture.asset(
-                            SvgAppIcons.editIcon,
-                            colorFilter: ColorFilter.mode(
-                                isPositive
-                                    ? AppColors.accentGreen
-                                    : AppColors.accentRed,
-                                BlendMode.srcIn),
-                          ),
-                        ),
+                  child: Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color:
+                          theme.colorScheme.surface.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: theme.dividerColor.withValues(alpha: 0.1),
+                        width: 1,
                       ),
-                    ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(15.0),
+                      child: SvgPicture.asset(
+                        SvgAppIcons.editIcon,
+                        colorFilter: ColorFilter.mode(
+                            isPositive
+                                ? AppColors.accentGreen
+                                : AppColors.accentRed,
+                            BlendMode.srcIn),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -479,6 +530,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
 
   void _showEditPersonDialog(BuildContext context, Person person) {
     final controller = TextEditingController(text: person.name);
+    final upiController = TextEditingController(text: person.upiId);
     final theme = Theme.of(context);
     String? selectedPhotoPath = person.photoPath;
 
@@ -591,6 +643,27 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                   style: GoogleFonts.dmSans(fontSize: 16),
                   autofocus: true,
                 ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: upiController,
+                  decoration: InputDecoration(
+                    labelText: 'UPI ID',
+                    labelStyle: GoogleFonts.dmSans(fontSize: 16),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: true,
+                    fillColor: theme.colorScheme.surface,
+                    prefixIcon: Icon(Icons.payment_rounded,
+                        color: theme.colorScheme.primary),
+                    hintText: 'user@upi',
+                    hintStyle: GoogleFonts.dmSans(
+                      fontSize: 14,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  style: GoogleFonts.dmSans(fontSize: 16),
+                ),
               ],
             ),
             actions: [
@@ -610,6 +683,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                     final updatedPerson = Person(
                       name: name,
                       photoPath: selectedPhotoPath,
+                      upiId: upiController.text.trim(),
                     );
                     context
                         .read<PersonViewModel>()

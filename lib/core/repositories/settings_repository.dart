@@ -199,4 +199,28 @@ class SettingsRepository {
   Future<void> setFirstTimeAutoSelection(bool value) async {
     await _settingsBox.put(_autoSelectionFirstTimeKey, value);
   }
+  
+  String? getUpiId() {
+    return _settingsBox.get(AppConstants.upiIdKey);
+  }
+
+  Future<void> setUpiId(String? upiId) async {
+    if (upiId == null || upiId.isEmpty) {
+      await _settingsBox.delete(AppConstants.upiIdKey);
+    } else {
+      await _settingsBox.put(AppConstants.upiIdKey, upiId);
+    }
+  }
+
+  String? getUpiName() {
+    return _settingsBox.get(AppConstants.upiNameKey);
+  }
+
+  Future<void> setUpiName(String? upiName) async {
+    if (upiName == null || upiName.isEmpty) {
+      await _settingsBox.delete(AppConstants.upiNameKey);
+    } else {
+      await _settingsBox.put(AppConstants.upiNameKey, upiName);
+    }
+  }
 }

@@ -105,9 +105,12 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 850),
+          child: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
           const GlassAppBar(
             title: AppStrings.analytics,
             centerTitle: true,
@@ -321,15 +324,14 @@ class _ChartPageState extends State<ChartPage> with TickerProviderStateMixin {
                       transaction: filteredTxs[index], index: index),
                 ),
               ),
-              const SliverToBoxAdapter(
-                  child: SizedBox(height: AppDimensions.borderRadiusFull)),
+              ],
             ],
           ],
-
-        ],
+        ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildSectionHeader(String title) {
     return Row(

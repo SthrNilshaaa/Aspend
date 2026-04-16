@@ -17,6 +17,7 @@ import '../core/utils/responsive_utils.dart';
 import '../core/const/app_colors.dart';
 import '../core/const/app_dimensions.dart';
 import '../core/const/app_typography.dart';
+import '../core/utils/blur_utils.dart';
 
 class TransactionTile extends StatefulWidget {
   final Transaction transaction;
@@ -50,8 +51,7 @@ class _TransactionTileState extends State<TransactionTile> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final themeViewModel = context.watch<ThemeViewModel>();
-    final isDark = themeViewModel.isDarkMode;
+    final isDark = context.select<ThemeViewModel, bool>((vm) => vm.isDarkMode);
     final color =
         TransactionUtils.getCategoryColor(widget.transaction.category);
     final iconSvg =
@@ -306,12 +306,9 @@ class _TransactionTileState extends State<TransactionTile> {
     final iconSvg =
         TransactionUtils.getCategorySvg(widget.transaction.category);
 
-    showModalBottomSheet(
+    BlurUtils.showBlurredBottomSheet(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: 0.3),
-      builder: (context) => DraggableScrollableSheet(
+      child: DraggableScrollableSheet(
           initialChildSize: 0.7,
           minChildSize: 0.5,
           maxChildSize: 0.95,
@@ -635,18 +632,11 @@ class _TransactionTileState extends State<TransactionTile> {
                         child: ZoomTapAnimation(
                           onTap: () {
                             Navigator.pop(context);
-                            showModalBottomSheet(
+                            BlurUtils.showBlurredBottomSheet(
                               context: context,
-                              isScrollControlled: true,
-                              backgroundColor: Colors.transparent,
-                              barrierColor: Colors.black.withValues(alpha: 0.3),
-                              builder: (context) => BackdropFilter(
-                                filter:
-                                    ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                                child: AddTransactionDialog(
-                                  isIncome: widget.transaction.isIncome,
-                                  existingTransaction: widget.transaction,
-                                ),
+                              child: AddTransactionDialog(
+                                isIncome: widget.transaction.isIncome,
+                                existingTransaction: widget.transaction,
                               ),
                             );
                           },

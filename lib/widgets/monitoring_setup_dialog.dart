@@ -12,7 +12,6 @@ class MonitoringSetupDialog extends StatefulWidget {
 class _MonitoringSetupDialogState extends State<MonitoringSetupDialog>
     with WidgetsBindingObserver {
   bool _isNotificationPermissionGranted = false;
-  bool _isAccessibilityPermissionGranted = false;
   bool _isSmsPermissionGranted = false;
 
   @override
@@ -37,14 +36,11 @@ class _MonitoringSetupDialogState extends State<MonitoringSetupDialog>
 
   Future<void> _checkPermissions() async {
     final notificationStatus = await NativeBridge.checkNotificationPermission();
-    final accessibilityStatus =
-        await NativeBridge.checkAccessibilityPermission();
     final smsStatus = await NativeBridge.checkSmsPermission();
 
     if (mounted) {
       setState(() {
         _isNotificationPermissionGranted = notificationStatus;
-        _isAccessibilityPermissionGranted = accessibilityStatus;
         _isSmsPermissionGranted = smsStatus;
       });
     }
@@ -82,15 +78,6 @@ class _MonitoringSetupDialogState extends State<MonitoringSetupDialog>
               await NativeBridge.requestSmsPermission();
             },
           ),
-          const SizedBox(height: 12),
-          _buildPermissionStep(
-            '3. Accessibility Service',
-            'Enables screen-based detection for selected payment apps.',
-            _isAccessibilityPermissionGranted,
-            () async {
-              await NativeBridge.requestAccessibilityPermission();
-            },
-          ),
           const SizedBox(height: 20),
           Container(
             padding: const EdgeInsets.all(12),
@@ -121,7 +108,6 @@ class _MonitoringSetupDialogState extends State<MonitoringSetupDialog>
         ),
         ElevatedButton(
           onPressed: (_isNotificationPermissionGranted ||
-                  _isAccessibilityPermissionGranted ||
                   _isSmsPermissionGranted)
               ? () {
                   Navigator.pop(context, true);

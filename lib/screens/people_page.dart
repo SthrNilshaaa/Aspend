@@ -23,6 +23,8 @@ import '../core/const/app_strings.dart';
 import '../core/const/app_colors.dart';
 import '../core/const/app_dimensions.dart';
 import '../core/const/app_typography.dart';
+import '../core/utils/blur_utils.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PeopleTab extends StatefulWidget {
   const PeopleTab({super.key});
@@ -79,177 +81,202 @@ class _PeopleTabState extends State<PeopleTab> {
 
   void _showPersonDialog(BuildContext context, {Person? existingPerson}) {
     final controller = TextEditingController(text: existingPerson?.name);
+    final upiController = TextEditingController(text: existingPerson?.upiId);
     final theme = Theme.of(context);
     String? selectedPhotoPath = existingPerson?.photoPath;
 
-    showDialog(
+    BlurUtils.showBlurredDialog(
       context: context,
-      builder: (_) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-        child: StatefulBuilder(
-          builder: (context, setStateDialog) => AlertDialog(
-            shape: RoundedRectangleBorder(
-                borderRadius:
-                    BorderRadius.circular(AppDimensions.borderRadiusLarge)),
-            title: Text(
-              existingPerson == null
-                  ? AppStrings.addNewPerson
-                  : AppStrings.editPerson,
-              style: GoogleFonts.dmSans(
-                fontSize: AppTypography.fontSizeLarge,
-                fontWeight: AppTypography.fontWeightBold,
-                color: theme.colorScheme.primary,
-              ),
+      child: StatefulBuilder(
+        builder: (context, setStateDialog) => AlertDialog(
+          shape: RoundedRectangleBorder(
+              borderRadius:
+                  BorderRadius.circular(AppDimensions.borderRadiusLarge)),
+          title: Text(
+            existingPerson == null
+                ? AppStrings.addNewPerson
+                : AppStrings.editPerson,
+            style: GoogleFonts.dmSans(
+              fontSize: AppTypography.fontSizeLarge,
+              fontWeight: AppTypography.fontWeightBold,
+              color: theme.colorScheme.primary,
             ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Photo Selection
-                GestureDetector(
-                  onTap: () async {
-                    final ImagePicker picker = ImagePicker();
-                    final XFile? image = await picker.pickImage(
-                      source: ImageSource.gallery,
-                    );
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Photo Selection
+              GestureDetector(
+                onTap: () async {
+                  final ImagePicker picker = ImagePicker();
+                  final XFile? image = await picker.pickImage(
+                    source: ImageSource.gallery,
+                  );
 
-                    if (image != null) {
-                      setStateDialog(() {
-                        selectedPhotoPath = image.path;
-                      });
-                    }
-                  },
-                  child: Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color: selectedPhotoPath != null
-                          ? theme.colorScheme.primary.withValues(alpha: 0.1)
-                          : theme.colorScheme.surface,
-                      borderRadius: BorderRadius.circular(
-                          AppDimensions.borderRadiusLarge),
-                      border: Border.all(
-                        color: selectedPhotoPath != null
-                            ? theme.colorScheme.primary
-                            : theme.colorScheme.outline.withValues(alpha: 0.3),
-                        width: 1,
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(2.0),
-                      child: selectedPhotoPath != null
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(
-                                  AppDimensions.borderRadiusFull),
-                              child: selectedPhotoPath!.startsWith('assets/')
-                                  ? Image.asset(selectedPhotoPath!,
-                                      width: 96, height: 96, fit: BoxFit.cover)
-                                  : Image.file(
-                                      File(selectedPhotoPath!),
-                                      width: 96,
-                                      height: 96,
-                                      fit: BoxFit.cover,
-                                    ),
-                            )
-                          : Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.add_a_photo,
-                                  size: AppDimensions.iconSizeXLarge + 2,
-                                  color: theme.colorScheme.primary,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  AppStrings.addPhoto,
-                                  style: GoogleFonts.dmSans(
-                                    fontSize: AppTypography.fontSizeXSmall,
-                                    color: theme.colorScheme.primary,
-                                    fontWeight:
-                                        AppTypography.fontWeightSemiBold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  existingPerson == null
-                      ? AppStrings.enterNameHint
-                      : AppStrings.updateDetailsHint,
-                  style: GoogleFonts.dmSans(
-                    fontSize: AppTypography.fontSizeSmall,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                TextField(
-                  controller: controller,
-                  decoration: InputDecoration(
-                    labelText: AppStrings.personName,
-                    labelStyle: GoogleFonts.dmSans(
-                        fontSize: AppTypography.fontSizeSmall),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(
-                          AppDimensions.borderRadiusSmall),
-                    ),
-                    filled: true,
-                    fillColor: theme.colorScheme.surface,
-                    prefixIcon: Icon(Icons.person_outline,
-                        color: theme.colorScheme.primary),
-                  ),
-                  style: GoogleFonts.dmSans(fontSize: 16),
-                  autofocus: true,
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(
-                  'Cancel',
-                  style: GoogleFonts.dmSans(
-                      fontSize: 16, fontWeight: FontWeight.w600),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  final name = controller.text.trim();
-                  if (name.isNotEmpty) {
-                    HapticFeedback.lightImpact();
-                    if (existingPerson == null) {
-                      final person =
-                          Person(name: name, photoPath: selectedPhotoPath);
-                      context.read<PersonViewModel>().addPerson(person);
-                    } else {
-                      final updatedPerson = Person(
-                        name: name,
-                        photoPath: selectedPhotoPath,
-                      );
-                      context
-                          .read<PersonViewModel>()
-                          .updatePerson(existingPerson, updatedPerson);
-                    }
-                    Navigator.pop(context);
+                  if (image != null) {
+                    setStateDialog(() {
+                      selectedPhotoPath = image.path;
+                    });
                   }
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: theme.colorScheme.primary,
-                  foregroundColor: theme.colorScheme.onPrimary,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                          AppDimensions.borderRadiusSmall)),
+                child: Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: selectedPhotoPath != null
+                        ? theme.colorScheme.primary.withValues(alpha: 0.1)
+                        : theme.colorScheme.surface,
+                    borderRadius: BorderRadius.circular(
+                        AppDimensions.borderRadiusLarge),
+                    border: Border.all(
+                      color: selectedPhotoPath != null
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.outline.withValues(alpha: 0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: selectedPhotoPath != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(
+                                AppDimensions.borderRadiusFull),
+                            child: selectedPhotoPath!.startsWith('assets/')
+                                ? Image.asset(selectedPhotoPath!,
+                                    width: 96, height: 96, fit: BoxFit.cover)
+                                : Image.file(
+                                    File(selectedPhotoPath!),
+                                    width: 96,
+                                    height: 96,
+                                    fit: BoxFit.cover,
+                                  ),
+                          )
+                        : Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.add_a_photo,
+                                size: AppDimensions.iconSizeXLarge + 2,
+                                color: theme.colorScheme.primary,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                AppStrings.addPhoto,
+                                style: GoogleFonts.dmSans(
+                                  fontSize: AppTypography.fontSizeXSmall,
+                                  color: theme.colorScheme.primary,
+                                  fontWeight:
+                                      AppTypography.fontWeightSemiBold,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
                 ),
-                child: Text(
-                  existingPerson == null ? 'Add' : 'Update',
-                  style: GoogleFonts.dmSans(
-                      fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                existingPerson == null
+                    ? AppStrings.enterNameHint
+                    : AppStrings.updateDetailsHint,
+                style: GoogleFonts.dmSans(
+                  fontSize: AppTypography.fontSizeSmall,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                 ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: controller,
+                decoration: InputDecoration(
+                  labelText: AppStrings.personName,
+                  labelStyle: GoogleFonts.dmSans(
+                      fontSize: AppTypography.fontSizeSmall),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(
+                        AppDimensions.borderRadiusSmall),
+                  ),
+                  filled: true,
+                  fillColor: theme.colorScheme.surface,
+                  prefixIcon: Icon(Icons.person_outline,
+                      color: theme.colorScheme.primary),
+                ),
+                style: GoogleFonts.dmSans(fontSize: 16),
+                autofocus: true,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: upiController,
+                decoration: InputDecoration(
+                  labelText: AppStrings.upiId,
+                  labelStyle: GoogleFonts.dmSans(
+                      fontSize: AppTypography.fontSizeSmall),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(
+                        AppDimensions.borderRadiusSmall),
+                  ),
+                  filled: true,
+                  fillColor: theme.colorScheme.surface,
+                  prefixIcon: Icon(Icons.payment_rounded,
+                      color: theme.colorScheme.primary),
+                  hintText: 'user@upi',
+                  hintStyle: GoogleFonts.dmSans(
+                    fontSize: AppTypography.fontSizeSmall,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                  ),
+                ),
+                style: GoogleFonts.dmSans(fontSize: 16),
               ),
             ],
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.dmSans(
+                    fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final name = controller.text.trim();
+                if (name.isNotEmpty) {
+                  HapticFeedback.lightImpact();
+                  if (existingPerson == null) {
+                    final person = Person(
+                      name: name,
+                      photoPath: selectedPhotoPath,
+                      upiId: upiController.text.trim(),
+                    );
+                    context.read<PersonViewModel>().addPerson(person);
+                  } else {
+                    final updatedPerson = Person(
+                      name: name,
+                      photoPath: selectedPhotoPath,
+                      upiId: upiController.text.trim(),
+                    );
+                    context
+                        .read<PersonViewModel>()
+                        .updatePerson(existingPerson, updatedPerson);
+                  }
+                  Navigator.pop(context);
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: theme.colorScheme.primary,
+                foregroundColor: theme.colorScheme.onPrimary,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                        AppDimensions.borderRadiusSmall)),
+              ),
+              child: Text(
+                existingPerson == null ? 'Add' : 'Update',
+                style: GoogleFonts.dmSans(
+                    fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -451,213 +478,219 @@ class _PeopleTabState extends State<PeopleTab> {
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      body: CustomScrollView(
-        controller: _scrollController,
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          const GlassAppBar(
-            title: AppStrings.people,
-            centerTitle: true,
-          ),
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: HomeHeaderDelegate(
-              // minHeight: 150,
-              // maxHeight: 150,
-              height: 180,
-              child: _buildPinnedHeader(context, personViewModel),
-            ),
-          ),
-
-          if (people.isEmpty)
-            const SliverFillRemaining(
-              hasScrollBody: false,
-              child: EmptyStateView(
-                icon: Icons.people_outline,
-                title: AppStrings.noPeopleYet,
-                description: 'Add people to track transactions with them',
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 850),
+          child: CustomScrollView(
+            controller: _scrollController,
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              const GlassAppBar(
+                title: AppStrings.people,
+                centerTitle: true,
               ),
-            )
-          else
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-              sliver: SliverGrid(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount:
-                      ResponsiveUtils.getResponsiveGridCrossAxisCount(context),
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: ResponsiveUtils.isMobile(context)
-                      ? 4.5
-                      : (ResponsiveUtils.isTablet(context) ? 2.5 : 3.0),
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: HomeHeaderDelegate(
+                  // minHeight: 150,
+                  // maxHeight: 150,
+                  height: 180,
+                  child: _buildPinnedHeader(context, personViewModel),
                 ),
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final person = people[index];
-                    final total =
-                        personViewModel.getTotalForPerson(person.name);
-                    final isPositive = total >= 0;
-
-                    return ZoomTapAnimation(
-                      onTap: () {
-                        HapticFeedback.selectionClick();
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => PersonDetailPage(person: person),
-                          ),
-                        );
-                      },
-                      child: ModernCard(
-                        padding: const EdgeInsets.all(12),
-                        borderRadius: AppDimensions.borderRadiusXLarge,
-                        color: theme.colorScheme.surface,
-                        child: IntrinsicHeight(
-                          child: Row(
-                            children: [
-                              Stack(
-                                children: [
-                                  Container(
-                                    width:
-                                        ResponsiveUtils.getResponsiveIconSize(
-                                            context,
-                                            mobile: 60,
-                                            tablet: 56,
-                                            desktop: 64),
-                                    height:
-                                        ResponsiveUtils.getResponsiveIconSize(
-                                            context,
-                                            mobile: 60,
-                                            tablet: 56,
-                                            desktop: 64),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(
-                                          AppDimensions.borderRadiusLarge),
-                                      color: theme.colorScheme.primary
-                                          .withValues(alpha: 0.1),
-                                      border: Border.all(
-                                        color: theme.colorScheme.primary
-                                            .withValues(alpha: 0.1),
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(2.0),
-                                      child: person.photoPath != null
-                                          ? ClipRRect(
-                                              borderRadius: BorderRadius
-                                                  .circular(AppDimensions
-                                                      .borderRadiusMinLarge),
-                                              child: person.photoPath!
-                                                      .startsWith('assets/')
-                                                  ? Image.asset(
-                                                      person.photoPath!,
-                                                      fit: BoxFit.cover)
-                                                  : Image.file(
-                                                      File(person.photoPath!),
-                                                      fit: BoxFit.cover,
-                                                    ),
-                                            )
-                                          : Icon(Icons.person_rounded,
-                                              color: theme.colorScheme.primary,
-                                              size: 24),
-                                    ),
-                                  ),
-                                  Positioned(
-                                    right: 0,
-                                    bottom: 0,
-                                    child: Container(
-                                      width: 14,
-                                      height: 14,
-                                      decoration: BoxDecoration(
-                                        color: isPositive
-                                            ? AppColors.accentGreen
-                                            : AppColors.accentRed,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                            color: theme.colorScheme.surface,
-                                            width: 2),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+              ),
+              if (people.isEmpty)
+                const SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: EmptyStateView(
+                    icon: Icons.people_outline,
+                    title: AppStrings.noPeopleYet,
+                    description: 'Add people to track transactions with them',
+                  ),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  sliver: SliverGrid(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount:
+                          ResponsiveUtils.getResponsiveGridCrossAxisCount(context),
+                      mainAxisSpacing: 16,
+                      crossAxisSpacing: 16,
+                      childAspectRatio: ResponsiveUtils.isMobile(context)
+                          ? 4.5
+                          : (ResponsiveUtils.isTablet(context) ? 2.8 : 3.2),
+                    ),
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final person = people[index];
+                        final total =
+                            personViewModel.getTotalForPerson(person.name);
+                        final isPositive = total >= 0;
+    
+                        return RepaintBoundary(
+                          child: ZoomTapAnimation(
+                            onTap: () {
+                              HapticFeedback.selectionClick();
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => PersonDetailPage(person: person),
+                                ),
+                              );
+                            },
+                            child: ModernCard(
+                              padding: const EdgeInsets.all(16),
+                              borderRadius: AppDimensions.borderRadiusXLarge,
+                              color: theme.colorScheme.surface,
+                              child: IntrinsicHeight(
+                                child: Row(
                                   children: [
-                                    Text(
-                                      person.name,
-                                      style: GoogleFonts.dmSans(
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: ResponsiveUtils
-                                            .getResponsiveFontSize(context,
-                                                mobile: AppTypography
-                                                    .fontSizeMedium,
-                                                tablet: 17,
-                                                desktop: 19),
-                                        color: theme.colorScheme.onSurface,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                                    Stack(
+                                      children: [
+                                        Container(
+                                          width:
+                                              ResponsiveUtils.getResponsiveIconSize(
+                                                  context,
+                                                  mobile: 60,
+                                                  tablet: 56,
+                                                  desktop: 64),
+                                          height:
+                                              ResponsiveUtils.getResponsiveIconSize(
+                                                  context,
+                                                  mobile: 60,
+                                                  tablet: 56,
+                                                  desktop: 64),
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(
+                                                AppDimensions.borderRadiusLarge),
+                                            color: theme.colorScheme.primary
+                                                .withValues(alpha: 0.1),
+                                            border: Border.all(
+                                              color: theme.colorScheme.primary
+                                                  .withValues(alpha: 0.1),
+                                              width: 1,
+                                            ),
+                                          ),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(2.0),
+                                            child: person.photoPath != null
+                                                ? ClipRRect(
+                                                    borderRadius: BorderRadius
+                                                        .circular(AppDimensions
+                                                            .borderRadiusMinLarge),
+                                                    child: person.photoPath!
+                                                            .startsWith('assets/')
+                                                        ? Image.asset(
+                                                            person.photoPath!,
+                                                            fit: BoxFit.cover)
+                                                        : Image.file(
+                                                            File(person.photoPath!),
+                                                            fit: BoxFit.cover,
+                                                          ),
+                                                  )
+                                                : Icon(Icons.person_rounded,
+                                                    color: theme.colorScheme.primary,
+                                                    size: 24),
+                                          ),
+                                        ),
+                                        Positioned(
+                                          right: 0,
+                                          bottom: 0,
+                                          child: Container(
+                                            width: 14,
+                                            height: 14,
+                                            decoration: BoxDecoration(
+                                              color: isPositive
+                                                  ? AppColors.accentGreen
+                                                  : AppColors.accentRed,
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                  color: theme.colorScheme.surface,
+                                                  width: 2),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      isPositive
-                                          ? AppStrings.youGet
-                                          : AppStrings.youGive,
-                                      style: GoogleFonts.dmSans(
-                                        fontSize: 11,
-                                        color: theme.colorScheme.onSurface
-                                            .withValues(alpha: 0.7),
-                                        fontWeight:
-                                            AppTypography.fontWeightMedium,
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceEvenly,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            person.name,
+                                            style: GoogleFonts.dmSans(
+                                              fontWeight: FontWeight.w700,
+                                              fontSize: ResponsiveUtils
+                                                  .getResponsiveFontSize(context,
+                                                      mobile: AppTypography
+                                                          .fontSizeMedium,
+                                                      tablet: 17,
+                                                      desktop: 19),
+                                              color: theme.colorScheme.onSurface,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            isPositive
+                                                ? AppStrings.youGet
+                                                : AppStrings.youGive,
+                                            style: GoogleFonts.dmSans(
+                                              fontSize: 11,
+                                              color: theme.colorScheme.onSurface
+                                                  .withValues(alpha: 0.7),
+                                              fontWeight:
+                                                  AppTypography.fontWeightMedium,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
+                                    const SizedBox(width: 8),
+                                        Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          crossAxisAlignment: CrossAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              '₹ ${total.abs().toStringAsFixed(0)}',
+                                              style: GoogleFonts.dmSans(
+                                                fontWeight: FontWeight.w900,
+                                                fontSize:
+                                                    ResponsiveUtils.getResponsiveFontSize(
+                                                        context,
+                                                        mobile: 16,
+                                                        tablet: 18,
+                                                        desktop: 20),
+                                                color: isPositive
+                                                    ? AppColors.accentGreen
+                                                    : AppColors.accentRed,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                   ],
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    '₹ ${total.abs().toStringAsFixed(0)}',
-                                    style: GoogleFonts.dmSans(
-                                      fontWeight: FontWeight.w900,
-                                      fontSize:
-                                          ResponsiveUtils.getResponsiveFontSize(
-                                              context,
-                                              mobile: 16,
-                                              tablet: 18,
-                                              desktop: 20),
-                                      color: isPositive
-                                          ? AppColors.accentGreen
-                                          : AppColors.accentRed,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                            ),
                           ),
-                        ),
-                      ),
-                    );
-                  },
-                  childCount: people.length,
+                        );
+                      },
+                      childCount: people.length,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: people.isEmpty ? 100 : 80,
-            ),
-          ), // Your existing SizedBox
-        ],
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: people.isEmpty ? 100 : 80,
+                ),
+              ), // Your existing SizedBox
+            ],
+          ),
+        ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: people.isEmpty
@@ -923,10 +956,9 @@ class _PeopleTabState extends State<PeopleTab> {
     final theme = Theme.of(context);
     final vm = context.read<PersonViewModel>();
 
-    showModalBottomSheet(
+    BlurUtils.showBlurredBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
+      child: Container(
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
           borderRadius: const BorderRadius.vertical(

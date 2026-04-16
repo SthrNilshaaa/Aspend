@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -203,6 +204,18 @@ class MyApp extends StatelessWidget {
             ),
           );
         }
+
+        // Apply System UI Style for Android status bar icons
+        SystemChrome.setSystemUIOverlayStyle(
+          SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness:
+                themeViewModel.isDarkMode ? Brightness.light : Brightness.dark,
+            systemNavigationBarColor: scaffoldBackgroundColor,
+            systemNavigationBarIconBrightness:
+                themeViewModel.isDarkMode ? Brightness.light : Brightness.dark,
+          ),
+        );
 
         return MaterialApp(
           debugShowCheckedModeBanner: false,

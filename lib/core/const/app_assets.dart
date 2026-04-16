@@ -26,13 +26,13 @@ class SvgAppIcons {
 
   // Category Icons
   static const String foodIcon = 'assets/icons/food_icon.svg';
-  static const String groceriesIcon = 'assets/icons/Group_icon.svg';
+  // static const String groceriesIcon = 'assets/icons/Group_icon.svg';
   static const String transportIcon = 'assets/icons/transport_icon.svg';
   static const String shoppingIcon = 'assets/icons/shopping_icon.svg';
   static const String billIcon = 'assets/icons/bill_icon.svg';
   static const String entertainmentIcon = 'assets/icons/entertainment_icon.svg';
   static const String healthIcon = 'assets/icons/health_icon.svg';
-  static const String giftIcon = 'assets/icons/gift_icon.svg';
+  // static const String giftIcon = 'assets/icons/gift_icon.svg';
   static const String fuelIcon = 'assets/icons/fuel.svg';
   static const String rentIcon = 'assets/icons/rent_icon.svg';
   static const String travelIcon = 'assets/icons/travel_icon.svg';
@@ -41,5 +41,19 @@ class SvgAppIcons {
   static const String subscriptionIcon = 'assets/icons/subscription_icon.svg';
   static const String personalCareIcon = 'assets/icons/personal_care_icon.svg';
   static const String taxIcon = 'assets/icons/tax_icon.svg';
+  static const String educationIcon = 'assets/icons/education.svg';
+  static const String groceriesIcon = 'assets/icons/groceries.svg';
+  static const String charityIcon = 'assets/icons/charity.svg';
+  static const String loanRepaymentIcon = 'assets/icons/loan_repayment.svg';
+  static const String loanIcon = 'assets/icons/loan.svg';
+  static const String otherIcon = 'assets/icons/other.svg';
+  static const String freelanceIcon = 'assets/icons/freelance.svg';
+  static const String giftIcon = 'assets/icons/gift.svg';
+  static const String cashbackIcon = 'assets/icons/cashback.svg';
+  static const String businessIcon = 'assets/icons/business.svg';
+  static const String investmentIcon = 'assets/icons/investment.svg';
+  static const String interestIcon = 'assets/icons/interest.svg';
+  static const String refundIcon = 'assets/icons/refund.svg';
+  static const String salaryIcon = 'assets/icons/salary.svg';
   static const String genericCategoryIcon = 'assets/icons/Catory_icon.svg';
 }

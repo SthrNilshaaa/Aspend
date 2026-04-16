@@ -10,6 +10,8 @@ import '../core/const/app_strings.dart';
 import '../core/const/app_assets.dart';
 import '../core/models/person.dart';
 import '../core/view_models/person_view_model.dart';
+import '../core/utils/blur_utils.dart';
+import 'request_money_dialog.dart';
 
 class PersonDetailHeader extends StatelessWidget {
   final Person person;
@@ -106,6 +108,11 @@ class PersonDetailHeader extends StatelessWidget {
                                   ],
                                 ),
                               ),
+                              if (isPositive && total > 0)
+                                _RequestMoneyButton(
+                                  personName: person.name,
+                                  amount: total,
+                                ),
                             ],
                           ),
                         ),
@@ -413,5 +420,47 @@ class _SortToggleButton extends StatelessWidget {
       case PersonTransactionSortOption.amountLowest:
         return Icons.expand_less;
     }
+  }
+}
+
+class _RequestMoneyButton extends StatelessWidget {
+  final String personName;
+  final double amount;
+
+  const _RequestMoneyButton({required this.personName, required this.amount});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 8),
+      child: IconButton(
+        icon: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppColors.accentGreen.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: AppColors.accentGreen.withValues(alpha: 0.2),
+              width: 1,
+            ),
+          ),
+          child: const Icon(
+            Icons.qr_code_2_rounded,
+            color: AppColors.accentGreen,
+            size: 24,
+          ),
+        ),
+        onPressed: () {
+          BlurUtils.showBlurredDialog(
+            context: context,
+            child: RequestMoneyDialog(
+              personName: personName,
+              amount: amount,
+            ),
+          );
+        },
+        tooltip: 'Request Money via UPI',
+      ),
+    );
   }
 }

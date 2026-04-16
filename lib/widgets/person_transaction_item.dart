@@ -7,6 +7,7 @@ import '../core/const/app_assets.dart';
 import '../core/const/app_colors.dart';
 import '../core/const/app_dimensions.dart';
 import '../core/models/person_transaction.dart';
+import '../core/utils/blur_utils.dart';
 import '../../widgets/add_transaction_dialog.dart';
 
 class PersonTransactionItem extends StatelessWidget {
@@ -39,11 +40,9 @@ class PersonTransactionItem extends StatelessWidget {
             onLongPress: onLongPress,
             child: ZoomTapAnimation(
               onTap: () {
-                showModalBottomSheet(
+                BlurUtils.showBlurredBottomSheet(
                   context: context,
-                  isScrollControlled: true,
-                  backgroundColor: Colors.transparent,
-                  builder: (context) => AddTransactionDialog(
+                  child: AddTransactionDialog(
                     isIncome: tx.isIncome,
                     existingPersonTransaction: tx,
                   ),

@@ -59,8 +59,6 @@ class TransactionDetectionService {
 
           if (type == 'SMS') {
             await processSmsMessage(text, sender: packageName);
-          } else if (type == 'ACCESSIBILITY') {
-            await processAccessibilityEvent(text, packageName: packageName);
           } else {
             await processNotification(title, text, packageName: packageName);
           }
@@ -70,9 +68,6 @@ class TransactionDetectionService {
 
           if (parts[0] == 'SMS') {
             await processSmsMessage(parts[1], sender: parts[2]);
-          } else if (parts[0] == 'ACCESSIBILITY' ||
-              (parts.length > 2 && parts[2] == 'ACCESSIBILITY')) {
-            await processAccessibilityEvent(parts[1], packageName: parts[0]);
           } else {
             await processNotification(parts[0], parts[1], packageName: parts[2]);
           }
@@ -228,29 +223,6 @@ class TransactionDetectionService {
     }
   }
 
-  static Future<void> processAccessibilityEvent(String text, {String? packageName}) async {
-    try {
-      if (packageName != null) {
-        final monitoredApps = await NativeBridge.getMonitoredApps();
-        if (monitoredApps.isNotEmpty && !monitoredApps.contains(packageName)) return;
-      }
-
-      final parsed = TransactionParser.parse(text, packageName: packageName);
-      if (parsed != null && parsed.confidence > 0.5) {
-        final tx = parsed.toTransaction();
-        await _addDetectedTransaction(tx, 'Screen Activity');
-        await _recordDetection(
-          text: text,
-          status: 'detected',
-          reason: 'Screen activity',
-          packageName: packageName,
-          confidence: parsed.confidence,
-        );
-      }
-    } catch (e) {
-      debugPrint('Error processing accessibility event: $e');
-    }
-  }
 
   static Future<void> _addDetectedTransaction(Transaction transaction, String source) async {
     try {
@@ -314,11 +286,21 @@ class TransactionDetectionService {
   }
 
   static Future<void> setEnabled(bool enabled) async {
-    await _settingsRepo.setUseAutoDetection(enabled);
     if (enabled) {
+      final hasNotification = await NativeBridge.checkNotificationPermission();
+      final hasSms = await NativeBridge.checkSmsPermission();
+      
+      if (!hasNotification && !hasSms) {
+        debugPrint('Cannot enable auto-detection: No permissions granted');
+        await _settingsRepo.setUseAutoDetection(false);
+        return;
+      }
+
+      await _settingsRepo.setUseAutoDetection(true);
       await _autoSelectPaymentApps();
       await startMonitoring();
     } else {
+      await _settingsRepo.setUseAutoDetection(false);
       await stopMonitoring();
     }
   }
@@ -399,7 +381,7 @@ class TransactionDetectionService {
   static Future<void> deleteOldUndetectedHistory() async {
     try {
       if (!(_settingsRepo.getAutoDeleteUndetected())) return;
-      await _transactionRepo.clearOldDetectionHistory(const Duration(hours: 2));
+      await _transactionRepo.clearOldDetectionHistory(const Duration(hours: 12));
     } catch (e) {
       debugPrint('Error clearing old history: $e');
     }

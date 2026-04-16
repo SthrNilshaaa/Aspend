@@ -43,12 +43,6 @@ class NativeBridge {
             sender: sender);
         break;
 
-      case 'onAccessibilityEvent':
-        final text = call.arguments['text'] as String? ?? '';
-        final packageName = call.arguments['packageName'] as String? ?? '';
-        await TransactionDetectionService.processAccessibilityEvent(text,
-            packageName: packageName);
-        break;
 
       case 'showAddIncomeDialog':
         _emitEvent('SHOW_ADD_INCOME');
@@ -56,6 +50,10 @@ class NativeBridge {
 
       case 'showAddExpenseDialog':
         _emitEvent('SHOW_ADD_EXPENSE');
+        break;
+      
+      case 'showVoiceInputDialog':
+        _emitEvent('SHOW_VOICE_INPUT');
         break;
 
       default:
@@ -160,27 +158,7 @@ class NativeBridge {
     }
   }
 
-  static Future<bool> requestAccessibilityPermission() async {
-    try {
-      final result =
-          await _channel.invokeMethod('requestAccessibilityPermission');
-      return result as bool? ?? false;
-    } catch (e) {
-      debugPrint('Error requesting accessibility permission: $e');
-      return false;
-    }
-  }
 
-  static Future<bool> checkAccessibilityPermission() async {
-    try {
-      final result =
-          await _channel.invokeMethod('checkAccessibilityPermission');
-      return result as bool? ?? false;
-    } catch (e) {
-      debugPrint('Error checking accessibility permission: $e');
-      return false;
-    }
-  }
 
   static Future<List<Map<String, String>>> getInstalledApps() async {
     try {

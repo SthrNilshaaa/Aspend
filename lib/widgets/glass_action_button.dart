@@ -34,7 +34,7 @@ class GlassActionButton extends StatelessWidget {
           child: Container(
             width: 60,
             height: 60,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 18),
+            alignment: Alignment.center,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.15),
               shape: BoxShape.circle,
@@ -46,6 +46,8 @@ class GlassActionButton extends StatelessWidget {
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 icon is String
                     ? SvgPicture.asset(
@@ -54,7 +56,14 @@ class GlassActionButton extends StatelessWidget {
                         width: 20,
                         height: 20,
                       )
-                    : Icon(icon, color: color, size: 22),
+                    : Icon(
+                        icon,
+                        color: color,
+                        size: 30,
+                        // fill: 1,
+                        // weight: 1,
+                         weight: 30,
+                      ),
                 if (label != null && label!.isNotEmpty) ...[
                   const SizedBox(width: 8),
                   Text(

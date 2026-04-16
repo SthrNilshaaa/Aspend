@@ -238,6 +238,23 @@ class TransactionViewModel with ChangeNotifier {
     return _cachedGroupedTransactions!;
   }
 
+  List<dynamic>? _cachedHomeItems;
+
+  List<dynamic> get homeItems {
+    if (_cachedHomeItems != null) return _cachedHomeItems!;
+
+    final grouped = groupedFilteredTransactions;
+    final items = <dynamic>[];
+    for (final entry in grouped.entries) {
+      items.add(entry.key); // Date header
+      for (int i = 0; i < entry.value.length; i++) {
+        items.add({'transaction': entry.value[i], 'index': i});
+      }
+    }
+    _cachedHomeItems = items;
+    return items;
+  }
+
   List<Transaction>? _cachedSortedTransactions;
 
   List<Transaction> get sortedTransactions {
@@ -314,6 +331,7 @@ class TransactionViewModel with ChangeNotifier {
     _cachedSortedTransactions = null;
     _cachedFilteredTransactions = null;
     _cachedGroupedTransactions = null;
+    _cachedHomeItems = null;
   }
 
   @override

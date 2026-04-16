@@ -4,6 +4,8 @@ import '../../core/const/app_dimensions.dart';
 import '../../core/const/app_typography.dart';
 import '../../core/utils/responsive_utils.dart';
 import '../../core/utils/transaction_utils.dart';
+import 'package:provider/provider.dart';
+import '../../core/view_models/transaction_view_model.dart';
 import '../../core/models/transaction.dart';
 import '../../widgets/transaction_tile.dart';
 
@@ -19,16 +21,8 @@ class HomeTransactionList extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     
-    // Flatten the grouped transactions into a list of items for SliverList
-    final items = <dynamic>[];
-    for (final entry in grouped.entries) {
-      items.add(entry.key); // Add the date as a header
-      
-      // Add transactions with their index
-      for (int i = 0; i < entry.value.length; i++) {
-        items.add({'transaction': entry.value[i], 'index': i});
-      }
-    }
+    final transactionViewModel = context.read<TransactionViewModel>();
+    final items = transactionViewModel.homeItems;
 
     return SliverPadding(
       padding:
@@ -44,22 +38,24 @@ class HomeTransactionList extends StatelessWidget {
                 "${dateKey.year}-${dateKey.month.toString().padLeft(2, '0')}-${dateKey.day.toString().padLeft(2, '0')}";
             final relativeDate = TransactionUtils.formatRelativeDate(dateStr);
             
-            return Padding(
-              padding: const EdgeInsets.only(
-                  left: AppDimensions.paddingXSmall,
-                  bottom: AppDimensions.paddingXSmall,
-                  top: AppDimensions.paddingXSmall),
-              child: Text(
-                relativeDate,
-                style: GoogleFonts.dmSans(
-                  fontWeight: FontWeight.w800,
-                  color: theme.colorScheme.primary.withValues(alpha: 0.8),
-                  fontSize: ResponsiveUtils.getResponsiveFontSize(
-                      context,
-                      mobile: AppTypography.fontSizeSmall,
-                      tablet: AppTypography.fontSizeMedium,
-                      desktop: AppTypography.fontSizeSmall + 4),
-                  letterSpacing: 0.5,
+            return RepaintBoundary(
+              child: Padding(
+                padding: const EdgeInsets.only(
+                    left: AppDimensions.paddingXSmall,
+                    bottom: AppDimensions.paddingXSmall,
+                    top: AppDimensions.paddingXSmall),
+                child: Text(
+                  relativeDate,
+                  style: GoogleFonts.dmSans(
+                    fontWeight: FontWeight.w800,
+                    color: theme.colorScheme.primary.withValues(alpha: 0.8),
+                    fontSize: ResponsiveUtils.getResponsiveFontSize(
+                        context,
+                        mobile: AppTypography.fontSizeSmall,
+                        tablet: AppTypography.fontSizeMedium,
+                        desktop: AppTypography.fontSizeSmall + 4),
+                    letterSpacing: 0.5,
+                  ),
                 ),
               ),
             );

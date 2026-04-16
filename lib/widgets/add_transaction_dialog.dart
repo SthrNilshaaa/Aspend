@@ -152,14 +152,18 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
     return Padding(
       padding:
           EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: theme.scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(AppDimensions.borderRadiusXLarge)),
-        ),
-        child: Form(
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 550),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: theme.scaffoldBackgroundColor,
+              borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(AppDimensions.borderRadiusXLarge)),
+            ),
+            child: Form(
           key: _formKey,
           child: SingleChildScrollView(
             child: Column(
@@ -167,100 +171,110 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // Stylized Amount Header
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: AppDimensions.paddingLarge + 8,
-                      horizontal: AppDimensions.paddingXLarge),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        (widget.isIncome
-                                ? AppColors.accentGreen
-                                : AppColors.accentRed)
-                            .withValues(alpha: isDark ? 0.15 : 0.08),
-                        (widget.isIncome
-                                ? AppColors.accentGreen
-                                : AppColors.accentRed)
-                            .withValues(alpha: isDark ? 0.05 : 0.02),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius:
-                        BorderRadius.circular(AppDimensions.borderRadiusXLarge),
-                    border: Border.all(
-                      color: (widget.isIncome
-                              ? AppColors.accentGreen
-                              : AppColors.accentRed)
-                          .withValues(alpha: isDark ? 0.2 : 0.1),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        'Amount in INR',
-                        style: GoogleFonts.dmSans(
-                          fontSize: AppTypography.fontSizeXSmall,
-                          fontWeight: FontWeight.bold,
-                          color: (widget.isIncome
+                GestureDetector(
+                  // tap to enable show input for amount
+                  onTap: () {
+                    // show input for amount in nTextformfield  if amount is 0.00
+                    if (_amount.text == '0.00') {
+                      _amount.text = '';
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: AppDimensions.paddingLarge + 8,
+                        horizontal: AppDimensions.paddingXLarge),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          (widget.isIncome
                                   ? AppColors.accentGreen
                                   : AppColors.accentRed)
-                              .withValues(alpha: 0.6),
-                          letterSpacing: 2,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        textBaseline: TextBaseline.alphabetic,
-                        children: [
-                          Text(
-                            '₹',
-                            style: GoogleFonts.dmSans(
-                              fontSize: AppTypography.fontSizeXXLarge,
-                              fontWeight: AppTypography.fontWeightBlack,
-                              color: widget.isIncome
+                              .withValues(alpha: isDark ? 0.15 : 0.08),
+                          (widget.isIncome
                                   ? AppColors.accentGreen
-                                  : AppColors.accentRed,
-                            ),
+                                  : AppColors.accentRed)
+                              .withValues(alpha: isDark ? 0.10 : 0.02),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius:
+                          BorderRadius.circular(AppDimensions.borderRadiusXLarge),
+                      border: Border.all(
+                        color: (widget.isIncome
+                                ? AppColors.accentGreen
+                                : AppColors.accentRed)
+                            .withValues(alpha: isDark ? 0.2 : 0.1),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Amount in INR',
+                          style: GoogleFonts.dmSans(
+                            fontSize: AppTypography.fontSizeXSmall,
+                            fontWeight: FontWeight.bold,
+                            color: (widget.isIncome
+                                    ? AppColors.accentGreen
+                                    : AppColors.accentRed)
+                                .withValues(alpha: 0.6),
+                            letterSpacing: 2,
                           ),
-                          const SizedBox(width: 8),
-                          IntrinsicWidth(
-                            child: TextFormField(
-                              controller: _amount,
-                              keyboardType: TextInputType.number,
-                              style: GoogleFonts.bayon(
-                                fontSize: AppTypography.fontSizeGigantic + 10,
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
+                            Text(
+                              '₹',
+                              style: GoogleFonts.dmSans(
+                                fontSize: AppTypography.fontSizeXXLarge,
+                                fontWeight: AppTypography.fontWeightBlack,
                                 color: widget.isIncome
                                     ? AppColors.accentGreen
                                     : AppColors.accentRed,
-                                letterSpacing: 0,
-                                height: 1,
                               ),
-                              decoration: InputDecoration(
-                                hintText: '0',
-                                hintStyle: GoogleFonts.bayon(
-                                  color: (widget.isIncome
-                                          ? AppColors.accentGreen
-                                          : AppColors.accentRed)
-                                      .withValues(alpha: 0.2),
-                                ),
-                                border: InputBorder.none,
-                                enabledBorder: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                                filled: false,
-                                contentPadding: EdgeInsets.zero,
-                              ),
-                              textAlign: TextAlign.center,
-                              validator: (v) =>
-                                  (v?.isEmpty ?? true) ? 'Required' : null,
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                            const SizedBox(width: 8),
+                            IntrinsicWidth(
+                              child: TextFormField(
+                                controller: _amount,
+                                keyboardType: TextInputType.number,
+                                style: GoogleFonts.bayon(
+                                  fontSize: AppTypography.fontSizeGigantic + 10,
+                                  color: widget.isIncome
+                                      ? AppColors.accentGreen
+                                      : AppColors.accentRed,
+                                  letterSpacing: 0,
+                                  height: 1,
+                                ),
+                                decoration: InputDecoration(
+                                  hintText: '0',
+                                  hintStyle: GoogleFonts.bayon(
+                                    color: (widget.isIncome
+                                            ? AppColors.accentGreen
+                                            : AppColors.accentRed)
+                                        .withValues(alpha: 0.2),
+                                  ),
+                                  border: InputBorder.none,
+                                  enabledBorder: InputBorder.none,
+                                  focusedBorder: InputBorder.none,
+                                  filled: false,
+                                  contentPadding: EdgeInsets.zero,
+                                ),
+                                textAlign: TextAlign.start,
+                                validator: (v) =>
+                                    (v?.isEmpty ?? true) ? 'Required' : null,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -481,8 +495,10 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
           ),
         ),
       ),
-    );
-  }
+        ),
+    ),
+  );
+}
 
   Widget _picker(String label, String val, List<String> items,
       ValueChanged<String> onDone, String type) {

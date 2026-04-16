@@ -100,4 +100,12 @@ class AppStrings {
   static const String skip = 'Skip';
   static const String next = 'Next';
   static const String getStarted = 'Get Started';
+
+  // UPI Request
+  static const String upiId = 'UPI ID';
+  static const String upiIdDesc = 'Set your UPI ID for money requests';
+  static const String upiName = 'Display Name';
+  static const String upiNameDesc = 'Optional: Name shown in UPI request';
+  static const String requestMoney = 'Request Money';
+  static const String generateQr = 'Generate Payment QR';
 }

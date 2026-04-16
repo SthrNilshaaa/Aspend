@@ -1,6 +1,8 @@
 import 'dart:ui';
 import 'dart:async';
 
+import 'package:aspends_tracker/core/models/transaction.dart';
+import 'package:aspends_tracker/widgets/request_money_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -18,11 +20,18 @@ import '../core/const/app_colors.dart';
 import '../../core/const/app_dimensions.dart';
 import '../core/const/app_typography.dart';
 import '../../core/const/app_assets.dart';
+import '../core/utils/blur_utils.dart';
 
 import '../../widgets/header_delegate.dart';
 import '../../widgets/add_transaction_dialog.dart';
 import '../../widgets/empty_state_view.dart';
 import '../../widgets/glass_action_button.dart';
+import '../../widgets/recording_hud.dart';
+import '../core/view_models/person_view_model.dart';
+import '../core/models/person_transaction.dart';
+import '../core/utils/voice_parser.dart';
+import '../core/services/speech_service.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import '../shared/widgets/home_app_bar.dart';
 import '../shared/widgets/home_balance_section.dart';
@@ -44,6 +53,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   bool _showFab = true;
   double _turns = 0.0;
   StreamSubscription<String>? _uiEventSubscription;
+  
+  final SpeechService _speechService = SpeechService();
+  String _recordingText = "";
+  bool _isRecording = false;
 
   @override
   void initState() {
@@ -92,6 +105,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         _showAddTransactionDialog(isIncome: true);
       } else if (event == 'SHOW_ADD_EXPENSE') {
         _showAddTransactionDialog(isIncome: false);
+      } else if (event == 'SHOW_VOICE_INPUT') {
+        _startRecording();
       } else if (event == 'SYNC_STARTED') {
         context.read<TransactionViewModel>().setSyncing(true);
       } else if (event == 'SYNC_FINISHED') {
@@ -108,16 +123,97 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   void _showAddTransactionDialog({required bool isIncome}) {
-    showModalBottomSheet(
+    BlurUtils.showBlurredBottomSheet(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: 0.3),
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: AddTransactionDialog(isIncome: isIncome),
-      ),
+      child: AddTransactionDialog(isIncome: isIncome),
     );
+  }
+
+  Future<void> _startRecording() async {
+    final success = await _speechService.initSpeech();
+    if (success) {
+      HapticFeedback.heavyImpact();
+      setState(() {
+        _isRecording = true;
+        _recordingText = "";
+      });
+      _speechService.startListening((text) {
+        setState(() => _recordingText = text);
+      });
+    } else {
+      Fluttertoast.showToast(msg: "Speech recognition unavailable");
+    }
+  }
+
+  Future<void> _stopAndSaveRecording() async {
+    if (!_isRecording) return;
+    
+    HapticFeedback.mediumImpact();
+    setState(() => _isRecording = false);
+    await _speechService.stopListening();
+
+    if (_recordingText.isEmpty) return;
+
+    final pvm = context.read<PersonViewModel>();
+    final tvm = context.read<TransactionViewModel>();
+    
+    final result = VoiceParser.parse(
+      _recordingText, 
+      knownPeople: pvm.people.map((p) => p.name).toList(),
+    );
+
+    if (result.isRequest && result.amount != null && result.personName != null) {
+      showDialog(
+        context: context,
+        builder: (context) => RequestMoneyDialog(
+          personName: result.personName!,
+          amount: result.amount!,
+        ),
+      );
+      Fluttertoast.showToast(msg: "Opening Request QR for ${result.personName}");
+      return; 
+    }
+
+    if (result.amount != null) {
+      final tx = Transaction(
+        amount: result.amount!,
+        note: result.note,
+        category: result.category ?? 'Other',
+        account: 'Cash',
+        date: DateTime.now(),
+        isIncome: result.isIncome ?? false,
+      );
+
+      await tvm.addTransaction(tx);
+
+      if (result.personName != null) {
+        pvm.addPersonTransaction(
+          PersonTransaction(
+            personName: result.personName!,
+            amount: tx.amount,
+            note: tx.note,
+            date: tx.date,
+            isIncome: tx.isIncome,
+          ), 
+          result.personName!,
+        );
+      }
+
+      Fluttertoast.showToast(
+        msg: "Saved ₹${result.amount} for ${result.category ?? 'Other'}",
+        backgroundColor: Colors.green,
+        textColor: Colors.white,
+      );
+    } else {
+      HapticFeedback.vibrate();
+      Fluttertoast.showToast(
+        msg: "Couldn't find amount. Try: 'Spent 500 on Food'",
+        backgroundColor: Colors.orange,
+        textColor: Colors.white,
+      );
+      // Fallback: Open manual dialog
+      _showAddTransactionDialog(isIncome: result.isIncome ?? false);
+    }
   }
 
   @override
@@ -131,53 +227,89 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     return Scaffold(
       extendBody: true,
-      body: CustomScrollView(
-        controller: _scrollController,
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          HomeAppBar(
-            isDark: isDark,
-            turns: _turns,
-            isSyncing: transactionViewModel.isSyncing,
-            onLeadingTap: () => setState(() => _turns += 4),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 850),
+          child: CustomScrollView(
+            controller: _scrollController,
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              HomeAppBar(
+                isDark: isDark,
+                turns: _turns,
+                isSyncing: transactionViewModel.isSyncing,
+                onLeadingTap: () => setState(() => _turns += 4),
+              ),
+              HomeBalanceSection(viewModel: transactionViewModel),
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: HomeHeaderDelegate(
+                  height: 140 * MediaQuery.textScalerOf(context).scale(1) +
+                      20, // Dynamic height prevents overflow when system font size is increased
+                  child: _buildPinnedHeader(context),
+                ),
+              ),
+              if (txns.isNotEmpty)
+                HomeTransactionList(grouped: grouped)
+              else
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: _buildEmptyState(),
+                ),
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: txns.isNotEmpty
+                      ? MediaQuery.of(context).padding.bottom +
+                          AppDimensions.paddingXLarge * 2.5
+                      : MediaQuery.of(context).padding.bottom +
+                          AppDimensions.paddingXLarge * 3,
+                ),
+              ),
+            ],
           ),
-          HomeBalanceSection(viewModel: transactionViewModel),
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: HomeHeaderDelegate(
-              height: 140 * MediaQuery.textScalerOf(context).scale(1) +
-                  20, // Dynamic height prevents overflow when system font size is increased
-              child: _buildPinnedHeader(context),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: Stack(
+        alignment: Alignment.bottomCenter,
+        clipBehavior: Clip.none,
+        children: [
+          Positioned(
+            bottom: 130, // Lifted slightly higher for better layout
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 400),
+              reverseDuration: const Duration(milliseconds: 300),
+              transitionBuilder: (child, animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: ScaleTransition(
+                    scale: Tween<double>(begin: 0.8, end: 1.0).animate(
+                      CurvedAnimation(parent: animation, curve: Curves.easeOutBack),
+                    ),
+                    child: child,
+                  ),
+                );
+              },
+              child: _isRecording
+                  ? RecordingHUD(
+                      key: const ValueKey('recording_hud'),
+                      text: _recordingText,
+                      isListening: _isRecording,
+                    )
+                  : const SizedBox.shrink(key: ValueKey('empty')),
             ),
           ),
-          if (txns.isNotEmpty)
-            HomeTransactionList(grouped: grouped)
-          else
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: _buildEmptyState(),
-            ),
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: txns.isNotEmpty
-                  ? MediaQuery.of(context).padding.bottom +
-                      AppDimensions.paddingXLarge * 2.5
-                  : MediaQuery.of(context).padding.bottom +
-                      AppDimensions.paddingXLarge * 3,
+          AnimatedSlide(
+            offset: _showFab ? Offset.zero : const Offset(0, 2),
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            child: AnimatedOpacity(
+              opacity: _showFab ? 1.0 : 0.5,
+              duration: const Duration(milliseconds: 300),
+              child: _buildDualFab(theme),
             ),
           ),
         ],
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: AnimatedSlide(
-        offset: _showFab ? Offset.zero : const Offset(0, 2),
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        child: AnimatedOpacity(
-          opacity: _showFab ? 1.0 : 0.5,
-          duration: const Duration(milliseconds: 300),
-          child: _buildDualFab(theme),
-        ),
       ),
     );
   }
@@ -275,13 +407,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     final theme = Theme.of(context);
     final vm = context.read<TransactionViewModel>();
 
-    showModalBottomSheet(
+    BlurUtils.showBlurredBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: 0.3),
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
+      child: Container(
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
           borderRadius: const BorderRadius.vertical(
@@ -324,7 +452,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ],
         ),
       ),
-      )
     );
   }
 
@@ -438,6 +565,28 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             icon: SvgAppIcons.incomeIcon,
             color: AppColors.accentGreen,
             onTap: () => _showAddTransactionDialog(isIncome: true),
+          ),
+        ),
+        const SizedBox(width: 8),
+        ClipOval(
+          child: GestureDetector(
+            onLongPressStart: (_) => _startRecording(),
+            onLongPressEnd: (_) async {
+              await Future.delayed(const Duration(milliseconds: 900));
+              _stopAndSaveRecording();
+            },
+            onLongPressUp: () async {
+              // Both handlers used for robustness, delay ensures last words captured
+              await Future.delayed(const Duration(milliseconds: 900));
+              _stopAndSaveRecording();
+            },
+            child: GlassActionButton(
+              icon: Icons.mic_rounded,
+              color: theme.colorScheme.primary,
+              onTap: () {
+                Fluttertoast.showToast(msg: "Hold to record transaction");
+              },
+            ),
           ),
         ),
         const SizedBox(width: 8),

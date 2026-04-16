@@ -624,15 +624,34 @@ class _HistoryCard extends StatelessWidget {
                             ? theme.colorScheme.primary.withValues(alpha: 0.1)
                             : Colors.orange.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
+                        border: Border.all(
+                          color: (isDetected
+                                  ? theme.colorScheme.primary
+                                  : Colors.orange)
+                              .withValues(alpha: 0.2),
+                          width: 1,
+                        ),
                       ),
-                      child: Icon(
-                        isDetected
-                            ? Icons.check_rounded
-                            : Icons.priority_high_rounded,
-                        color: isDetected
-                            ? theme.colorScheme.primary
-                            : Colors.orange,
-                        size: 24,
+                      child: Center(
+                        child: entry.confidence != null
+                            ? Text(
+                                '${(entry.confidence! * 100).toInt()}%',
+                                style: GoogleFonts.bayon(
+                                  fontSize: 16,
+                                  color: isDetected
+                                      ? theme.colorScheme.primary
+                                      : Colors.orange,
+                                ),
+                              )
+                            : Icon(
+                                isDetected
+                                    ? Icons.check_rounded
+                                    : Icons.priority_high_rounded,
+                                color: isDetected
+                                    ? theme.colorScheme.primary
+                                    : Colors.orange,
+                                size: 20,
+                              ),
                       ),
                     ),
               title: Text(

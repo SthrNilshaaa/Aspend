@@ -140,10 +140,10 @@ class AboutPage extends StatelessWidget {
               delegate: SliverChildListDelegate([
                 _buildSectionHeader(context, 'Developer & Designer'),
                 _buildDeveloperCard(context, 'SthrKaran', 'Lead Designer',
-                    'assets/icons/Main_logo_transparent.png'),
+                    'SK'),
                 const SizedBox(height: 8),
                 _buildDeveloperCard(context, 'nilshaaa', 'Developer',
-                    'assets/icons/Main_logo_transparent.png'),
+                    'N'),
                 const SizedBox(height: 32),
                 _buildSectionHeader(context, 'Support & Legal'),
                 SettingTile(
@@ -177,9 +177,6 @@ class AboutPage extends StatelessWidget {
                     // Placeholder for store link
                   },
                 ),
-                const SizedBox(height: 32),
-                _buildSectionHeader(context, 'Buy me a coffee'),
-                _buildCoffeeSection(context),
                 const SizedBox(height: 48),
                 Center(
                   child: Column(
@@ -228,7 +225,7 @@ class AboutPage extends StatelessWidget {
   }
 
   Widget _buildDeveloperCard(
-      BuildContext context, String title, String subtitle, String image) {
+      BuildContext context, String title, String subtitle, String initials) {
     final isDark = context.watch<ThemeViewModel>().isDarkMode;
     final primaryColor = Theme.of(context).colorScheme.primary;
 
@@ -267,7 +264,16 @@ class AboutPage extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Image.asset(image, fit: BoxFit.cover),
+                child: Center(
+                  child: Text(
+                    initials,
+                    style: GoogleFonts.dmSans(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -302,162 +308,6 @@ class AboutPage extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildCoffeeSection(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildCoffeeButton(
-            context,
-            icon: Icons.coffee_rounded,
-            label: 'Buy me a coffee',
-            onTap: () =>
-                _launchUrl(context, 'https://www.buymeacoffee.com/xxxx'),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildCoffeeButton(
-            context,
-            icon: Icons.qr_code_2_rounded,
-            label: 'Support via UPI',
-            onTap: () => _showUPIDialog(context),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCoffeeButton(BuildContext context,
-      {required IconData icon,
-      required String label,
-      required VoidCallback onTap}) {
-    final primaryColor = Theme.of(context).colorScheme.primary;
-    final isDark = context.watch<ThemeViewModel>().isDarkMode;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: primaryColor.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusRegular),
-        border: Border.all(
-          color: primaryColor.withValues(alpha: 0.15),
-          width: 1,
-        ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius:
-              BorderRadius.circular(AppDimensions.borderRadiusRegular),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(icon, color: primaryColor, size: 32),
-                const SizedBox(height: 10),
-                Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white70 : Colors.black87,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showUPIDialog(BuildContext context) {
-    final primaryColor = Theme.of(context).colorScheme.primary;
-    final isDark =
-        Provider.of<ThemeViewModel>(context, listen: false).isDarkMode;
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          'Support via UPI',
-          style: GoogleFonts.dmSans(fontWeight: FontWeight.bold),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Your support helps keep Aspends free and open source.',
-              style: GoogleFonts.dmSans(fontSize: 14),
-            ),
-            const SizedBox(height: 20),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: primaryColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: primaryColor.withValues(alpha: 0.2)),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'xxxx@upi', // Placeholder
-                      style: GoogleFonts.dmSans(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: primaryColor,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.copy_rounded, size: 20),
-                    onPressed: () {
-                      Clipboard.setData(const ClipboardData(text: 'xxxx@upi'));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Text('UPI ID copied to clipboard'),
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10)),
-                        ),
-                      );
-                    },
-                  )
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            Center(
-              child: Text(
-                'Thank you for your generosity! ❤️',
-                style: GoogleFonts.dmSans(
-                  fontSize: 12,
-                  fontStyle: FontStyle.italic,
-                  color: isDark ? Colors.white38 : Colors.black38,
-                ),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Close',
-              style: GoogleFonts.dmSans(
-                  fontWeight: FontWeight.bold, color: primaryColor),
-            ),
-          )
-        ],
       ),
     );
   }

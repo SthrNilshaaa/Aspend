@@ -13,8 +13,6 @@ import '../core/const/app_strings.dart';
 import '../core/const/app_constants.dart';
 import '../core/const/app_dimensions.dart';
 import '../core/const/app_typography.dart';
-import '../core/services/native_bridge.dart';
-import '../widgets/monitoring_setup_dialog.dart';
 
 class SplashScreen extends StatefulWidget {
   final bool isDarkMode;
@@ -91,21 +89,6 @@ class _SplashScreenState extends State<SplashScreen>
     }
 
     if (mounted) {
-      // Check permissions after authentication if on-boarding is done
-      if (introCompleted && !isWidgetLaunch) {
-        final hasNotification =
-            await NativeBridge.checkNotificationPermission();
-        final hasSms = await NativeBridge.checkSmsPermission();
-
-        if (mounted && (!hasNotification || !hasSms)) {
-          // Show setup dialog if permissions missing
-          await showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) => const MonitoringSetupDialog(),
-          );
-        }
-      }
 
       if (mounted) {
         _navigateToTarget(

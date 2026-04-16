@@ -12,6 +12,8 @@ class ThemeViewModel with ChangeNotifier {
   List<String> _incomeCategories = [];
   List<String> _expenseCategories = [];
   List<String> _accounts = [];
+  String? _upiId;
+  String? _upiName;
 
   ThemeViewModel(this._repository) {
     _loadSettings();
@@ -26,6 +28,8 @@ class ThemeViewModel with ChangeNotifier {
   List<String> get incomeCategories => _incomeCategories;
   List<String> get expenseCategories => _expenseCategories;
   List<String> get accounts => _accounts;
+  String? get upiId => _upiId;
+  String? get upiName => _upiName;
 
   bool get isDarkMode {
     final brightness =
@@ -44,6 +48,8 @@ class ThemeViewModel with ChangeNotifier {
     _incomeCategories = _repository.getIncomeCategories();
     _expenseCategories = _repository.getExpenseCategories();
     _accounts = _repository.getAccounts();
+    _upiId = _repository.getUpiId();
+    _upiName = _repository.getUpiName();
 
     // Migration logic
     final legacyCats = _repository.getCustomCategories();
@@ -162,6 +168,18 @@ class ThemeViewModel with ChangeNotifier {
         await _repository.setAccounts(_accounts);
       }
     }
+    notifyListeners();
+  }
+
+  void setUpiId(String? id) async {
+    _upiId = id;
+    await _repository.setUpiId(id);
+    notifyListeners();
+  }
+
+  void setUpiName(String? name) async {
+    _upiName = name;
+    await _repository.setUpiName(name);
     notifyListeners();
   }
 }

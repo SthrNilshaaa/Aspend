@@ -41,7 +41,9 @@ dependencies:
   flutter_svg: ^2.2.3
   url_launcher: ^6.2.1
   gradient_blur: ^1.0.2+1
-  image_picker: ^1.2.1 
+  image_picker: ^1.2.1
+  speech_to_text: ^7.0.0
+  qr_flutter: ^4.1.0
 
 dev_dependencies:
   flutter_test:
@@ -70,7 +72,6 @@ flutter:
       fonts:
         - asset: assets/font/Bayon-Regular.ttf
 
-
 flutter_launcher_icons:
   ios: false
   android: true
@@ -78,9 +79,6 @@ flutter_launcher_icons:
   adaptive_icon_foreground: "assets/icons/dark_logo_splash.png"
   image_path: "assets/icons/dark_logo_splash.png"
   adaptive_icon_foreground_inset: 25
-
-
-
 
 file_picker:
   android:

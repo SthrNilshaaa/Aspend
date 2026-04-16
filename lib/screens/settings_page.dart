@@ -27,6 +27,7 @@ import 'about_page.dart';
 import '../../widgets/glass_app_bar.dart';
 import '../../widgets/settings_widgets.dart';
 import '../../widgets/monitoring_setup_dialog.dart';
+import '../core/utils/blur_utils.dart';
 import '../core/utils/transaction_utils.dart';
 import '../core/const/app_strings.dart';
 import '../core/const/app_constants.dart';
@@ -156,11 +157,12 @@ class _SettingsPageState extends State<SettingsPage> {
                       ),
                       const SizedBox(height: 24),
 
-                      TitledSection(
+                       TitledSection(
                         title: AppStrings.security,
                         icon: Icons.security,
                         children: [
                           _buildAppLockSection(context),
+                          _buildUpiSettingsTile(context),
                         ],
                       ),
                       const SizedBox(height: 24),
@@ -249,7 +251,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           const SliverToBoxAdapter(
             child: SizedBox(
-              height:  80,
+              height: 120,
             ),
           ),
         ],
@@ -299,27 +301,77 @@ class _SettingsPageState extends State<SettingsPage> {
               ],
             ),
             const SizedBox(height: 16),
-            DropdownButtonHideUnderline(
-              child: DropdownButton<ThemeMode>(
-                value: context.watch<ThemeViewModel>().themeMode,
-                isExpanded: true,
-                icon: const Icon(Icons.arrow_drop_down),
-                onChanged: (mode) {
-                  HapticFeedback.lightImpact();
-                  if (mode != null) {
-                    context.read<ThemeViewModel>().setThemeMode(mode);
-                  }
-                },
-                items: ThemeMode.values.map((mode) {
-                  final label = mode.toString().split('.').last.capitalize();
-                  return DropdownMenuItem(
-                    value: mode,
-                    child: Text(label),
-                  );
-                }).toList(),
-              ),
-            ),
+            _buildThemeSegmentedControl(context),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildThemeSegmentedControl(BuildContext context) {
+    final viewModel = context.watch<ThemeViewModel>();
+    final theme = Theme.of(context);
+    
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          _buildThemeOption(context, ThemeMode.system, Icons.settings_suggest_rounded, 'System'),
+          _buildThemeOption(context, ThemeMode.light, Icons.light_mode_rounded, 'Light'),
+          _buildThemeOption(context, ThemeMode.dark, Icons.dark_mode_rounded, 'Dark'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildThemeOption(BuildContext context, ThemeMode mode, IconData icon, String label) {
+    final viewModel = context.watch<ThemeViewModel>();
+    final isSelected = viewModel.themeMode == mode;
+    final theme = Theme.of(context);
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.mediumImpact();
+          viewModel.setThemeMode(mode);
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: isSelected ? theme.colorScheme.primary : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: isSelected ? [
+              BoxShadow(
+                color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              )
+            ] : [],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurfaceVariant,
+                size: 20,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: GoogleFonts.dmSans(
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -363,46 +415,41 @@ class _SettingsPageState extends State<SettingsPage> {
       subtitle: AppStrings.selectColor,
       onTap: () async {
         Color selectedColor = currentColor;
-        await showDialog(
+        BlurUtils.showBlurredDialog(
           context: context,
-          builder: (context) {
-            return BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-              child: AlertDialog(
-                title: const Text('Pick App Color'),
-                content: SingleChildScrollView(
-                  child: BlockPicker(
-                    pickerColor: selectedColor,
-                    onColorChanged: (color) {
-                      selectedColor = color;
-                    },
-                  ),
-                ),
-                actions: [
-                  TextButton(
-                    child: const Text('Reset'),
-                    onPressed: () {
-                      viewModel.setCustomSeedColor(null);
-                      Navigator.of(context).pop();
-                      _showSnackBar(context, 'App color reset to default!');
-                    },
-                  ),
-                  TextButton(
-                    child: const Text('Cancel'),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                  ElevatedButton(
-                    child: const Text('Select'),
-                    onPressed: () {
-                      viewModel.setCustomSeedColor(selectedColor);
-                      Navigator.of(context).pop();
-                      // Removed snackbar as it might trigger lint and is redundant with the UI update
-                    },
-                  ),
-                ],
+          child: AlertDialog(
+            title: const Text('Pick App Color'),
+            content: SingleChildScrollView(
+              child: BlockPicker(
+                pickerColor: selectedColor,
+                onColorChanged: (color) {
+                  selectedColor = color;
+                },
               ),
-            );
-          },
+            ),
+            actions: [
+              TextButton(
+                child: const Text('Reset'),
+                onPressed: () {
+                  viewModel.setCustomSeedColor(null);
+                  Navigator.of(context).pop();
+                  _showSnackBar(context, 'App color reset to default!');
+                },
+              ),
+              TextButton(
+                child: const Text('Cancel'),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              ElevatedButton(
+                child: const Text('Select'),
+                onPressed: () {
+                  viewModel.setCustomSeedColor(selectedColor);
+                  Navigator.of(context).pop();
+                  // Removed snackbar as it might trigger lint and is redundant with the UI update
+                },
+              ),
+            ],
+          ),
         );
       },
     );
@@ -448,6 +495,60 @@ class _SettingsPageState extends State<SettingsPage> {
             _showSnackBar(context, 'Error: \n$e');
           }
         },
+      ),
+    );
+  }
+
+  Widget _buildUpiSettingsTile(BuildContext context) {
+    final viewModel = context.watch<ThemeViewModel>();
+    return Column(
+      children: [
+        SettingTile(
+          icon: Icons.qr_code_2_rounded,
+          title: AppStrings.upiId,
+          subtitle: viewModel.upiId ?? AppStrings.upiIdDesc,
+          onTap: () => _showUpiInputDialog(context, 'UPI ID', viewModel.upiId,
+              (val) => viewModel.setUpiId(val)),
+        ),
+        SettingTile(
+          icon: Icons.person_pin_outlined,
+          title: AppStrings.upiName,
+          subtitle: viewModel.upiName ?? AppStrings.upiNameDesc,
+          onTap: () => _showUpiInputDialog(context, 'Display Name',
+              viewModel.upiName, (val) => viewModel.setUpiName(val)),
+        ),
+      ],
+    );
+  }
+
+  void _showUpiInputDialog(BuildContext context, String title,
+      String? currentValue, Function(String) onSave) {
+    final controller = TextEditingController(text: currentValue);
+    BlurUtils.showBlurredDialog(
+      context: context,
+      child: AlertDialog(
+        title: Text('Edit $title'),
+        content: TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            hintText: 'Enter $title',
+            border: const OutlineInputBorder(),
+          ),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            child: const Text('Cancel'),
+            onPressed: () => Navigator.pop(context),
+          ),
+          ElevatedButton(
+            child: const Text('Save'),
+            onPressed: () {
+              onSave(controller.text.trim());
+              Navigator.pop(context);
+            },
+          ),
+        ],
       ),
     );
   }
@@ -501,9 +602,23 @@ class _SettingsPageState extends State<SettingsPage> {
 
                           final notificationAccess =
                               await NativeBridge.checkNotificationPermission();
+                          final smsAccess = await NativeBridge.checkSmsPermission();
+
+                          if (!notificationAccess && !smsAccess) {
+                            if (mounted) {
+                              ErrorHandler.showErrorSnackBar(context,
+                                  'Permissions required: No notification or SMS access granted. Auto-detection cannot be enabled.');
+                              setState(() {});
+                            }
+                            return;
+                          }
+
                           if (!notificationAccess && mounted) {
                             ErrorHandler.showWarningSnackBar(context,
-                                'Enabled: Please make sure to allow Aspend in the notification access settings.');
+                                'Note: Notification access is missing. Only SMS detection will work.');
+                          } else if (!smsAccess && mounted) {
+                            ErrorHandler.showWarningSnackBar(context,
+                                'Note: SMS permission is missing. Only Notification detection will work.');
                           }
 
                           await NativeBridge.requestBatteryOptimization();
@@ -555,53 +670,6 @@ class _SettingsPageState extends State<SettingsPage> {
           },
         ),
         SettingTile(
-          icon: Icons.monitor_heart_outlined,
-          title: 'Screen Activity Monitoring',
-          subtitle: 'Detect transactions in real-time from payment apps',
-          trailing: FutureBuilder<bool>(
-            future: NativeBridge.checkAccessibilityPermission(),
-            builder: (context, snapshot) {
-              final isEnabled = snapshot.data ?? false;
-              return Switch(
-                value: isEnabled,
-                onChanged: (value) async {
-                  HapticFeedback.lightImpact();
-                  if (value) {
-                    final confirmed = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                        child: AlertDialog(
-                          title: const Text('Enable Screen Monitoring?'),
-                          content: const Text(
-                              'This allows Aspend to detect transactions as you make them in apps like GPay, PhonePe, and Paytm. Your data remains private and stays on your device.'),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context, false),
-                              child: const Text('Cancel'),
-                            ),
-                            ElevatedButton(
-                              onPressed: () => Navigator.pop(context, true),
-                              child: const Text('Enable'),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                    if (confirmed == true) {
-                      await NativeBridge.requestAccessibilityPermission();
-                    }
-                  } else {
-                    await NativeBridge
-                        .requestAccessibilityPermission(); // Opens settings to disable
-                  }
-                  if (mounted) setState(() {});
-                },
-              );
-            },
-          ),
-        ),
-        SettingTile(
           icon: Icons.bug_report_outlined,
           title: 'Test Detection Logic',
           subtitle: 'Simulate a notification to verify parsing',
@@ -635,7 +703,7 @@ class _SettingsPageState extends State<SettingsPage> {
         SettingTile(
           icon: Icons.auto_delete_outlined,
           title: 'Auto-delete undetected history',
-          subtitle: 'Delete undetected items after 24 hours',
+          subtitle: 'Delete undetected items after 12 hours',
           trailing: Switch(
             value: context.watch<ThemeViewModel>().autoDeleteUndetected,
             onChanged: (value) {
@@ -656,82 +724,79 @@ class _SettingsPageState extends State<SettingsPage> {
     
     ParsedTransaction? result;
 
-    showDialog(
+    BlurUtils.showBlurredDialog(
       context: context,
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-        child: StatefulBuilder(
-          builder: (context, setDialogState) => AlertDialog(
-            title: const Text('Test Parser Diagnostic'),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Enter a sample notification message to see how our parser handles it.',
-                    style: TextStyle(fontSize: 13),
+      child: StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Test Parser Diagnostic'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Enter a sample notification message to see how our parser handles it.',
+                  style: TextStyle(fontSize: 13),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: controller,
+                  maxLines: 3,
+                  decoration: const InputDecoration(
+                    hintText: 'Paste notification text here...',
+                    border: OutlineInputBorder(),
                   ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: controller,
-                    maxLines: 3,
-                    decoration: const InputDecoration(
-                      hintText: 'Paste notification text here...',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  if (result != null) ...[
-                    const SizedBox(height: 20),
-                    const Divider(),
-                    const SizedBox(height: 10),
-                    Text(
-                        'Status: ${result!.isBalanceUpdate ? 'Balance Sync' : result!.amount > 0 ? 'Transaction Detected' : 'No Action Detected'}',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: result!.amount > 0 || result!.isBalanceUpdate
-                                ? Colors.green
-                                : Colors.orange)),
-                    const SizedBox(height: 8),
-                    _resultItem(
-                        'Amount', '₹${result!.amount.toStringAsFixed(2)}'),
-                    _resultItem(
-                        'Type', result!.isIncome ? 'Income' : 'Expense'),
-                    _resultItem('Merchant', result!.merchant ?? 'Unknown'),
-                    _resultItem('Category', result!.category ?? 'General'),
-                    _resultItem('Bank', result!.bank ?? 'Unknown'),
-                    _resultItem('Account', result!.account ?? 'N/A'),
-                    _resultItem('Balance',
-                        result!.balance != null ? '₹${result!.balance}' : 'N/A'),
-                    _resultItem(
-                        'Confidence', '${(result!.confidence * 100).toInt()}%'),
-                  ],
+                ),
+                if (result != null) ...[
+                  const SizedBox(height: 20),
+                  const Divider(),
+                  const SizedBox(height: 10),
+                  Text(
+                      'Status: ${result!.isBalanceUpdate ? 'Balance Sync' : result!.amount > 0 ? 'Transaction Detected' : 'No Action Detected'}',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: result!.amount > 0 || result!.isBalanceUpdate
+                              ? Colors.green
+                              : Colors.orange)),
+                  const SizedBox(height: 8),
+                  _resultItem(
+                      'Amount', '₹${result!.amount.toStringAsFixed(2)}'),
+                  _resultItem(
+                      'Type', result!.isIncome ? 'Income' : 'Expense'),
+                  _resultItem('Merchant', result!.merchant ?? 'Unknown'),
+                  _resultItem('Category', result!.category ?? 'General'),
+                  _resultItem('Bank', result!.bank ?? 'Unknown'),
+                  _resultItem('Account', result!.account ?? 'N/A'),
+                  _resultItem('Balance',
+                      result!.balance != null ? '₹${result!.balance}' : 'N/A'),
+                  _resultItem(
+                      'Confidence', '${(result!.confidence * 100).toInt()}%'),
                 ],
-              ),
+              ],
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Close'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  final text = controller.text;
-                  final parsed = TransactionParser.parse(text,
-                      packageName: 'com.test.bank');
-                  setDialogState(() {
-                    result = parsed;
-                  });
-
-                  if (parsed == null) {
-                    ErrorHandler.showErrorSnackBar(
-                        context, 'Pattern not recognized');
-                  }
-                },
-                child: const Text('Parse Text'),
-              ),
-            ],
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final text = controller.text;
+                final parsed = TransactionParser.parse(text,
+                    packageName: 'com.test.bank');
+                setDialogState(() {
+                  result = parsed;
+                });
+
+                if (parsed == null) {
+                  ErrorHandler.showErrorSnackBar(
+                      context, 'Pattern not recognized');
+                }
+              },
+              child: const Text('Parse Text'),
+            ),
+          ],
         ),
       ),
     );
@@ -903,119 +968,113 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _showManageItemsDialog(BuildContext context, String type) {
-    showModalBottomSheet(
+    BlurUtils.showBlurredBottomSheet(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: 0.3),
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: StatefulBuilder(
-          builder: (context, setStateDialog) {
-            final themeViewModel = context.watch<ThemeViewModel>();
-            final items = (type == 'Income')
-                ? themeViewModel.incomeCategories
-                : (type == 'Expense')
-                    ? themeViewModel.expenseCategories
-                    : themeViewModel.accounts;
+      child: StatefulBuilder(
+        builder: (context, setStateDialog) {
+          final themeViewModel = context.watch<ThemeViewModel>();
+          final items = (type == 'Income')
+              ? themeViewModel.incomeCategories
+              : (type == 'Expense')
+                  ? themeViewModel.expenseCategories
+                  : themeViewModel.accounts;
 
-            return Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).scaffoldBackgroundColor,
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(24)),
-              ),
-              padding: const EdgeInsets.all(24),
-              height: MediaQuery.of(context).size.height * 0.75,
-              child: Column(
-                children: [
-                  Text('Manage ${type}s',
-                      style: GoogleFonts.dmSans(
-                          fontSize: 18, fontWeight: FontWeight.bold)),
-                  const Divider(),
-                  Expanded(
-                    child: items.isEmpty
-                        ? Center(
-                            child: Text(
-                              'No ${type.toLowerCase()}s found.',
-                              style: GoogleFonts.dmSans(color: Colors.grey),
-                            ),
-                          )
-                        : ListView.builder(
-                            itemCount: items.length,
-                            itemBuilder: (context, index) {
-                              final item = items[index];
-                              return ListTile(
-                                leading: (type == 'Income' || type == 'Expense')
-                                    ? Container(
-                                        padding: const EdgeInsets.all(8),
-                                        decoration: BoxDecoration(
-                                          color:
-                                              TransactionUtils.getCategoryColor(
-                                                      item)
-                                                  .withValues(alpha: 0.1),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: SvgPicture.asset(
-                                          TransactionUtils.getCategorySvg(item),
-                                          colorFilter: ColorFilter.mode(
-                                              TransactionUtils.getCategoryColor(
-                                                  item),
-                                              BlendMode.srcIn),
-                                          width: 18,
-                                          height: 18,
-                                        ),
-                                      )
-                                    : null,
-                                title: Text(item, style: GoogleFonts.dmSans()),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.edit_outlined,
-                                          size: 20),
-                                      onPressed: () => _showEditItemDialog(
-                                          context,
-                                          item,
-                                          type,
-                                          (n) => setStateDialog(() {})),
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete_outline,
-                                          color: Colors.red, size: 20),
-                                      onPressed: () {
-                                        themeViewModel.removeItem(item, type);
-                                        setStateDialog(() {});
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
+          return Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            padding: const EdgeInsets.all(24),
+            height: MediaQuery.of(context).size.height * 0.75,
+            child: Column(
+              children: [
+                Text('Manage ${type}s',
+                    style: GoogleFonts.dmSans(
+                        fontSize: 18, fontWeight: FontWeight.bold)),
+                const Divider(),
+                Expanded(
+                  child: items.isEmpty
+                      ? Center(
+                          child: Text(
+                            'No ${type.toLowerCase()}s found.',
+                            style: GoogleFonts.dmSans(color: Colors.grey),
                           ),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
-                      ),
-                      icon: const Icon(Icons.add),
-                      label: Text('Add $type',
-                          style:
-                              GoogleFonts.dmSans(fontWeight: FontWeight.bold)),
-                      onPressed: () => _showEditItemDialog(
-                          context, null, type, (n) => setStateDialog(() {})),
+                        )
+                      : ListView.builder(
+                          itemCount: items.length,
+                          itemBuilder: (context, index) {
+                            final item = items[index];
+                            return ListTile(
+                              leading: (type == 'Income' || type == 'Expense')
+                                  ? Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            TransactionUtils.getCategoryColor(
+                                                    item)
+                                                .withValues(alpha: 0.1),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: SvgPicture.asset(
+                                        TransactionUtils.getCategorySvg(item),
+                                        colorFilter: ColorFilter.mode(
+                                            TransactionUtils.getCategoryColor(
+                                                item),
+                                            BlendMode.srcIn),
+                                        width: 18,
+                                        height: 18,
+                                      ),
+                                    )
+                                  : null,
+                              title: Text(item, style: GoogleFonts.dmSans()),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit_outlined,
+                                        size: 20),
+                                    onPressed: () => _showEditItemDialog(
+                                        context,
+                                        item,
+                                        type,
+                                        (n) => setStateDialog(() {})),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline,
+                                        color: Colors.red, size: 20),
+                                    onPressed: () {
+                                      themeViewModel.removeItem(item, type);
+                                      setStateDialog(() {});
+                                    },
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                     ),
+                    icon: const Icon(Icons.add),
+                    label: Text('Add $type',
+                        style:
+                            GoogleFonts.dmSans(fontWeight: FontWeight.bold)),
+                    onPressed: () => _showEditItemDialog(
+                        context, null, type, (n) => setStateDialog(() {})),
                   ),
-                ],
-              ),
-            );
-          },
-        ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -1024,79 +1083,73 @@ class _SettingsPageState extends State<SettingsPage> {
       BuildContext context, String? old, String type, Function(String) onDone) {
     final controller = TextEditingController(text: old);
 
-    showModalBottomSheet(
+    BlurUtils.showBlurredBottomSheet(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: 0.3),
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Padding(
-          padding:
-              EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).scaffoldBackgroundColor,
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(24)),
-            ),
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('${old == null ? 'Add' : 'Edit'} $type',
-                    style: GoogleFonts.dmSans(
-                        fontSize: 18, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 24),
-                TextField(
-                  controller: controller,
-                  autofocus: true,
-                  decoration: InputDecoration(
-                    hintText: 'Enter name...',
-                    labelText: '$type Name',
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding:
+            EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('${old == null ? 'Add' : 'Edit'} $type',
+                  style: GoogleFonts.dmSans(
+                      fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 24),
+              TextField(
+                controller: controller,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: 'Enter name...',
+                  labelText: '$type Name',
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+                textCapitalization: TextCapitalization.words,
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancel'),
+                    ),
                   ),
-                  textCapitalization: TextCapitalization.words,
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancel'),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                        ),
-                        onPressed: () {
-                          final val = controller.text.trim();
-                          if (val.isNotEmpty) {
-                            final themeViewModel =
-                                context.read<ThemeViewModel>();
-                            if (old == null) {
-                              themeViewModel.addItem(val, type);
-                            } else {
-                              themeViewModel.updateItem(old, val, type);
-                            }
-                            onDone(val);
-                            Navigator.pop(context);
+                      onPressed: () {
+                        final val = controller.text.trim();
+                        if (val.isNotEmpty) {
+                          final themeViewModel =
+                              context.read<ThemeViewModel>();
+                          if (old == null) {
+                            themeViewModel.addItem(val, type);
+                          } else {
+                            themeViewModel.updateItem(old, val, type);
                           }
-                        },
-                        child: const Text('Save'),
-                      ),
+                          onDone(val);
+                          Navigator.pop(context);
+                        }
+                      },
+                      child: const Text('Save'),
                     ),
-                  ],
-                ),
-              ],
-            ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
@@ -1156,37 +1209,34 @@ class _SettingsPageState extends State<SettingsPage> {
     final viewModel = context.read<ThemeViewModel>();
     final controller =
         TextEditingController(text: viewModel.monthlyBudget.toString());
-    showDialog(
+    BlurUtils.showBlurredDialog(
       context: context,
-      builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-        child: AlertDialog(
-          title: const Text('Set Monthly Budget'),
-          content: TextField(
-            controller: controller,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: 'Budget Amount',
-              prefixText: '₹ ',
-            ),
+      child: AlertDialog(
+        title: const Text('Set Monthly Budget'),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(
+            labelText: 'Budget Amount',
+            prefixText: '₹ ',
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final val = double.tryParse(controller.text) ?? 0.0;
-                viewModel.setMonthlyBudget(val);
-                if (!mounted) return;
-                Navigator.pop(context);
-                ErrorHandler.showSuccessSnackBar(context, 'Budget updated!');
-              },
-              child: const Text('Save'),
-            ),
-          ],
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final val = double.tryParse(controller.text) ?? 0.0;
+              viewModel.setMonthlyBudget(val);
+              if (!mounted) return;
+              Navigator.pop(context);
+              ErrorHandler.showSuccessSnackBar(context, 'Budget updated!');
+            },
+            child: const Text('Save'),
+          ),
+        ],
       ),
     );
   }
@@ -1211,75 +1261,72 @@ class _SettingsPageState extends State<SettingsPage> {
         Provider.of<ThemeViewModel>(context, listen: false).isDarkMode;
     final theme = Theme.of(context);
 
-    showDialog(
+    BlurUtils.showBlurredDialog(
       context: context,
-      builder: (_) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-        child: AlertDialog(
-          backgroundColor: theme.colorScheme.surface,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Row(
-            children: [
-              const Icon(Icons.warning, color: Colors.red, size: 24),
-              const SizedBox(width: 8),
-              Text(
-                'Confirm Delete',
-                style: GoogleFonts.dmSans(
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black,
-                ),
+      child: AlertDialog(
+        backgroundColor: theme.colorScheme.surface,
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(Icons.warning, color: Colors.red, size: 24),
+            const SizedBox(width: 8),
+            Text(
+              'Confirm Delete',
+              style: GoogleFonts.dmSans(
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : Colors.black,
               ),
-            ],
-          ),
-          content: Text(
-            'Are you sure you want to delete all transactions and reset your balance? This action cannot be undone.',
-            style: GoogleFonts.dmSans(
-              color: isDark ? Colors.white70 : Colors.black87,
-            ),
-          ),
-          actions: [
-            TextButton(
-              child: Text(
-                'Cancel',
-                style: TextStyle(color: theme.colorScheme.primary),
-              ),
-              onPressed: () {
-                HapticFeedback.lightImpact();
-                Navigator.pop(context);
-              },
-            ),
-            ElevatedButton.icon(
-              icon: const Icon(Icons.delete),
-              label: const Text('Delete All'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-              ),
-              onPressed: () async {
-                HapticFeedback.lightImpact();
-                try {
-                  final box = await Hive.openBox<double>('balanceBox');
-                  await box.clear();
-                  if (!context.mounted) return;
-                  await Provider.of<TransactionViewModel>(context,
-                          listen: false)
-                      .deleteAllData();
-                  await Provider.of<PersonViewModel>(context, listen: false)
-                      .deleteAllData();
-                  if (!context.mounted) return;
-                  Navigator.pop(context);
-                  _showSnackBar(context, 'All data deleted successfully!');
-                } catch (e) {
-                  if (!context.mounted) return;
-                  Navigator.pop(context);
-                  _showSnackBar(
-                      context, 'Failed to delete all data. Please try again.');
-                }
-              },
             ),
           ],
         ),
+        content: Text(
+          'Are you sure you want to delete all transactions and reset your balance? This action cannot be undone.',
+          style: GoogleFonts.dmSans(
+            color: isDark ? Colors.white70 : Colors.black87,
+          ),
+        ),
+        actions: [
+          TextButton(
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: theme.colorScheme.primary),
+            ),
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              Navigator.pop(context);
+            },
+          ),
+          ElevatedButton.icon(
+            icon: const Icon(Icons.delete),
+            label: const Text('Delete All'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () async {
+              HapticFeedback.lightImpact();
+              try {
+                final box = await Hive.openBox<double>('balanceBox');
+                await box.clear();
+                if (!context.mounted) return;
+                await Provider.of<TransactionViewModel>(context,
+                        listen: false)
+                    .deleteAllData();
+                await Provider.of<PersonViewModel>(context, listen: false)
+                    .deleteAllData();
+                if (!context.mounted) return;
+                Navigator.pop(context);
+                _showSnackBar(context, 'All data deleted successfully!');
+              } catch (e) {
+                if (!context.mounted) return;
+                Navigator.pop(context);
+                _showSnackBar(
+                    context, 'Failed to delete all data. Please try again.');
+              }
+            },
+          ),
+        ],
       ),
     );
   }
@@ -1289,72 +1336,69 @@ class _SettingsPageState extends State<SettingsPage> {
         Provider.of<ThemeViewModel>(context, listen: false).isDarkMode;
     final theme = Theme.of(context);
 
-    showDialog(
+    BlurUtils.showBlurredDialog(
       context: context,
-      builder: (_) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-        child: AlertDialog(
-          backgroundColor: theme.colorScheme.surface,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Row(
-            children: [
-              const Icon(Icons.refresh, color: Colors.orange, size: 24),
-              const SizedBox(width: 8),
-              Text(
-                'Reset Intro',
-                style: GoogleFonts.dmSans(
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black,
-                ),
+      child: AlertDialog(
+        backgroundColor: theme.colorScheme.surface,
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(Icons.refresh, color: Colors.orange, size: 24),
+            const SizedBox(width: 8),
+            Text(
+              'Reset Intro',
+              style: GoogleFonts.dmSans(
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : Colors.black,
               ),
-            ],
-          ),
-          content: Text(
-            'This will show the intro screens again the next time you open the app. Your data will remain unchanged.',
-            style: GoogleFonts.dmSans(
-              color: isDark ? Colors.white70 : Colors.black87,
-            ),
-          ),
-          actions: [
-            TextButton(
-              child: Text(
-                'Cancel',
-                style: TextStyle(color: theme.colorScheme.primary),
-              ),
-              onPressed: () {
-                HapticFeedback.lightImpact();
-                Navigator.pop(context);
-              },
-            ),
-            ElevatedButton.icon(
-              icon: const Icon(Icons.refresh),
-              label: const Text('Reset'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-                foregroundColor: Colors.white,
-              ),
-              onPressed: () async {
-                HapticFeedback.lightImpact();
-                try {
-                  final box = await Hive.openBox<double>('balanceBox');
-                  await box.clear();
-                  // Reset introCompleted flag in settings box
-                  final settingsBox = await Hive.openBox('settings');
-                  await settingsBox.put('introCompleted', false);
-                  if (!context.mounted) return;
-                  Navigator.pop(context);
-                  _showSnackBar(context, 'Intro reset successfully!');
-                } catch (e) {
-                  if (!context.mounted) return;
-                  Navigator.pop(context);
-                  _showSnackBar(
-                      context, 'Failed to reset intro. Please try again.\n$e');
-                }
-              },
             ),
           ],
         ),
+        content: Text(
+          'This will show the intro screens again the next time you open the app. Your data will remain unchanged.',
+          style: GoogleFonts.dmSans(
+            color: isDark ? Colors.white70 : Colors.black87,
+          ),
+        ),
+        actions: [
+          TextButton(
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: theme.colorScheme.primary),
+            ),
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              Navigator.pop(context);
+            },
+          ),
+          ElevatedButton.icon(
+            icon: const Icon(Icons.refresh),
+            label: const Text('Reset'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () async {
+              HapticFeedback.lightImpact();
+              try {
+                final box = await Hive.openBox<double>('balanceBox');
+                await box.clear();
+                // Reset introCompleted flag in settings box
+                final settingsBox = await Hive.openBox('settings');
+                await settingsBox.put('introCompleted', false);
+                if (!context.mounted) return;
+                Navigator.pop(context);
+                _showSnackBar(context, 'Intro reset successfully!');
+              } catch (e) {
+                if (!context.mounted) return;
+                Navigator.pop(context);
+                _showSnackBar(
+                    context, 'Failed to reset intro. Please try again.\n$e');
+              }
+            },
+          ),
+        ],
       ),
     );
   }

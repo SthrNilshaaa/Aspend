@@ -20,6 +20,8 @@ class AppConstants {
   static const String accountsKey = 'accounts_list';
   static const String ignoredPatternsKey = 'ignoredPatterns';
   static const String autoSelectionFirstTimeKey = 'isFirstTimeAutoSelection';
+  static const String upiIdKey = 'upiId';
+  static const String upiNameKey = 'upiName';
 
   // Animation Durations
   static const Duration splashEntryDuration = Duration(milliseconds: 1000);

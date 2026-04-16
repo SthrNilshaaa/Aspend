@@ -11,16 +11,40 @@ class TransactionUtils {
         return SvgAppIcons.transportIcon;
       case 'flipkart':
         return SvgAppIcons.shoppingIcon;
+      case 'shopping':
+        return SvgAppIcons.shoppingIcon;
+      case 'amazon':
+        return SvgAppIcons.shoppingIcon;
+      case 'education':
+        return SvgAppIcons.educationIcon;
+      case 'groceries':
+        return SvgAppIcons.groceriesIcon;
+      case 'charity':
+      case 'carity':
+        return SvgAppIcons.charityIcon;
+      case 'loan repayment':
+        return SvgAppIcons.loanRepaymentIcon;
+      case 'loan':
+        return SvgAppIcons.loanIcon;
+      case 'other':
+        return SvgAppIcons.otherIcon;
+      case 'freelance':
+        return SvgAppIcons.freelanceIcon;
+      case 'gift':
+        return SvgAppIcons.giftIcon;
+      case 'cashback':
+        return SvgAppIcons.cashbackIcon;
+      case 'business':
+        return SvgAppIcons.businessIcon;
       case 'bills':
         return SvgAppIcons.billIcon;
       case 'entertainment':
         return SvgAppIcons.entertainmentIcon;
       case 'health':
         return SvgAppIcons.healthIcon;
+      case 'gift':
       case 'gifts':
         return SvgAppIcons.giftIcon;
-      case 'groceries':
-        return SvgAppIcons.groceriesIcon;
       case 'bonus':
         return SvgAppIcons.giftIcon;
       case 'fuel':
@@ -43,13 +67,15 @@ class TransactionUtils {
       case 'tax':
         return SvgAppIcons.taxIcon;
       case 'salary':
-        return SvgAppIcons.insuranceIcon;
-      case 'freelance':
+        return SvgAppIcons.salaryIcon;
       case 'investment':
+        return SvgAppIcons.investmentIcon;
       case 'income':
-      case 'interest':
-      case 'refund':
         return SvgAppIcons.incomeIcon;
+      case 'interest':
+        return SvgAppIcons.interestIcon;
+      case 'refund':
+        return SvgAppIcons.refundIcon;
       default:
         return SvgAppIcons.genericCategoryIcon;
     }
