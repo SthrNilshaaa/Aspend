@@ -2,11 +2,8 @@ import 'dart:async';
 
 import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
-=======
 import '../core/const/app_colors.dart';
 import '../core/const/app_dimensions.dart';
->>>>>>> master
 
 class _Cloud {
   static const _light = Color(0xFF96CDDE);
@@ -14,17 +11,10 @@ class _Cloud {
   static const _normal = Color(0xFFACCFDA);
 
   static const _assets = [
-<<<<<<< HEAD
-    "assets/plane_indicator/cloud1.png",
-    "assets/plane_indicator/cloud2.png",
-    "assets/plane_indicator/cloud3.png",
-    "assets/plane_indicator/cloud4.png",
-=======
     'assets/plane_indicator/cloud1.png',
     'assets/plane_indicator/cloud2.png',
     'assets/plane_indicator/cloud3.png',
     'assets/plane_indicator/cloud4.png',
->>>>>>> master
   ];
 
   AnimationController? controller;
@@ -191,21 +181,13 @@ class _PlaneIndicatorState extends State<PlaneIndicator>
             width: 172,
             height: 50,
             decoration: BoxDecoration(
-<<<<<<< HEAD
-              color: Colors.blue.shade600,
-=======
               color: AppColors.primaryGreen,
->>>>>>> master
               borderRadius: BorderRadius.circular(25),
             ),
             child: const Icon(
               Icons.flight,
               color: Colors.white,
-<<<<<<< HEAD
-              size: 30,
-=======
               size: AppDimensions.iconSizeXLarge + 2,
->>>>>>> master
             ),
           ),
           builder: (BuildContext context, Widget? child) {
@@ -279,15 +261,10 @@ class _PlaneIndicatorState extends State<PlaneIndicator>
                                         begin: Alignment.topCenter,
                                         end: Alignment.bottomCenter,
                                         colors: [
-<<<<<<< HEAD
-                                          Colors.blue[100]!.withOpacity(.2),
-                                          Colors.blue[100]!.withOpacity(0.0)
-=======
                                           AppColors.primaryGreen
                                               .withValues(alpha: .2),
                                           AppColors.primaryGreen
                                               .withValues(alpha: 0.0)
->>>>>>> master
                                         ],
                                       ),
                                     ),

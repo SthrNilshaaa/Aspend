@@ -29,15 +29,18 @@ class BackupService {
       row.add(tx.isIncome ? "Income" : "Expense");
       rows.add(row);
     }
-
-    String csvData = const ListToCsvConverter().convert(rows);
+    String csvData = Csv().encode(rows);
     final dir = await getTemporaryDirectory();
     final file = File(
         '${dir.path}/aspends_transactions_${DateTime.now().millisecondsSinceEpoch}.csv');
     await file.writeAsString(csvData);
 
-    await Share.shareXFiles([XFile(file.path)],
-        text: 'Aspends Transactions Export (CSV)');
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(file.path)],
+        text: 'Aspends Transactions Export (CSV)',
+      ),
+    );
   }
 
   static Future<void> exportAllDataJsonAndShare() async {
@@ -63,13 +66,17 @@ class BackupService {
         '${dir.path}/aspends_full_backup_${DateTime.now().millisecondsSinceEpoch}.json');
     await file.writeAsString(jsonStr);
 
-    await Share.shareXFiles([XFile(file.path)],
-        text: 'Aspends Full Backup (JSON)');
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(file.path)],
+        text: 'Aspends Full Backup (JSON)',
+      ),
+    );
   }
 
   static Future<bool> importDataFromJson(BuildContext context) async {
     try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
+      FilePickerResult? result = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['json'],
       );

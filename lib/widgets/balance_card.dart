@@ -1,13 +1,3 @@
-<<<<<<< HEAD
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
-
-import '../view_models/theme_view_model.dart';
-import '../view_models/transaction_view_model.dart';
-import '../utils/responsive_utils.dart';
-=======
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -22,7 +12,6 @@ import '../core/const/app_dimensions.dart';
 import '../core/const/app_typography.dart';
 import '../core/const/app_strings.dart';
 import '../core/const/app_assets.dart';
->>>>>>> master
 
 class BalanceCard extends StatefulWidget {
   final double balance;
@@ -71,18 +60,6 @@ class _BalanceCardState extends State<BalanceCard>
 
   @override
   Widget build(BuildContext context) {
-<<<<<<< HEAD
-    final isPositive = widget.balance >= 0;
-    final theme = Theme.of(context);
-    final themeViewModel = context.watch<ThemeViewModel>();
-    final isDark = themeViewModel.isDarkMode;
-    final useAdaptive = themeViewModel.useAdaptiveColor;
-
-    // Get transaction statistics
-    final transactionViewModel = context.watch<TransactionViewModel>();
-    final totalIncome = transactionViewModel.totalIncome;
-    final totalExpenses = transactionViewModel.totalSpend;
-=======
     Theme.of(context);
     // Optimized rebuilds with select
     final isDark = context.select<ThemeViewModel, bool>((vm) => vm.isDarkMode);
@@ -118,7 +95,6 @@ class _BalanceCardState extends State<BalanceCard>
           ? AppColors.balanceCardBorderDarkModePositive
           : AppColors.balanceCardBorderLightModePositive;
     }
->>>>>>> master
 
     return GestureDetector(
       onLongPress: () {
@@ -133,221 +109,6 @@ class _BalanceCardState extends State<BalanceCard>
         scale: _scaleAnimation,
         child: FadeTransition(
           opacity: _fadeAnimation,
-<<<<<<< HEAD
-          child: Container(
-            margin: ResponsiveUtils.getResponsiveEdgeInsets(context,
-                horizontal: 8, vertical: 8),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  theme.colorScheme.primaryContainer,
-                  theme.colorScheme.primaryContainer
-                ],
-              ),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-            child: Padding(
-              padding: ResponsiveUtils.getResponsiveEdgeInsets(context,
-                  horizontal: 16, vertical: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Current Balance',
-                        style: GoogleFonts.nunito(
-                          fontSize: ResponsiveUtils.getResponsiveFontSize(
-                              context,
-                              mobile: 16,
-                              tablet: 18,
-                              desktop: 20),
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? Colors.white : Colors.black87,
-                        ),
-                      ),
-                      Icon(
-                        Icons.account_balance_wallet,
-                        color: isDark ? Colors.white70 : Colors.black54,
-                        size: ResponsiveUtils.getResponsiveIconSize(context,
-                            mobile: 20, tablet: 24, desktop: 28),
-                      ),
-                    ],
-                  ),
-                  SizedBox(
-                      height: ResponsiveUtils.getResponsiveSpacing(context,
-                          mobile: 10, tablet: 12, desktop: 16)),
-
-                  // Balance Amount
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          '₹${widget.balance.toStringAsFixed(2)}',
-                          style: GoogleFonts.nunito(
-                            fontSize: ResponsiveUtils.getResponsiveFontSize(
-                                context,
-                                mobile: 28,
-                                tablet: 32,
-                                desktop: 36),
-                            fontWeight: FontWeight.bold,
-                            color: isPositive
-                                ? Colors.green.shade700
-                                : Colors.red.shade700,
-                          ),
-                        ),
-                      ),
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: ResponsiveUtils.getResponsiveSpacing(
-                              context,
-                              mobile: 10,
-                              tablet: 12,
-                              desktop: 14),
-                          vertical: ResponsiveUtils.getResponsiveSpacing(
-                              context,
-                              mobile: 4,
-                              tablet: 6,
-                              desktop: 8),
-                        ),
-                        decoration: BoxDecoration(
-                          color: isPositive
-                              ? Colors.green.withOpacity(0.2)
-                              : Colors.red.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(
-                          isPositive ? 'Positive' : 'Negative',
-                          style: TextStyle(
-                            fontSize: ResponsiveUtils.getResponsiveFontSize(
-                                context,
-                                mobile: 10,
-                                tablet: 12,
-                                desktop: 14),
-                            fontWeight: FontWeight.w600,
-                            color: isPositive
-                                ? Colors.green.shade700
-                                : Colors.red.shade700,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-
-                  // Quick Stats
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildStatItem(
-                          'Income',
-                          totalIncome,
-                          Colors.green,
-                          Icons.trending_up,
-                          isDark,
-                        ),
-                      ),
-                      SizedBox(
-                          width: ResponsiveUtils.getResponsiveSpacing(context,
-                              mobile: 8, tablet: 12, desktop: 16)),
-                      Expanded(
-                        child: _buildStatItem(
-                          'Expenses',
-                          totalExpenses,
-                          Colors.red,
-                          Icons.trending_down,
-                          isDark,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatItem(
-      String label, double amount, Color color, IconData icon, bool isDark) {
-    return Container(
-      padding: EdgeInsets.all(ResponsiveUtils.getResponsiveSpacing(context,
-          mobile: 8, tablet: 10, desktop: 12)),
-      decoration: BoxDecoration(
-        color: isDark
-            ? Colors.black.withOpacity(0.2)
-            : Colors.white.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: color.withOpacity(0.3),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: ResponsiveUtils.getResponsiveIconSize(context,
-                    mobile: 20, tablet: 24, desktop: 28),
-                height: ResponsiveUtils.getResponsiveIconSize(context,
-                    mobile: 20, tablet: 24, desktop: 28),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Icon(
-                  icon,
-                  size: ResponsiveUtils.getResponsiveIconSize(context,
-                      mobile: 12, tablet: 14, desktop: 16),
-                  color: color,
-                ),
-              ),
-              SizedBox(
-                  width: ResponsiveUtils.getResponsiveSpacing(context,
-                      mobile: 6, tablet: 8, desktop: 10)),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: ResponsiveUtils.getResponsiveFontSize(context,
-                      mobile: 10, tablet: 12, desktop: 14),
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white70 : Colors.black87,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(
-              height: ResponsiveUtils.getResponsiveSpacing(context,
-                  mobile: 4, tablet: 6, desktop: 8)),
-          Text(
-            '₹${amount.toStringAsFixed(2)}',
-            style: TextStyle(
-              fontSize: ResponsiveUtils.getResponsiveFontSize(context,
-                  mobile: 12, tablet: 14, desktop: 16),
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-        ],
-=======
           child: Stack(children: [
             Padding(
               padding: const EdgeInsets.symmetric(
@@ -596,7 +357,6 @@ class _BalanceCardState extends State<BalanceCard>
       
           ]),
         ),
->>>>>>> master
       ),
     );
   }
@@ -607,43 +367,6 @@ class _BalanceCardState extends State<BalanceCard>
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-<<<<<<< HEAD
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: theme.dialogBackgroundColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'Balance Details',
-              style: GoogleFonts.nunito(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.black,
-              ),
-            ),
-            const SizedBox(height: 20),
-            // Add more detailed balance information here
-            ListTile(
-              leading: const Icon(Icons.info_outline),
-              title: const Text('Tap and hold to edit balance'),
-              subtitle: const Text('Long press the balance card'),
-              onTap: () => Navigator.pop(context),
-            ),
-          ],
-=======
       builder: (context) => BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
@@ -698,98 +421,18 @@ class _BalanceCardState extends State<BalanceCard>
                       AppDimensions.paddingXSmall),
             ],
           ),
->>>>>>> master
         ),
       ),
     );
   }
 
   void _showEditBalanceDialog(BuildContext context, bool isDark) {
-<<<<<<< HEAD
-    HapticFeedback.lightImpact();
-=======
->>>>>>> master
     final controller =
         TextEditingController(text: widget.balance.toStringAsFixed(2));
     final theme = Theme.of(context);
 
     showDialog(
       context: context,
-<<<<<<< HEAD
-      builder: (_) => AlertDialog(
-        backgroundColor: theme.dialogBackgroundColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Icon(Icons.edit, color: theme.colorScheme.primary),
-            const SizedBox(width: 8),
-            Text(
-              "Edit Balance",
-              style: TextStyle(
-                color: isDark ? Colors.white : Colors.black,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        content: TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-          decoration: InputDecoration(
-            labelText: "New Balance",
-            prefixText: "₹ ",
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            filled: true,
-            fillColor: theme.colorScheme.surface,
-          ),
-          style: TextStyle(color: isDark ? Colors.white : Colors.black),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              "Cancel",
-              style: TextStyle(color: theme.colorScheme.primary),
-            ),
-          ),
-          ElevatedButton.icon(
-            icon: const Icon(Icons.save),
-            label: const Text("Save"),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: theme.colorScheme.primary,
-              foregroundColor: Colors.white,
-            ),
-            onPressed: () {
-              final newBalance = double.tryParse(controller.text);
-              if (newBalance != null) {
-                widget.onBalanceUpdate(newBalance);
-                Navigator.pop(context);
-
-                // Show success message
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text("Balance updated successfully!"),
-                    backgroundColor: Colors.green,
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Please enter a valid number"),
-                    backgroundColor: Colors.red,
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-              }
-            },
-=======
       builder: (_) => BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: AlertDialog(
@@ -916,15 +559,12 @@ class CurrencyText extends StatelessWidget {
               // color: isNegative ? AppColors.accentRed : AppColors.accentGreen,
               letterSpacing: 1,
             ),
->>>>>>> master
           ),
         ],
       ),
     );
   }
 }
-<<<<<<< HEAD
-=======
 
 class StatItem extends StatelessWidget {
   final String label;
@@ -1027,4 +667,3 @@ class DecorativeLine extends StatelessWidget {
     );
   }
 }
->>>>>>> master

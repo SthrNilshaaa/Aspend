@@ -38,7 +38,7 @@ class PersonBackupHelper {
 
   static Future<void> importFromJson(BuildContext context) async {
     try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
+      FilePickerResult? result = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['json'],
       );

@@ -8,7 +8,7 @@ import 'package:hive/hive.dart';
 
 class DataImporter {
   static Future<void> importFromJson(BuildContext context) async {
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['json'],
     );
