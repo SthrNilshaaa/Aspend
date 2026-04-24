@@ -52,6 +52,7 @@ app.*.map.json
 # Tooling specific
 .code-review-graph/
 .claude/
+.lib/
 graphify-out/
 
 # Backup and temporary files
