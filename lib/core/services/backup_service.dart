@@ -41,6 +41,8 @@ class BackupService {
         text: 'Aspends Transactions Export (CSV)',
       ),
     );
+    await SharePlus.instance.share(ShareParams(files: [XFile(file.path)],
+        text: 'Aspends Transactions Export (CSV)'));
   }
 
   static Future<void> exportAllDataJsonAndShare() async {
@@ -71,7 +73,7 @@ class BackupService {
         files: [XFile(file.path)],
         text: 'Aspends Full Backup (JSON)',
       ),
-    );
+    ));
   }
 
   static Future<bool> importDataFromJson(BuildContext context) async {

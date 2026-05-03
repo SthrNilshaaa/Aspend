@@ -166,9 +166,9 @@ class _RootNavigationState extends State<RootNavigation>
                           gradient: LinearGradient(
                             colors: [
                               isDark
-                                  ? Colors.black.withOpacity(
-                                      0.05) //theme.primaryColor.withOpacity(0.5)
-                                  : Colors.white.withOpacity(0.05),
+                                  ? Colors.black.withValues(
+                                      alpha: 0.05) //theme.primaryColor.withValues(alpha: 0.5)
+                                  : Colors.white.withValues(alpha: 0.05),
                               Colors.transparent,
                             ],
                             end: Alignment.topCenter,

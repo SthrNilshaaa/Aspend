@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import '../core/services/speech_service.dart';
 import '../core/utils/voice_parser.dart';
-import '../core/const/app_dimensions.dart';
 import '../core/const/app_typography.dart';
 import '../core/utils/blur_utils.dart';
 import 'add_transaction_dialog.dart';
@@ -19,7 +18,6 @@ class VoiceInputOverlay extends StatefulWidget {
 class _VoiceInputOverlayState extends State<VoiceInputOverlay> with SingleTickerProviderStateMixin {
   final SpeechService _speechService = SpeechService();
   String _currentText = "Listening...";
-  bool _isInitialized = false;
   late AnimationController _pulseController;
 
   @override
@@ -36,7 +34,6 @@ class _VoiceInputOverlayState extends State<VoiceInputOverlay> with SingleTicker
   Future<void> _initAndStart() async {
     final success = await _speechService.initSpeech();
     if (success) {
-      if (mounted) setState(() => _isInitialized = true);
       _startRecording();
     } else {
       if (mounted) {

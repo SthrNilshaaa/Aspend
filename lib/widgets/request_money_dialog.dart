@@ -66,7 +66,7 @@ class RequestMoneyDialog extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppDimensions.borderRadiusXLarge),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -87,7 +87,7 @@ class RequestMoneyDialog extends StatelessWidget {
               'Requesting from $personName',
               style: GoogleFonts.dmSans(
                 fontSize: 14,
-                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
             const SizedBox(height: 24),
@@ -121,7 +121,7 @@ class RequestMoneyDialog extends StatelessWidget {
               'UPI ID: $upiId',
               style: GoogleFonts.dmSans(
                 fontSize: 12,
-                color: theme.colorScheme.onSurface.withOpacity(0.5),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
               ),
             ),
             const SizedBox(height: 32),
@@ -188,11 +188,11 @@ class RequestMoneyDialog extends StatelessWidget {
       final file = await File('${tempDir.path}/upi_qr_${DateTime.now().millisecondsSinceEpoch}.png').create();
       await file.writeAsBytes(pngBytes);
 
-      final result = await Share.shareXFiles(
-        [XFile(file.path)],
+      final result = await SharePlus.instance.share(ShareParams(
+        files: [XFile(file.path)],
         text: 'Pay via UPI QR for $personName',
         subject: 'UPI Payment Link',
-      );
+      ));
 
       if (result.status == ShareResultStatus.success) {
         debugPrint('Sharing success!');

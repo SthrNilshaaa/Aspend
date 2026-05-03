@@ -24,7 +24,6 @@ import '../core/const/app_colors.dart';
 import '../core/const/app_dimensions.dart';
 import '../core/const/app_typography.dart';
 import '../core/utils/blur_utils.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class PeopleTab extends StatefulWidget {
   const PeopleTab({super.key});

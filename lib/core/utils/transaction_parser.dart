@@ -365,7 +365,6 @@ class TransactionParser {
         lower.contains('payment of'));
     
     final bool isBalOnlyMatch = _balOnlyKW.any((kw) => lower.contains(kw));
-    final bool isTxPossible = _isLikelyTransaction(lower);
 
     if (!hasStrongAction && !isBalOnlyMatch) return null;
 
@@ -409,7 +408,7 @@ class TransactionParser {
       );
     }
 
-    if (!isTxPossible) return null;
+    if (!_isLikelyTransaction(lower)) return null;
 
     // 3. Marker Validation (Relaxed, but enforced strictly for empty senders)
     final bool hasHardMarker = _hardMarkers.any((m) => lower.contains(m));

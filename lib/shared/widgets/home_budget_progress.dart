@@ -32,7 +32,7 @@ class HomeBudgetProgress extends StatelessWidget {
         viewModel.getTransactionsInRange(startOfMonth, endOfMonth);
     final spent = monthlyTxs
         .where((t) => !t.isIncome)
-        .fold(0.0, (sum, t) => sum + (t.amount ?? 0.0));
+        .fold(0.0, (sum, t) => sum + t.amount);
 
     final percentage = (spent / budget).clamp(0.0, 1.0);
     final isOverBudget = spent > budget;
