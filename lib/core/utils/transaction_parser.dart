@@ -90,6 +90,10 @@ class TransactionParser {
     'monies credited',
     'cash added',
     'topup of',
+    'sent to you',
+    'sent ₹ to you',
+    'sent ₹',
+
   ];
 
   static const _expenseKW = [
@@ -185,6 +189,9 @@ class TransactionParser {
     'paid ₹',
     'received ₹',
     'credited ₹',
+    'sent ₹',
+    'sent to you',
+
   ];
 
   static const _bankMap = {
@@ -334,7 +341,8 @@ class TransactionParser {
     if (lower.contains('otp') || lower.contains('verification code')) {
       return null;
     }
-    if (lower.contains('declined') || lower.contains('failed')) return null;
+    final failureKeywords = ['failed', 'declined', 'unsuccessful', 'cancelled', 'rejected', 'timed out', 'declined by'];
+    if (failureKeywords.any((kw) => lower.contains(kw))) return null;
     if (!_amountMarkerPattern.hasMatch(lower)) return null;
 
     // 2. Determine if it's a balance update only or a transaction
@@ -343,7 +351,18 @@ class TransactionParser {
         lower.contains('received') ||
         lower.contains('paid') ||
         lower.contains('payment successful') ||
-        lower.contains('spent'));
+        lower.contains('sent') ||
+        lower.contains('spent') ||
+        lower.contains('withdrawn') ||
+        lower.contains('deducted') ||
+        lower.contains('transfer') ||
+        lower.contains('txn') ||
+        lower.contains('transaction') ||
+        lower.contains('purchased') ||
+        lower.contains('refund') ||
+        lower.contains('charged') ||
+        lower.contains('deposited') ||
+        lower.contains('payment of'));
     
     final bool isBalOnlyMatch = _balOnlyKW.any((kw) => lower.contains(kw));
     final bool isTxPossible = _isLikelyTransaction(lower);
@@ -362,6 +381,9 @@ class TransactionParser {
     }
     if (lower.contains('sent to') || lower.contains('paid to')) {
       isIncome = false;
+    }
+    if (lower.contains('sent to you') || lower.contains('sent ₹') && lower.contains('to you')) {
+      isIncome = true;
     }
 
     // Pick the best amount based on proximity to action keywords
@@ -541,36 +563,45 @@ class TransactionParser {
   }
 
   static DateTime? _extractDate(String text) {
-    // DD-MM-YY or DD/MM/YYYY etc
-    final dateMatch = _datePattern.firstMatch(text);
+    // 1. DD-MM-YY or DD/MM/YYYY or DD MMM YYYY or DD-MMM-YY
+    final datePattern1 = RegExp(
+        r'(\d{1,2})[\s\-/](0[1-9]|1[0-2]|[A-Za-z]{3})[\s\-/](\d{2,4})',
+        caseSensitive: false);
+    
+    // 2. MMM DD, YYYY or MMM DD
+    final datePattern2 = RegExp(
+        r'([A-Za-z]{3})\s+(\d{1,2})(?:,?\s+(\d{2,4}))?',
+        caseSensitive: false);
+
+    var dateMatch = datePattern1.firstMatch(text);
+    bool pattern2 = false;
+    if (dateMatch == null) {
+      dateMatch = datePattern2.firstMatch(text);
+      pattern2 = true;
+    }
+
     if (dateMatch != null) {
       try {
-        final day = int.parse(dateMatch.group(1)!);
-        final monthStr = dateMatch.group(2)!;
-        final yearStr = dateMatch.group(3)!;
-
-        int month;
-        if (int.tryParse(monthStr) != null) {
-          month = int.parse(monthStr);
+        int day, month, year;
+        
+        if (!pattern2) {
+          day = int.parse(dateMatch.group(1)!);
+          final monthStr = dateMatch.group(2)!;
+          final yearStr = dateMatch.group(3)!;
+          
+          if (int.tryParse(monthStr) != null) {
+            month = int.parse(monthStr);
+          } else {
+            month = _monthToInt(monthStr);
+          }
+          year = int.parse(yearStr);
         } else {
-          final months = [
-            'JAN',
-            'FEB',
-            'MAR',
-            'APR',
-            'MAY',
-            'JUN',
-            'JUL',
-            'AUG',
-            'SEP',
-            'OCT',
-            'NOV',
-            'DEC'
-          ];
-          month = months.indexOf(monthStr.toUpperCase()) + 1;
+          month = _monthToInt(dateMatch.group(1)!);
+          day = int.parse(dateMatch.group(2)!);
+          final yearStr = dateMatch.group(3);
+          year = yearStr != null ? int.parse(yearStr) : DateTime.now().year;
         }
 
-        int year = int.parse(yearStr);
         if (year < 100) year += 2000;
 
         if (month > 0 && month <= 12 && day > 0 && day <= 31) {
@@ -580,6 +611,16 @@ class TransactionParser {
     }
     return null;
   }
+
+  static int _monthToInt(String monthStr) {
+    final months = [
+      'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
+      'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'
+    ];
+    return months.indexOf(monthStr.toUpperCase()) + 1;
+  }
+
+
 
   static double _calculateConfidence(
       String? acc, String? bank, String? merc, String? ref) {

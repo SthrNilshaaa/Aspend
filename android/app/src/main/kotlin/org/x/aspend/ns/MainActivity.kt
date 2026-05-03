@@ -120,6 +120,21 @@ class MainActivity : FlutterFragmentActivity() {
                     }
                 }
 
+                "getPendingNotifications" -> {
+                    try {
+                        val sharedPreferences = getSharedPreferences("AspendPrefs", android.content.Context.MODE_PRIVATE)
+                        val pendingList = sharedPreferences.getStringSet("pending_notifications", emptySet())?.toList() ?: emptyList()
+                        
+                        // Clear them after reading
+                        sharedPreferences.edit().remove("pending_notifications").apply()
+                        
+                        result.success(pendingList)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error getting pending notifications: ${e.message}")
+                        result.success(emptyList<String>())
+                    }
+                }
+
                 else -> {
                     result.notImplemented()
                 }

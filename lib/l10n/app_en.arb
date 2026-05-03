@@ -1,0 +1,82 @@
+{
+  "appName": "Aspends",
+  "appTagline": "Smart spending, simplified.",
+  "totalBalance": "Total Balance",
+  "income": "Income",
+  "expense": "Expense",
+  "monthlyBudget": "Monthly Budget",
+  "transactions": "Transactions",
+  "recentTransactions": "Recent Transactions",
+  "seeAll": "See All",
+  "settings": "Settings",
+  "language": "Language",
+  "theme": "Theme",
+  "darkMode": "Dark Mode",
+  "lightMode": "Light Mode",
+  "systemDefault": "System Default",
+  "adaptiveColor": "Adaptive Color",
+  "customColor": "Custom Color",
+  "backup": "Backup & Restore",
+  "export": "Export Data",
+  "import": "Import Data",
+  "privacyPolicy": "Privacy Policy",
+  "telegramSupport": "Telegram Support",
+  "addTransaction": "Add Transaction",
+  "editTransaction": "Edit Transaction",
+  "deleteTransaction": "Delete Transaction",
+  "amount": "Amount",
+  "category": "Category",
+  "account": "Account",
+  "date": "Date",
+  "note": "Note (Optional)",
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "search": "Search transactions...",
+  "noTransactions": "No transactions found",
+  "voiceInput": "Voice Input",
+  "speechUnavailable": "Speech recognition unavailable",
+  "microPermissionDenied": "Microphone permission denied",
+  "appearance": "Appearance",
+  "security": "Security",
+  "autoDetection": "Auto Transaction Detection",
+  "backupExport": "Backup & Export",
+  "dataManagement": "Data Management",
+  "budgetingBalance": "Budgeting & Balance",
+  "customDropdowns": "Custom Dropdown Items",
+  "appInformation": "App Information",
+  "developedBy": "Developed with ❤️ by Sthrnilshaa",
+  "chooseTheme": "Choose your preferred theme",
+  "appLock": "App Lock",
+  "appLockDesc": "Require device authentication to open app",
+  "upiId": "UPI ID",
+  "upiIdDesc": "Set your UPI ID for money requests",
+  "upiName": "Display Name",
+  "upiNameDesc": "Optional: Name shown in UPI request",
+  "analytics": "Analytics",
+  "people": "People",
+  "charts": "Charts",
+  "sortBy": "Sort By",
+  "holdToRecord": "Hold to record transaction",
+  "couldNotFindAmount": "Couldn't find amount. Try: 'Spent 500 on Food'",
+  "savedAmount": "Saved ₹{amount} for {category}",
+  "@savedAmount": {
+    "placeholders": {
+      "amount": { "type": "String" },
+      "category": { "type": "String" }
+    }
+  },
+  "logsDeleted": "Deleted {count} logs",
+  "@logsDeleted": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "patternsIgnored": "Permanently ignored {count} patterns",
+  "@patternsIgnored": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "recheckComplete": "Recheck complete"
+}

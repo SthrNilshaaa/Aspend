@@ -1,0 +1,82 @@
+{
+  "appName": "Aspends",
+  "appTagline": "स्मार्ट खर्च, सरल बनाया गया।",
+  "totalBalance": "कुल शेष",
+  "income": "आय",
+  "expense": "व्यय",
+  "monthlyBudget": "मासिक बजट",
+  "transactions": "लेन-देन",
+  "recentTransactions": "हाल के लेन-देन",
+  "seeAll": "सभी देखें",
+  "settings": "सेटिंग्स",
+  "language": "भाषा",
+  "theme": "थीम",
+  "darkMode": "डार्क मोड",
+  "lightMode": "लाइट मोड",
+  "systemDefault": "सिस्टम डिफॉल्ट",
+  "adaptiveColor": "अनुकूली रंग",
+  "customColor": "कस्टम रंग",
+  "backup": "बैकअप और रिस्टोर",
+  "export": "डेटा निर्यात करें",
+  "import": "डेटा आयात करें",
+  "privacyPolicy": "गोपनीयता नीति",
+  "telegramSupport": "टेलीग्राम सहायता",
+  "addTransaction": "लेन-देन जोड़ें",
+  "editTransaction": "लेन-देन संपादित करें",
+  "deleteTransaction": "लेन-देन हटाएं",
+  "amount": "राशि",
+  "category": "श्रेणी",
+  "account": "खाता",
+  "date": "दिनांक",
+  "note": "नोट (वैकल्पिक)",
+  "save": "सहेजें",
+  "cancel": "रद्द करें",
+  "delete": "हटाएं",
+  "search": "लेन-देन खोजें...",
+  "noTransactions": "कोई लेन-देन नहीं मिला",
+  "voiceInput": "वॉयस इनपुट",
+  "speechUnavailable": "भाषण पहचान अनुपलब्ध",
+  "microPermissionDenied": "माइक्रोफोन अनुमति अस्वीकार कर दी गई",
+  "appearance": "दिखावट",
+  "security": "सुरक्षा",
+  "autoDetection": "ऑटो लेन-देन का पता लगाना",
+  "backupExport": "बैकअप और निर्यात",
+  "dataManagement": "डेटा प्रबंधन",
+  "budgetingBalance": "बजट और शेष",
+  "customDropdowns": "कस्टम ड्रॉपडाउन आइटम",
+  "appInformation": "ऐप की जानकारी",
+  "developedBy": "Sthrnilshaa द्वारा ❤️ के साथ विकसित",
+  "chooseTheme": "अपनी पसंदीदा थीम चुनें",
+  "appLock": "ऐप लॉक",
+  "appLockDesc": "ऐप खोलने के लिए डिवाइस प्रमाणीकरण की आवश्यकता है",
+  "upiId": "यूपीआई आईडी",
+  "upiIdDesc": "पैसे के अनुरोध के लिए अपनी यूपीआई आईडी सेट करें",
+  "upiName": "प्रदर्शित नाम",
+  "upiNameDesc": "वैकल्पिक: यूपीआई अनुरोध में दिखाया गया नाम",
+  "analytics": "विश्लेषण",
+  "people": "लोग",
+  "charts": "चार्ट",
+  "sortBy": "इसके द्वारा क्रमबद्ध करें",
+  "holdToRecord": "लेन-देन रिकॉर्ड करने के लिए दबाकर रखें",
+  "couldNotFindAmount": "राशि नहीं मिली। कोशिश करें: 'भोजन पर 500 खर्च किए'",
+  "savedAmount": "{category} के लिए ₹{amount} सहेजे गए",
+  "@savedAmount": {
+    "placeholders": {
+      "amount": { "type": "String" },
+      "category": { "type": "String" }
+    }
+  },
+  "logsDeleted": "{count} लॉग हटा दिए गए",
+  "@logsDeleted": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "patternsIgnored": "स्थायी रूप से {count} पैटर्न को अनदेखा कर दिया गया",
+  "@patternsIgnored": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "recheckComplete": "पुनः जाँच पूर्ण"
+}

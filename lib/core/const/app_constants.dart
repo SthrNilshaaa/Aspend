@@ -22,6 +22,7 @@ class AppConstants {
   static const String autoSelectionFirstTimeKey = 'isFirstTimeAutoSelection';
   static const String upiIdKey = 'upiId';
   static const String upiNameKey = 'upiName';
+  static const String localeKey = 'locale';
 
   // Animation Durations
   static const Duration splashEntryDuration = Duration(milliseconds: 1000);

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:aspends_tracker/l10n/generated/app_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -59,6 +60,7 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
   }
 
   Future<void> _bulkDelete(List<int> indices) async {
+    final l10n = AppLocalizations.of(context)!;
     final box = Hive.box<DetectionHistory>('detection_history');
     // Important: sort indices descending to avoid shifting issues when deleting
     final sortedIndices = List<int>.from(indices)
@@ -70,12 +72,13 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
     }
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Deleted ${indices.length} logs')),
+        SnackBar(content: Text(l10n.logsDeleted(indices.length))),
       );
     }
   }
 
   Future<void> _bulkIgnore(List<int> indices) async {
+    final l10n = AppLocalizations.of(context)!;
     final box = Hive.box<DetectionHistory>('detection_history');
     final settings = SettingsRepository();
     final ignored = settings.getIgnoredPatterns();
@@ -102,7 +105,7 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
       await _bulkDelete(indices);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Permanently ignored $count patterns')),
+          SnackBar(content: Text(l10n.patternsIgnored(count))),
         );
       }
     } else {
@@ -113,6 +116,7 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
@@ -120,7 +124,7 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
           GlassAppBar(
             title: _isSelectionMode
                 ? '${_selectedIndices.length} Selected'
-                : 'Detection History',
+                : l10n.autoDetection,
             centerTitle: true,
             leading: GestureDetector(
               onTap: () {
@@ -178,7 +182,7 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
                           .recheckSkippedTransactions();
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Recheck complete')),
+                          SnackBar(content: Text(l10n.recheckComplete)),
                         );
                       }
                     },
@@ -230,11 +234,11 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
                 Hive.box<DetectionHistory>('detection_history').listenable(),
             builder: (context, Box<DetectionHistory> box, _) {
               if (box.isEmpty) {
-                return const SliverFillRemaining(
+                return SliverFillRemaining(
                   hasScrollBody: false,
                   child: EmptyStateView(
                     icon: Icons.history_toggle_off,
-                    title: 'No detection history yet',
+                    title: l10n.noTransactions,
                   ),
                 );
               }
@@ -265,11 +269,11 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
               }
 
               if (entries.isEmpty && _searchQuery != null) {
-                return const SliverFillRemaining(
+                return SliverFillRemaining(
                   hasScrollBody: false,
                   child: EmptyStateView(
                     icon: Icons.search_off,
-                    title: 'No results found',
+                    title: l10n.noTransactions,
                   ),
                 );
               }
@@ -310,6 +314,7 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
   Widget _buildSearchSection(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = context.watch<ThemeViewModel>().isDarkMode;
+    final l10n = AppLocalizations.of(context)!;
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -391,7 +396,7 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
                       },
                       //transaparnt search bar
                       decoration: InputDecoration(
-                        hintText: "Search Logs...",
+                        hintText: l10n.search,
                         hintStyle: GoogleFonts.dmSans(
                           color: theme.colorScheme.onSurface
                               .withValues(alpha: 0.4),
@@ -562,11 +567,29 @@ class _HistoryCard extends StatelessWidget {
     this.onLongPress,
   });
 
+  String _getAppLabel(String? pkg) {
+    if (pkg == null) return 'Unknown App';
+    if (pkg.contains('com.google.android.apps.nbu.paisa.user')) return 'Google Pay';
+    if (pkg.contains('com.phonepe.app')) return 'PhonePe';
+    if (pkg.contains('net.one97.paytm')) return 'Paytm';
+    if (pkg.contains('com.whatsapp')) return 'WhatsApp';
+    if (pkg.contains('com.amazon.mShop')) return 'Amazon';
+    if (pkg.contains('sms')) return 'SMS Message';
+    return pkg.split('.').last.toUpperCase();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDetected = entry.status == 'detected';
     final isDark = theme.brightness == Brightness.dark;
+    
+    // Parse on the fly for rich info
+    final parsed = TransactionParser.parse(entry.text, packageName: entry.packageName);
+    final isDetected = entry.status == 'detected' || parsed != null;
+    
+    final amount = parsed?.amount ?? TransactionParser.parseAmount(entry.text);
+    final isIncome = parsed?.isIncome ?? (entry.text.toLowerCase().contains('credit') || entry.text.toLowerCase().contains('received'));
+    final merchant = parsed?.merchant ?? 'Unknown Source';
 
     return GestureDetector(
       onLongPress: onLongPress,
@@ -575,243 +598,89 @@ class _HistoryCard extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             color: isSelected
-                ? theme.colorScheme.primary.withValues(alpha: 0.05)
+                ? theme.colorScheme.primary.withValues(alpha: 0.08)
                 : isDark
-                    ? Colors.white.withValues(alpha: 0.03)
+                    ? Colors.white.withValues(alpha: 0.04)
                     : Colors.black.withValues(alpha: 0.02),
-            borderRadius:
-                BorderRadius.circular(AppDimensions.borderRadiusLarge),
+            borderRadius: BorderRadius.circular(AppDimensions.borderRadiusLarge),
             border: Border.all(
               color: isSelected
-                  ? theme.colorScheme.primary.withValues(alpha: 0.3)
+                  ? theme.colorScheme.primary.withValues(alpha: 0.4)
                   : isDetected
-                      ? theme.colorScheme.primary.withValues(alpha: 0.1)
-                      : Colors.orange.withValues(alpha: 0.1),
-              width: 1,
+                      ? (isIncome ? Colors.green : Colors.redAccent).withValues(alpha: 0.2)
+                      : Colors.orange.withValues(alpha: 0.2),
+              width: 1.2,
             ),
           ),
           child: Theme(
             data: theme.copyWith(dividerColor: Colors.transparent),
             child: ExpansionTile(
-              tilePadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               leading: isSelectionMode
-                  ? Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: isSelected
-                            ? theme.colorScheme.primary
-                            : Colors.transparent,
-                        border: Border.all(
-                          color: isSelected
-                              ? theme.colorScheme.primary
-                              : theme.dividerColor.withValues(alpha: 0.3),
-                          width: 2,
-                        ),
-                      ),
-                      child: isSelected
-                          ? const Icon(Icons.check,
-                              color: Colors.white, size: 24)
-                          : null,
-                    )
-                  : Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: isDetected
-                            ? theme.colorScheme.primary.withValues(alpha: 0.1)
-                            : Colors.orange.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: (isDetected
-                                  ? theme.colorScheme.primary
-                                  : Colors.orange)
-                              .withValues(alpha: 0.2),
-                          width: 1,
-                        ),
-                      ),
-                      child: Center(
-                        child: entry.confidence != null
-                            ? Text(
-                                '${(entry.confidence! * 100).toInt()}%',
-                                style: GoogleFonts.bayon(
-                                  fontSize: 16,
-                                  color: isDetected
-                                      ? theme.colorScheme.primary
-                                      : Colors.orange,
-                                ),
-                              )
-                            : Icon(
-                                isDetected
-                                    ? Icons.check_rounded
-                                    : Icons.priority_high_rounded,
-                                color: isDetected
-                                    ? theme.colorScheme.primary
-                                    : Colors.orange,
-                                size: 20,
-                              ),
-                      ),
-                    ),
+                  ? _buildSelectionIndicator(theme)
+                  : _buildStatusIcon(theme, isDetected, isIncome, parsed?.confidence),
               title: Text(
-                isDetected
-                    ? 'Successfully Detected'
-                    : (entry.reason ?? 'Skipped Entry'),
+                isDetected 
+                  ? (amount != null && amount > 0 
+                      ? '₹${amount.toStringAsFixed(0)} ${isIncome ? 'Received' : 'Paid'}' 
+                      : 'Transaction Detected')
+                  : (entry.reason ?? 'Notification Logged'),
                 style: GoogleFonts.dmSans(
-                  fontWeight: FontWeight.w700,
-                  fontSize: AppTypography.fontSizeSmall,
+                  fontWeight: FontWeight.w800,
+                  fontSize: AppTypography.fontSizeRegular,
                   color: theme.colorScheme.onSurface,
+                  letterSpacing: -0.2
                 ),
               ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.access_time_rounded,
-                          size: 12,
-                          color: theme.colorScheme.onSurface
-                              .withValues(alpha: 0.5)),
-                      const SizedBox(width: 4),
-                      Text(
-                        DateFormat('MMM d, hh:mm a').format(entry.timestamp),
-                        style: GoogleFonts.dmSans(
-                          fontSize: AppTypography.fontSizeXSmall,
-                          color: theme.colorScheme.onSurface
-                              .withValues(alpha: 0.5),
+              subtitle: Padding(
+                padding: const EdgeInsets.only(top: 4.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          isDetected ? merchant : 'Pattern not matched',
+                          style: GoogleFonts.dmSans(
+                            fontSize: AppTypography.fontSizeXSmall,
+                            fontWeight: FontWeight.w500,
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    entry.text,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.dmSans(
-                      fontSize: 11,
-                      fontStyle: FontStyle.italic,
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                        const SizedBox(width: 8),
+                        Container(
+                          width: 3,
+                          height: 3,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          DateFormat('h:mm a').format(entry.timestamp),
+                          style: GoogleFonts.dmSans(
+                            fontSize: AppTypography.fontSizeXSmall,
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    Text(
+                      _getAppLabel(entry.packageName),
+                      style: GoogleFonts.dmSans(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.primary.withValues(alpha: 0.7),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
               ),
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: double.infinity,
-                        height: 1,
-                        color: theme.dividerColor.withValues(alpha: 0.05),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'RAW MESSAGE',
-                        style: GoogleFonts.dmSans(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 10,
-                          color:
-                              theme.colorScheme.primary.withValues(alpha: 0.6),
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color:
-                              theme.colorScheme.surface.withValues(alpha: 0.5),
-                          borderRadius: BorderRadius.circular(
-                              AppDimensions.borderRadiusMedium),
-                          border: Border.all(
-                            color: theme.dividerColor.withValues(alpha: 0.05),
-                          ),
-                        ),
-                        child: Text(
-                          entry.text,
-                          style: GoogleFonts.dmSans(
-                            fontSize: AppTypography.fontSizeSmall,
-                            height: 1.5,
-                            color: theme.colorScheme.onSurface
-                                .withValues(alpha: 0.8),
-                          ),
-                        ),
-                      ),
-                      if (entry.packageName != null) ...[
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Icon(Icons.apps_rounded,
-                                size: 14, color: theme.colorScheme.primary),
-                            const SizedBox(width: 6),
-                            Text(
-                              entry.packageName!,
-                              style: GoogleFonts.dmSans(
-                                fontSize: AppTypography.fontSizeXSmall,
-                                color: theme.colorScheme.onSurface
-                                    .withValues(alpha: 0.6),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                      if (!isDetected) ...[
-                        const SizedBox(height: 16),
-                        ZoomTapAnimation(
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              backgroundColor: Colors.transparent,
-                              builder: (context) => AddTransactionDialog(
-                                isIncome: entry.text
-                                        .toLowerCase()
-                                        .contains('credit') ||
-                                    entry.text
-                                        .toLowerCase()
-                                        .contains('received'),
-                                initialNote: entry.text,
-                              ),
-                            );
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.primary,
-                              borderRadius: BorderRadius.circular(
-                                  AppDimensions.borderRadiusMedium),
-                            ),
-                            child: Center(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.add_rounded,
-                                      color: theme.colorScheme.onPrimary,
-                                      size: 20),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Add Manually',
-                                    style: GoogleFonts.dmSans(
-                                      color: theme.colorScheme.onPrimary,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: AppTypography.fontSizeSmall,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
+                _buildDetails(context, theme, parsed, isIncome),
               ],
             ),
           ),
@@ -819,4 +688,227 @@ class _HistoryCard extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildSelectionIndicator(ThemeData theme) {
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: isSelected ? theme.colorScheme.primary : Colors.transparent,
+        border: Border.all(
+          color: isSelected ? theme.colorScheme.primary : theme.dividerColor.withValues(alpha: 0.3),
+          width: 2,
+        ),
+      ),
+      child: isSelected ? const Icon(Icons.check, color: Colors.white, size: 22) : null,
+    );
+  }
+
+  Widget _buildStatusIcon(ThemeData theme, bool isDetected, bool isIncome, double? confidence) {
+    final color = isDetected 
+        ? (isIncome ? Colors.green : Colors.redAccent) 
+        : Colors.orange;
+        
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        shape: BoxShape.circle,
+        border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
+      ),
+      child: Center(
+        child: isDetected && confidence != null
+            ? Text(
+                '${(confidence * 100).toInt()}%',
+                style: GoogleFonts.bayon(fontSize: 14, color: color),
+              )
+            : Icon(
+                isDetected ? (isIncome ? Icons.call_received : Icons.call_made) : Icons.query_builder_rounded,
+                color: color,
+                size: 18,
+              ),
+      ),
+    );
+  }
+
+  Widget _buildDetails(BuildContext context, ThemeData theme, ParsedTransaction? parsed, bool isIncome) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            height: 1,
+            color: theme.dividerColor.withValues(alpha: 0.1),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'NOTIFICATION DATA',
+                style: GoogleFonts.dmSans(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 10,
+                  color: theme.colorScheme.primary.withValues(alpha: 0.6),
+                  letterSpacing: 1.2,
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  Clipboard.setData(ClipboardData(text: entry.text));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Message copied to clipboard'),
+                      behavior: SnackBarBehavior.floating,
+                      width: 200,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.copy_rounded, size: 10, color: theme.colorScheme.primary),
+                      const SizedBox(width: 4),
+                      Text(
+                        'COPY',
+                        style: GoogleFonts.dmSans(
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(AppDimensions.borderRadiusMedium),
+              border: Border.all(color: theme.dividerColor.withValues(alpha: 0.08)),
+            ),
+            child: SelectableText(
+              entry.text.isNotEmpty ? entry.text : 'No message content available',
+              style: GoogleFonts.dmSans(
+                fontSize: AppTypography.fontSizeSmall,
+                height: 1.5,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.9),
+              ),
+            ),
+          ),
+          if (entry.packageName != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Source: ${entry.packageName}',
+              style: GoogleFonts.dmSans(
+                fontSize: 9,
+                fontStyle: FontStyle.italic,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+              ),
+            ),
+          ],
+          const SizedBox(height: 16),
+          if (entry.status != 'detected' && parsed == null)
+            _buildManualAddButton(context, theme, isIncome)
+          else
+            _buildDetectedLabel(theme, isIncome),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildManualAddButton(BuildContext context, ThemeData theme, bool isIncome) {
+    return ZoomTapAnimation(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) => AddTransactionDialog(
+            isIncome: isIncome,
+            initialNote: entry.text,
+            initialAmount: TransactionParser.parseAmount(entry.text),
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.primary,
+          borderRadius: BorderRadius.circular(AppDimensions.borderRadiusMedium),
+          boxShadow: [
+            BoxShadow(
+              color: theme.colorScheme.primary.withValues(alpha: 0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.add_rounded, color: Colors.white, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Add Manually',
+                style: GoogleFonts.dmSans(
+                  fontWeight: FontWeight.w700,
+                  fontSize: AppTypography.fontSizeSmall,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetectedLabel(ThemeData theme, bool isIncome) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+      decoration: BoxDecoration(
+        color: (isIncome ? Colors.green : Colors.blue).withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusMedium),
+        border: Border.all(color: (isIncome ? Colors.green : Colors.blue).withValues(alpha: 0.1)),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.check_circle_outline_rounded,
+            size: 16,
+            color: isIncome ? Colors.green : Colors.blue,
+          ),
+          const SizedBox(width: 10),
+          Text(
+            isIncome ? 'Detected as Income' : 'Detected as Expense',
+            style: GoogleFonts.dmSans(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: isIncome ? Colors.green : Colors.blue,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
+

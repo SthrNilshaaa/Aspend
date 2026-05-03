@@ -175,7 +175,7 @@ class _SplashScreenState extends State<SplashScreen>
                                     tablet: AppTypography.fontSizeHuge,
                                     desktop:
                                         AppTypography.fontSizeXXLarge + 12),
-                                color: Colors.white,
+                                color: widget.isDarkMode ? Colors.white : Colors.black,
                                 fontWeight: AppTypography.fontWeightBold,
                                 letterSpacing: 1.2,
                               ),
@@ -194,7 +194,7 @@ class _SplashScreenState extends State<SplashScreen>
                                     mobile: AppTypography.fontSizeMedium,
                                     tablet: AppTypography.fontSizeSmall + 4,
                                     desktop: AppTypography.fontSizeLarge),
-                                color: Colors.white.withValues(alpha: 0.9),
+                                color: (widget.isDarkMode ? Colors.white : Colors.black).withValues(alpha: 0.9),
                                 fontWeight: AppTypography.fontWeightMedium,
                               ),
                             ),
@@ -204,7 +204,7 @@ class _SplashScreenState extends State<SplashScreen>
                               width: AppDimensions.avatarSizeStandard,
                               height: AppDimensions.avatarSizeStandard,
                               child: LoadingAnimationWidget.halfTriangleDot(
-                                color: Colors.white.withValues(alpha: 0.8),
+                                color: (widget.isDarkMode ? Colors.white : Colors.black).withValues(alpha: 0.8),
                                 size: AppDimensions.avatarSizeStandard,
                               ),
                             ),

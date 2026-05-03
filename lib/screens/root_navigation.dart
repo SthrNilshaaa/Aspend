@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:aspends_tracker/core/const/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:aspends_tracker/l10n/generated/app_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -80,6 +81,7 @@ class _RootNavigationState extends State<RootNavigation>
 
     final isLargeScreen = !ResponsiveUtils.isMobile(context);
 
+    final l10n = AppLocalizations.of(context)!;
     return ChangeNotifierProvider(
       create: (_) => LiquidNavbarViewModel(),
       child: Scaffold(
@@ -122,26 +124,26 @@ class _RootNavigationState extends State<RootNavigation>
                     color: isDark ? Colors.white38 : Colors.black38,
                     fontSize: 12,
                   ),
-                  destinations: const [
+                  destinations: [
                     NavigationRailDestination(
-                      icon: Icon(Icons.home_outlined),
-                      selectedIcon: Icon(Icons.home_rounded),
-                      label: Text('Home'),
+                      icon: const Icon(Icons.home_outlined),
+                      selectedIcon: const Icon(Icons.home_rounded),
+                      label: Text(l10n.appName),
                     ),
                     NavigationRailDestination(
-                      icon: Icon(Icons.group_outlined),
-                      selectedIcon: Icon(Icons.group_rounded),
-                      label: Text('People'),
+                      icon: const Icon(Icons.group_outlined),
+                      selectedIcon: const Icon(Icons.group_rounded),
+                      label: Text(l10n.people),
                     ),
                     NavigationRailDestination(
-                      icon: Icon(Icons.auto_graph_outlined),
-                      selectedIcon: Icon(Icons.auto_graph_rounded),
-                      label: Text('Charts'),
+                      icon: const Icon(Icons.auto_graph_outlined),
+                      selectedIcon: const Icon(Icons.auto_graph_rounded),
+                      label: Text(l10n.charts),
                     ),
                     NavigationRailDestination(
-                      icon: Icon(Icons.settings_outlined),
-                      selectedIcon: Icon(Icons.settings_rounded),
-                      label: Text('Settings'),
+                      icon: const Icon(Icons.settings_outlined),
+                      selectedIcon: const Icon(Icons.settings_rounded),
+                      label: Text(l10n.settings),
                     ),
                   ],
                 ),
@@ -185,21 +187,21 @@ class _RootNavigationState extends State<RootNavigation>
                           child: NativeGlassNavBar(
                             currentIndex: _selectedIndex,
                             onTap: _onItemTapped,
-                            tabs: const [
+                            tabs: [
                               NativeGlassNavBarItem(
-                                label: 'Home',
+                                label: l10n.appName,
                                 symbol: 'house',
                               ),
                               NativeGlassNavBarItem(
-                                label: 'People',
+                                label: l10n.people,
                                 symbol: 'person.2',
                               ),
                               NativeGlassNavBarItem(
-                                label: 'Charts',
+                                label: l10n.charts,
                                 symbol: 'chart.xyaxis.line',
                               ),
                               NativeGlassNavBarItem(
-                                label: 'Settings',
+                                label: l10n.settings,
                                 symbol: 'gear',
                               ),
                             ],

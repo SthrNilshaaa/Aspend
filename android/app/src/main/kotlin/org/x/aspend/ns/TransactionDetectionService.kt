@@ -52,7 +52,16 @@ class TransactionDetectionService : NotificationListenerService() {
                     )
                 )
             } else {
-                Log.w(TAG, "MethodChannel not initialized. Notification skipped.")
+                Log.w(TAG, "MethodChannel not initialized. Saving to pending notifications.")
+                
+                val sharedPreferences = getSharedPreferences("AspendPrefs", android.content.Context.MODE_PRIVATE)
+                val pendingList = sharedPreferences.getStringSet("pending_notifications", mutableSetOf())?.toMutableSet() ?: mutableSetOf()
+                
+                // Create a JSON-like simple string or proper JSON
+                val data = """{"type":"Notification","title":"${title.replace("\"", "\\\"")}","text":"${text.replace("\"", "\\\"")}","bigText":"${bigText.replace("\"", "\\\"")}","fullText":"${fullText.replace("\"", "\\\"")}","packageName":"${sbn.packageName}"}"""
+                pendingList.add(data)
+                
+                sharedPreferences.edit().putStringSet("pending_notifications", pendingList).apply()
             }
 
         } catch (e: Exception) {

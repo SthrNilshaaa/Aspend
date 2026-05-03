@@ -40,7 +40,14 @@ class SmsReceiver : BroadcastReceiver() {
                                 )
                             )
                         } else {
-                            Log.w(TAG, "MethodChannel not initialized. SMS skipped.")
+                            Log.w(TAG, "MethodChannel not initialized. Saving SMS to pending.")
+                            val sharedPreferences = context.getSharedPreferences("AspendPrefs", Context.MODE_PRIVATE)
+                            val pendingList = sharedPreferences.getStringSet("pending_notifications", mutableSetOf())?.toMutableSet() ?: mutableSetOf()
+                            
+                            val data = """{"type":"SMS","text":"${body.replace("\"", "\\\"")}","packageName":"$sender"}"""
+                            pendingList.add(data)
+                            
+                            sharedPreferences.edit().putStringSet("pending_notifications", pendingList).apply()
                         }
                     }
                 }

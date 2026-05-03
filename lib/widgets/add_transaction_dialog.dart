@@ -106,6 +106,8 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
         category: _category,
         account: _account,
         imagePaths: _images,
+        originalText: widget.initialNote,
+        source: widget.initialNote != null ? 'Manual Add (History)' : null,
       );
       vm.addTransaction(tx);
       _syncPerson(tx, pvm);

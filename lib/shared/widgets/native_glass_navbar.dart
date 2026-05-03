@@ -302,8 +302,8 @@ class _IconsLiquidLayer extends StatelessWidget {
               Icon(
                 _getIconData(item.symbol),
                 color: isSelected
-                    ? Colors.white
-                    : (isDark ? Colors.white70 : Colors.black87),
+                    ? (isDark ? Colors.white : Colors.black)
+                    : (isDark ? Colors.white38 : Colors.black38),
                 size: isSelected ? 24 : 22,
               ),
               const SizedBox(height: 3),
@@ -311,8 +311,8 @@ class _IconsLiquidLayer extends StatelessWidget {
                 item.label,
                 style: TextStyle(
                   color: isSelected
-                      ? Colors.white
-                      : (isDark ? Colors.white70 : Colors.black87),
+                      ? (isDark ? Colors.white : Colors.black)
+                      : (isDark ? Colors.white38 : Colors.black38),
                   fontSize: 10,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                 ),

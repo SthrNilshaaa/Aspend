@@ -108,13 +108,43 @@ class TransactionDetectionService {
     }
   }
 
+  static final Map<String, DateTime> _lastNotificationTimes = {};
+
   static Future<void> processNotification(String title, String body,
       {String? packageName}) async {
     if (!(await isEnabled())) return;
     
     try {
+
+      final fullText = '$title $body';
       // Skip notifications from our own app
       if (packageName == 'org.x.aspend.ns') return;
+
+      // final fullText = '$title $body'.trim();
+      if (fullText.isEmpty) return;
+
+      // Rate Limiting: Ignore identical notifications within 3 minutes
+      final spamKey = '${packageName ?? 'unknown'}:$fullText';
+      final now = DateTime.now();
+      if (_lastNotificationTimes.containsKey(spamKey)) {
+        final lastTime = _lastNotificationTimes[spamKey]!;
+        if (now.difference(lastTime).inMinutes < 3) {
+          debugPrint('Ignoring spam notification from $packageName');
+          return;
+        }
+      }
+      _lastNotificationTimes[spamKey] = now;
+
+      // Cleanup spam map if it gets too large
+      if (_lastNotificationTimes.length > 200) {
+        _lastNotificationTimes.remove(_lastNotificationTimes.keys.first);
+      }
+
+      // Noise Filtering
+      if (_isNoiseNotification(title, body)) {
+        debugPrint('Skipping noise notification: $title - $body');
+        return;
+      }
 
       if (packageName != null) {
         final monitoredApps = await NativeBridge.getMonitoredApps();
@@ -123,7 +153,6 @@ class TransactionDetectionService {
         }
       }
 
-      final fullText = '$title $body';
       final parsed = TransactionParser.parse(fullText, packageName: packageName);
 
       if (parsed != null) {
@@ -155,6 +184,30 @@ class TransactionDetectionService {
     } catch (e) {
       debugPrint('Error processing notification: $e');
     }
+  }
+
+  static bool _isNoiseNotification(String title, String body) {
+    final lowerTitle = title.toLowerCase();
+    final lowerBody = body.toLowerCase();
+    
+    final noiseKeywords = [
+      'downloading', 'uploading', 'checking for new', 'running...', 
+      'backup in progress', 'connected', 'debugging', 'system update',
+      'vpn is active', 'searching for', 'syncing', 'percent', 'kb/s', 'mb/s',
+      'low battery', 'battery full', 'charging', 'connected to', 'screenshot'
+    ];
+
+    for (final kw in noiseKeywords) {
+      if (lowerTitle.contains(kw) || lowerBody.contains(kw)) return true;
+    }
+
+    // Check for progress percentage (e.g. "45%")
+    if (RegExp(r'\d+%\s').hasMatch(body) || body.endsWith('%')) return true;
+    
+    // Check for transfer speeds
+    if (RegExp(r'\d+\s?(kb|mb)/s', caseSensitive: false).hasMatch(body)) return true;
+
+    return false;
   }
 
   static Future<void> processSmsMessage(String body, {String? sender}) async {
@@ -195,16 +248,26 @@ class TransactionDetectionService {
 
   static Future<bool> _isDuplicateHash(String text) async {
     try {
-      final hash = text.trim().hashCode.toString();
+      // Normalize text: lowercase, remove non-alphanumeric, remove extra whitespace
+      final normalized = text.toLowerCase()
+          .replaceAll(RegExp(r'[^a-z0-9]'), '')
+          .trim();
+      final hash = normalized.hashCode.toString();
+      
       final history = _transactionRepo.getDetectionHistory();
       
-      // Check if this exact text hash exists in recent history (last 100 items)
+      // Check last 100 items for duplicate normalized text in last 48 hours
       final recent = history.length > 100 
           ? history.sublist(history.length - 100) 
           : history;
       
-      return recent.any((e) => e.text.trim().hashCode.toString() == hash && 
-          DateTime.now().difference(e.timestamp).inHours < 24);
+      return recent.any((e) {
+        final eNormalized = e.text.toLowerCase()
+            .replaceAll(RegExp(r'[^a-z0-9]'), '')
+            .trim();
+        return eNormalized.hashCode.toString() == hash && 
+            DateTime.now().difference(e.timestamp).inHours < 48;
+      });
     } catch (e) {
       return false;
     }

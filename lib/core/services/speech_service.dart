@@ -16,11 +16,19 @@ class SpeechService {
   String get lastWords => _lastWords;
 
   Future<bool> initSpeech() async {
-    _speechEnabled = await _speechToText.initialize(
-      onStatus: (status) => debugPrint('Speech Status: $status'),
-      onError: (errorNotification) => debugPrint('Speech Error: $errorNotification'),
-    );
-    return _speechEnabled;
+    try {
+      _speechEnabled = await _speechToText.initialize(
+        onStatus: (status) => debugPrint('Speech Status: $status'),
+        onError: (errorNotification) => debugPrint('Speech Error: $errorNotification'),
+      );
+      if (!_speechEnabled) {
+        debugPrint('Speech recognition initialization failed or was denied.');
+      }
+      return _speechEnabled;
+    } catch (e) {
+      debugPrint('Error initializing speech recognition: $e');
+      return false;
+    }
   }
 
   Future<void> startListening(Function(String) onResult) async {

@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:aspends_tracker/core/repositories/settings_repository.dart';
 
@@ -14,6 +15,7 @@ class ThemeViewModel with ChangeNotifier {
   List<String> _accounts = [];
   String? _upiId;
   String? _upiName;
+  Locale? _locale;
 
   ThemeViewModel(this._repository) {
     _loadSettings();
@@ -30,6 +32,7 @@ class ThemeViewModel with ChangeNotifier {
   List<String> get accounts => _accounts;
   String? get upiId => _upiId;
   String? get upiName => _upiName;
+  Locale? get locale => _locale;
 
   bool get isDarkMode {
     final brightness =
@@ -50,6 +53,10 @@ class ThemeViewModel with ChangeNotifier {
     _accounts = _repository.getAccounts();
     _upiId = _repository.getUpiId();
     _upiName = _repository.getUpiName();
+    final localeCode = _repository.getLocale();
+    if (localeCode != null) {
+      _locale = Locale(localeCode);
+    }
 
     // Migration logic
     final legacyCats = _repository.getCustomCategories();
@@ -72,12 +79,29 @@ class ThemeViewModel with ChangeNotifier {
       _repository.setAccounts(_accounts);
       _repository.setCustomAccounts([]);
     }
+    applySystemUI();
     notifyListeners();
+  }
+
+  void applySystemUI() {
+    final brightness = isDarkMode ? Brightness.light : Brightness.dark;
+
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: brightness,
+        statusBarBrightness: isDarkMode ? Brightness.dark : Brightness.light,
+        systemNavigationBarColor: isDarkMode ? const Color(0xFF0D0D0D) : const Color(0xFFFDFFFD),
+        systemNavigationBarIconBrightness: brightness,
+        systemNavigationBarDividerColor: Colors.transparent,
+      ),
+    );
   }
 
   void setThemeMode(ThemeMode mode) async {
     _themeMode = mode;
     await _repository.setThemeMode(mode);
+    applySystemUI();
     notifyListeners();
   }
 
@@ -180,6 +204,12 @@ class ThemeViewModel with ChangeNotifier {
   void setUpiName(String? name) async {
     _upiName = name;
     await _repository.setUpiName(name);
+    notifyListeners();
+  }
+
+  void setLocale(Locale? locale) async {
+    _locale = locale;
+    await _repository.setLocale(locale?.languageCode);
     notifyListeners();
   }
 }

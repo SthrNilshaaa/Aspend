@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'transaction_detection_service.dart';
@@ -16,9 +17,44 @@ class NativeBridge {
     _channel.setMethodCallHandler(_handleMethodCall);
     try {
       await _channel.invokeMethod('appReady');
+      await _processPendingNotifications();
     } catch (e) {
       debugPrint('Error notifying appReady: $e');
     }
+  }
+
+  static Future<void> _processPendingNotifications() async {
+    try {
+      final pendingRaw = await _channel.invokeMethod('getPendingNotifications');
+      if (pendingRaw != null && pendingRaw is List) {
+        for (final raw in pendingRaw) {
+          try {
+            // We expect JSON strings from native
+            if (raw is String) {
+              final Map<String, dynamic> data = _parseJsonHack(raw);
+              if (data['type'] == 'Notification') {
+                await TransactionDetectionService.processNotification(
+                    data['title'] ?? '', data['fullText'] ?? data['text'] ?? '',
+                    packageName: data['packageName'] ?? '');
+              } else if (data['type'] == 'SMS') {
+                await TransactionDetectionService.processSmsMessage(
+                    data['text'] ?? '',
+                    sender: data['packageName'] ?? '');
+              }
+            }
+          } catch (e) {
+            debugPrint('Error parsing pending notification: $e');
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error getting pending notifications: $e');
+    }
+  }
+
+  static Map<String, dynamic> _parseJsonHack(String jsonString) {
+    // Simple custom parser since we know the format from Kotlin
+    return jsonDecode(jsonString);
   }
 
   static String? consumePendingEvent() {

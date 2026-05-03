@@ -13,7 +13,9 @@ import 'package:google_fonts/google_fonts.dart';
 import '../core/view_models/theme_view_model.dart';
 import '../core/view_models/transaction_view_model.dart';
 import '../core/services/native_bridge.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../core/services/transaction_detection_service.dart';
+import 'package:aspends_tracker/l10n/generated/app_localizations.dart';
 import '../../core/const/app_strings.dart';
 import '../core/const/app_constants.dart';
 import '../core/const/app_colors.dart';
@@ -130,6 +132,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Future<void> _startRecording() async {
+    final l10n = AppLocalizations.of(context)!;
+    // Check permission first
+    var status = await Permission.microphone.status;
+    if (status.isDenied) {
+      status = await Permission.microphone.request();
+      if (!status.isGranted) {
+        Fluttertoast.showToast(msg: l10n.microPermissionDenied);
+        return;
+      }
+    }
+
     final success = await _speechService.initSpeech();
     if (success) {
       HapticFeedback.heavyImpact();
@@ -141,11 +154,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         setState(() => _recordingText = text);
       });
     } else {
-      Fluttertoast.showToast(msg: "Speech recognition unavailable");
+      Fluttertoast.showToast(msg: l10n.speechUnavailable);
     }
   }
 
   Future<void> _stopAndSaveRecording() async {
+    final l10n = AppLocalizations.of(context)!;
     if (!_isRecording) return;
     
     HapticFeedback.mediumImpact();
@@ -200,14 +214,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       }
 
       Fluttertoast.showToast(
-        msg: "Saved ₹${result.amount} for ${result.category ?? 'Other'}",
+        msg: l10n.savedAmount(tx.amount.toStringAsFixed(0), tx.category),
         backgroundColor: Colors.green,
         textColor: Colors.white,
       );
     } else {
       HapticFeedback.vibrate();
       Fluttertoast.showToast(
-        msg: "Couldn't find amount. Try: 'Spent 500 on Food'",
+        msg: l10n.couldNotFindAmount,
         backgroundColor: Colors.orange,
         textColor: Colors.white,
       );
@@ -297,7 +311,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       isListening: _isRecording,
                     )
                   : const SizedBox.shrink(key: ValueKey('empty')),
-            ),
+          ),
           ),
           AnimatedSlide(
             offset: _showFab ? Offset.zero : const Offset(0, 2),
@@ -348,13 +362,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildTransactionHeaderRow(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 3),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            AppStrings.transactionsTitle,
+            l10n.transactions,
             style: GoogleFonts.dmSans(
               fontSize: AppTypography.fontSizeSubHeader +
                   2, // Slightly larger for section header
@@ -382,7 +397,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             child: Row(
               children: [
                 Text(
-                  AppStrings.viewAllLabel,
+                  l10n.seeAll,
                   style: GoogleFonts.dmSans(
                     fontSize: AppTypography.fontSizeSmall + 1,
                     fontWeight: AppTypography.fontWeightBold,
@@ -406,6 +421,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void _showSortDialog(BuildContext context) {
     final theme = Theme.of(context);
     final vm = context.read<TransactionViewModel>();
+    final l10n = AppLocalizations.of(context)!;
 
     BlurUtils.showBlurredBottomSheet(
       context: context,
@@ -432,7 +448,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ),
             const SizedBox(height: 24),
             Text(
-              'Sort By',
+              l10n.sortBy,
               style: GoogleFonts.dmSans(
                 fontSize: AppTypography.fontSizeLarge,
                 fontWeight: AppTypography.fontWeightBold,
@@ -495,6 +511,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildEmptyState() {
+    final l10n = AppLocalizations.of(context)!;
     return EmptyStateView(
       icon: Icons.account_balance_wallet_outlined,
       title: AppStrings.emptyWalletTitle,
@@ -540,7 +557,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
                   const SizedBox(width: 12),
                   Text(
-                    AppStrings.enableAutoDetection,
+                    l10n.autoDetection,
                     style: GoogleFonts.dmSans(
                       color: Colors.white,
                       fontWeight: AppTypography.fontWeightBold,
@@ -557,6 +574,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildDualFab(ThemeData theme) {
+    final l10n = AppLocalizations.of(context)!;
     return GlassFab(
       marginBottom: 65,
       children: [
@@ -584,7 +602,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               icon: Icons.mic_rounded,
               color: theme.colorScheme.primary,
               onTap: () {
-                Fluttertoast.showToast(msg: "Hold to record transaction");
+                Fluttertoast.showToast(msg: l10n.holdToRecord);
               },
             ),
           ),

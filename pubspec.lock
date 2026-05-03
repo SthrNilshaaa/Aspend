@@ -438,6 +438,11 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.0"
+  flutter_localizations:
+    dependency: "direct main"
+    description: flutter
+    source: sdk
+    version: "0.0.0"
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
@@ -756,10 +761,10 @@ packages:
     dependency: "direct main"
     description:
       name: liquid_glass_widgets
-      sha256: "1cb1c1a0d9a73144a39efce4482d55bdd97fee8b8f3a5711de1e7641c40845a3"
+      sha256: "0fadc4c070fe9680a76edb1fdb3461c709e7719701c0e4cbbba81f5a16f6d68c"
       url: "https://pub.dev"
     source: hosted
-    version: "0.8.3"
+    version: "0.8.4"
   liquid_pull_to_refresh:
     dependency: "direct main"
     description:

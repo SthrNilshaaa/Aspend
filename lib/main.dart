@@ -6,6 +6,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:dynamic_color/dynamic_color.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:aspends_tracker/l10n/generated/app_localizations.dart';
 
 import 'core/models/person.dart';
 import 'core/models/person_transaction.dart';
@@ -26,8 +28,11 @@ import 'core/const/app_strings.dart';
 import 'core/const/app_typography.dart';
 import 'core/const/app_dimensions.dart';
 
+import 'package:intl/date_symbol_data_local.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting(); // Required for intl date formatting in different locales
   await Hive.initFlutter();
 
   Hive.registerAdapter(TransactionAdapter());
@@ -202,29 +207,62 @@ class MyApp extends StatelessWidget {
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
             ),
+            appBarTheme: AppBarTheme(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              centerTitle: true,
+              systemOverlayStyle: SystemUiOverlayStyle(
+                statusBarColor: Colors.transparent,
+                statusBarIconBrightness: scheme.brightness == Brightness.dark
+                    ? Brightness.light
+                    : Brightness.dark,
+                statusBarBrightness: scheme.brightness,
+              ),
+            ),
           );
         }
 
-        // Apply System UI Style for Android status bar icons
-        SystemChrome.setSystemUIOverlayStyle(
-          SystemUiOverlayStyle(
+
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: SystemUiOverlayStyle(
             statusBarColor: Colors.transparent,
             statusBarIconBrightness:
                 themeViewModel.isDarkMode ? Brightness.light : Brightness.dark,
+            statusBarBrightness:
+                themeViewModel.isDarkMode ? Brightness.dark : Brightness.light,
             systemNavigationBarColor: scaffoldBackgroundColor,
             systemNavigationBarIconBrightness:
                 themeViewModel.isDarkMode ? Brightness.light : Brightness.dark,
+            systemNavigationBarDividerColor: Colors.transparent,
           ),
-        );
-
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          title: AppStrings.appName,
-          themeMode: themeViewModel.themeMode,
-          theme: createTheme(lightSchemeFinal),
-          darkTheme: createTheme(darkSchemeFinal),
-          home: SplashScreen(
-            isDarkMode: themeViewModel.isDarkMode,
+          child: MaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: AppStrings.appName,
+            themeMode: themeViewModel.themeMode,
+            theme: createTheme(lightSchemeFinal),
+            darkTheme: createTheme(darkSchemeFinal),
+            locale: themeViewModel.locale,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('en', ''),
+              Locale('hi', ''),
+              Locale('es', ''),
+              Locale('fr', ''),
+              Locale('de', ''),
+              Locale('ja', ''),
+              Locale('zh', ''),
+              Locale('ar', ''),
+              Locale('pt', ''),
+              Locale('ru', ''),
+            ],
+            home: SplashScreen(
+              isDarkMode: themeViewModel.isDarkMode,
+            ),
           ),
         );
       },
