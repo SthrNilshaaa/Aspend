@@ -1,10 +1,6 @@
-import 'dart:ui';
-import 'package:aspends_tracker/core/const/app_colors.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:zoom_tap_animation/zoom_tap_animation.dart';
 import '../core/view_models/theme_view_model.dart';
 import '../core/services/native_bridge.dart';
 import 'dart:async';
@@ -13,7 +9,6 @@ import 'people_page.dart';
 import 'chart_page.dart';
 import 'settings_page.dart';
 import '../core/utils/responsive_utils.dart';
-import '../core/const/app_dimensions.dart';
 import '../shared/widgets/native_glass_navbar.dart';
 
 import '../core/view_models/liquid_navbar_view_model.dart';
@@ -164,9 +159,9 @@ class _RootNavigationState extends State<RootNavigation>
                           gradient: LinearGradient(
                             colors: [
                               isDark
-                                  ? Colors.black.withOpacity(
-                                      0.05) //theme.primaryColor.withOpacity(0.5)
-                                  : Colors.white.withOpacity(0.05),
+                                  ? Colors.black.withValues(
+                                      alpha: 0.05) //theme.primaryColor.withValues(alpha: 0.5)
+                                  : Colors.white.withValues(alpha: 0.05),
                               Colors.transparent,
                             ],
                             end: Alignment.topCenter,

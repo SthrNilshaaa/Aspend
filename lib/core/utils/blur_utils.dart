@@ -16,7 +16,7 @@ class BlurUtils {
     return showDialog<T>(
       context: context,
       barrierDismissible: barrierDismissible,
-      barrierColor: barrierColor ?? Colors.black.withOpacity(0.3),
+      barrierColor: barrierColor ?? Colors.black.withValues(alpha: 0.3),
       builder: (context) => BackdropFilter(
         filter: standardBlur,
         child: child,
@@ -43,7 +43,7 @@ class BlurUtils {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       clipBehavior: clipBehavior,
-      barrierColor: barrierColor ?? Colors.black.withOpacity(0.3),
+      barrierColor: barrierColor ?? Colors.black.withValues(alpha: 0.3),
       builder: (context) => BackdropFilter(
         filter: standardBlur,
         child: child,

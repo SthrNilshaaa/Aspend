@@ -36,8 +36,8 @@ class BackupService {
         '${dir.path}/aspends_transactions_${DateTime.now().millisecondsSinceEpoch}.csv');
     await file.writeAsString(csvData);
 
-    await Share.shareXFiles([XFile(file.path)],
-        text: 'Aspends Transactions Export (CSV)');
+    await SharePlus.instance.share(ShareParams(files: [XFile(file.path)],
+        text: 'Aspends Transactions Export (CSV)'));
   }
 
   static Future<void> exportAllDataJsonAndShare() async {
@@ -63,8 +63,8 @@ class BackupService {
         '${dir.path}/aspends_full_backup_${DateTime.now().millisecondsSinceEpoch}.json');
     await file.writeAsString(jsonStr);
 
-    await Share.shareXFiles([XFile(file.path)],
-        text: 'Aspends Full Backup (JSON)');
+    await SharePlus.instance.share(ShareParams(files: [XFile(file.path)],
+        text: 'Aspends Full Backup (JSON)'));
   }
 
   static Future<bool> importDataFromJson(BuildContext context) async {

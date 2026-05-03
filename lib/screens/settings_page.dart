@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:local_auth/local_auth.dart';
 import '../core/view_models/theme_view_model.dart';
 import 'package:flutter/services.dart';
@@ -117,7 +116,6 @@ class _SettingsPageState extends State<SettingsPage> {
     final themeViewModel = context.watch<ThemeViewModel>();
     final theme = Theme.of(context);
     final isDark = themeViewModel.isDarkMode;
-    final useAdaptive = themeViewModel.useAdaptiveColor;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -309,7 +307,6 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildThemeSegmentedControl(BuildContext context) {
-    final viewModel = context.watch<ThemeViewModel>();
     final theme = Theme.of(context);
     
     return Container(
@@ -377,83 +374,6 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildAdaptiveColorSwitch(BuildContext context) {
-    final viewModel = context.watch<ThemeViewModel>();
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          children: [
-            Icon(Icons.color_lens, color: Colors.teal.shade600, size: 24),
-            const SizedBox(width: 12),
-            Text(
-              AppStrings.adaptiveColor,
-              style: GoogleFonts.dmSans(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-          ],
-        ),
-        Switch(
-          value: viewModel.useAdaptiveColor,
-          onChanged: (value) {
-            HapticFeedback.lightImpact();
-            viewModel.setUseAdaptiveColor(value);
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildColorPickerTile(BuildContext context) {
-    final viewModel = context.watch<ThemeViewModel>();
-    final currentColor = viewModel.customSeedColor ?? Colors.green;
-    return SettingTile(
-      icon: Icons.color_lens,
-      title: AppStrings.appColor,
-      subtitle: AppStrings.selectColor,
-      onTap: () async {
-        Color selectedColor = currentColor;
-        BlurUtils.showBlurredDialog(
-          context: context,
-          child: AlertDialog(
-            title: const Text('Pick App Color'),
-            content: SingleChildScrollView(
-              child: BlockPicker(
-                pickerColor: selectedColor,
-                onColorChanged: (color) {
-                  selectedColor = color;
-                },
-              ),
-            ),
-            actions: [
-              TextButton(
-                child: const Text('Reset'),
-                onPressed: () {
-                  viewModel.setCustomSeedColor(null);
-                  Navigator.of(context).pop();
-                  _showSnackBar(context, 'App color reset to default!');
-                },
-              ),
-              TextButton(
-                child: const Text('Cancel'),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-              ElevatedButton(
-                child: const Text('Select'),
-                onPressed: () {
-                  viewModel.setCustomSeedColor(selectedColor);
-                  Navigator.of(context).pop();
-                  // Removed snackbar as it might trigger lint and is redundant with the UI update
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
 
   Widget _buildAppLockSection(BuildContext context) {
     return SettingTile(

@@ -71,29 +71,15 @@ class _BalanceCardState extends State<BalanceCard>
     final isNegative = totalIncome < totalExpenses;
 
     final Color backgroundColor;
-    final Color lineColor;
-    final Color borderColor;
 
     if (isNegative) {
       backgroundColor = isDark
           ? AppColors.balanceCardDarkModeNegative
           : AppColors.balanceCardLightModeNegative;
-      lineColor = isDark
-          ? AppColors.balanceCardLineDarkModeNegative
-          : AppColors.balanceCardLineLightModeNegative;
-      borderColor = isDark
-          ? AppColors.balanceCardBorderDarkModeNegative
-          : AppColors.balanceCardBorderLightModeNegative;
     } else {
       backgroundColor = isDark
           ? AppColors.balanceCardDarkModePositive
           : AppColors.balanceCardLightModePositive;
-      lineColor = isDark
-          ? AppColors.balanceCardLineDarkModePositive
-          : AppColors.balanceCardLineLightModePositive;
-      borderColor = isDark
-          ? AppColors.balanceCardBorderDarkModePositive
-          : AppColors.balanceCardBorderLightModePositive;
     }
 
     return GestureDetector(
@@ -382,7 +368,7 @@ class _BalanceCardState extends State<BalanceCard>
                 width: AppDimensions.avatarSizeStandard,
                 height: AppDimensions.spacingXSmall,
                 decoration: BoxDecoration(
-                  color: Colors.grey.withOpacity(0.3),
+                  color: Colors.grey.withValues(alpha: 0.3),
                   borderRadius:
                       BorderRadius.circular(AppDimensions.spacingTiny),
                 ),
@@ -400,7 +386,7 @@ class _BalanceCardState extends State<BalanceCard>
                 leading: Container(
                   padding: const EdgeInsets.all(AppDimensions.paddingSmall),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withOpacity(0.1),
+                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
                     borderRadius:
                         BorderRadius.circular(AppDimensions.borderRadiusSmall),
                   ),

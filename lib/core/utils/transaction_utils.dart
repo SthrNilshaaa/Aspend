@@ -30,8 +30,6 @@ class TransactionUtils {
         return SvgAppIcons.otherIcon;
       case 'freelance':
         return SvgAppIcons.freelanceIcon;
-      case 'gift':
-        return SvgAppIcons.giftIcon;
       case 'cashback':
         return SvgAppIcons.cashbackIcon;
       case 'business':
@@ -44,7 +42,6 @@ class TransactionUtils {
         return SvgAppIcons.healthIcon;
       case 'gift':
       case 'gifts':
-        return SvgAppIcons.giftIcon;
       case 'bonus':
         return SvgAppIcons.giftIcon;
       case 'fuel':
