@@ -55,7 +55,7 @@ class GradientBlurContainer extends StatelessWidget {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors:
-                      gradientColors.map((c) => c.withOpacity(0.4)).toList(),
+                      gradientColors.map((c) => c.withValues(alpha: 0.4)).toList(),
                 ),
               ),
             ),

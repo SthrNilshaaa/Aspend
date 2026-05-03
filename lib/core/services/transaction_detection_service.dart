@@ -195,6 +195,7 @@ class TransactionDetectionService {
 
   static Future<bool> _isDuplicateHash(String text) async {
     try {
+      if (text.isEmpty) return false;
       final hash = text.trim().hashCode.toString();
       final history = _transactionRepo.getDetectionHistory();
       
@@ -204,7 +205,7 @@ class TransactionDetectionService {
           : history;
       
       return recent.any((e) => e.text.trim().hashCode.toString() == hash && 
-          DateTime.now().difference(e.timestamp).inHours < 24);
+          DateTime.now().difference(e.timestamp).inHours < 24 && e.status == 'detected');
     } catch (e) {
       return false;
     }

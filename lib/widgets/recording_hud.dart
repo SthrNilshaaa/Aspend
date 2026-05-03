@@ -2,7 +2,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/const/app_typography.dart';
-import '../core/const/app_dimensions.dart';
 
 class RecordingHUD extends StatelessWidget {
   final String text;
