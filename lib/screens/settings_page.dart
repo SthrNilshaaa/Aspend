@@ -17,6 +17,7 @@ import '../core/services/backup_service.dart';
 import '../core/view_models/transaction_view_model.dart';
 import '../core/view_models/person_view_model.dart';
 import '../core/services/pdf_service.dart';
+import '../core/const/app_typography.dart';
 import '../core/services/transaction_detection_service.dart';
 import '../core/services/native_bridge.dart';
 import '../core/utils/transaction_parser.dart';
@@ -660,10 +661,11 @@ class _SettingsPageState extends State<SettingsPage> {
                       HapticFeedback.lightImpact();
                       try {
                         if (value) {
-                          final hasPermission =
+                          final hasNotification =
                               await NativeBridge.checkNotificationPermission();
+                          final hasSms = await NativeBridge.checkSmsPermission();
 
-                          if (!hasPermission) {
+                          if (!hasNotification && !hasSms) {
                             final confirmed = await showDialog<bool>(
                               context: context,
                               builder: (context) => BackdropFilter(
@@ -752,18 +754,7 @@ class _SettingsPageState extends State<SettingsPage> {
           subtitle: 'Simulate a notification to verify parsing',
           onTap: () => _showTestDetectionDialog(context),
         ),
-        SettingTile(
-          icon: Icons.app_registration_rounded,
-          title: 'Monitored Apps',
-          subtitle: 'Choose which apps to monitor for transactions',
-          onTap: () {
-            HapticFeedback.lightImpact();
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const AppSelectionPage()),
-            );
-          },
-        ),
+
         SettingTile(
           icon: Icons.manage_history,
           title: 'Show Detection History',
@@ -893,66 +884,74 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildBackupSection(BuildContext context, bool isDark) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
         SettingTile(
           icon: Icons.upload_file,
-          title: 'Export Transactions (CSV)',
-          subtitle: 'Export your transactions to CSV',
+          title: l10n.exportCsvTitle,
+          subtitle: l10n.exportCsvDesc,
           onTap: () async {
             HapticFeedback.lightImpact();
             try {
               await BackupService.exportToCsvAndShare();
               if (!mounted) return;
-              _showSnackBar(context, 'Export completed successfully!');
+              _showSnackBar(context, l10n.exportCsvSuccess);
             } catch (e) {
               if (!mounted) return;
-              _showSnackBar(context, 'Export failed: $e');
+              _showSnackBar(context, l10n.exportCsvFailed(e.toString()));
             }
           },
         ),
         SettingTile(
           icon: Icons.backup,
-          title: 'Full Backup (JSON)',
-          subtitle: 'Backup all data to JSON',
+          title: l10n.fullBackupTitle,
+          subtitle: l10n.fullBackupDesc,
           onTap: () async {
             HapticFeedback.lightImpact();
             try {
               await BackupService.exportAllDataJsonAndShare();
               if (!mounted) return;
-              _showSnackBar(context, 'Backup completed!');
+              _showSnackBar(context, l10n.backupCompleted);
             } catch (e) {
               if (!mounted) return;
-              _showSnackBar(context, 'Backup failed: $e');
+              _showSnackBar(context, l10n.backupFailed(e.toString()));
             }
           },
         ),
         SettingTile(
           icon: Icons.restore,
-          title: 'Restore Backup (JSON)',
-          subtitle: 'Restore all data from JSON backup',
+          title: l10n.restoreBackupTitle,
+          subtitle: l10n.restoreBackupDesc,
           onTap: () async {
             HapticFeedback.lightImpact();
             try {
-              final success = await BackupService.importDataFromJson(context);
+              final strategy = await _showConflictResolutionSheet(context, l10n);
+              if (strategy == null) {
+                if (!mounted) return;
+                _showSnackBar(context, l10n.restoreFailedCancelled);
+                return;
+              }
+              final success = await BackupService.importDataFromJson(
+                context,
+                conflictResolutionStrategy: strategy,
+              );
               if (!mounted) return;
               if (success) {
-                _showSnackBar(context, 'Data restored successfully!');
-                // Restart app or reload all data might be needed,
-                // but since we are using reactive Hive watchers, it should work.
+                _showSnackBar(context, l10n.restoreCompleted);
               } else {
-                _showSnackBar(context, 'Restore failed or cancelled');
+                _showSnackBar(context, l10n.restoreFailedCancelled);
               }
             } catch (e) {
               if (!mounted) return;
-              _showSnackBar(context, 'Restore failed: $e');
+              _showSnackBar(context, l10n.restoreFailed(e.toString()));
             }
           },
         ),
         SettingTile(
           icon: Icons.picture_as_pdf,
-          title: 'Export as PDF',
-          subtitle: 'Generate PDF reports',
+          title: l10n.exportPdfTitle,
+          subtitle: l10n.exportPdfDesc,
           onTap: () async {
             HapticFeedback.lightImpact();
             try {
@@ -962,17 +961,17 @@ class _SettingsPageState extends State<SettingsPage> {
                   bytes: await file.readAsBytes(),
                   filename: 'home_transactions.pdf');
               if (!mounted) return;
-              _showSnackBar(context, 'PDF exported successfully!');
+              _showSnackBar(context, l10n.pdfExported);
             } catch (e) {
               if (!mounted) return;
-              _showSnackBar(context, 'PDF export failed: $e');
+              _showSnackBar(context, l10n.pdfExportFailed(e.toString()));
             }
           },
         ),
         SettingTile(
           icon: Icons.groups,
-          title: 'Export People Data',
-          subtitle: 'Backup people transactions',
+          title: l10n.exportPeopleTitle,
+          subtitle: l10n.exportPeopleDesc,
           onTap: () async {
             HapticFeedback.lightImpact();
             try {
@@ -982,10 +981,10 @@ class _SettingsPageState extends State<SettingsPage> {
                   bytes: await file.readAsBytes(),
                   filename: 'person_transactions.pdf');
               if (!mounted) return;
-              _showSnackBar(context, 'People data exported!');
+              _showSnackBar(context, l10n.peopleExported);
             } catch (e) {
               if (!mounted) return;
-              _showSnackBar(context, 'People data export failed: $e');
+              _showSnackBar(context, l10n.peopleExportFailed(e.toString()));
             }
           },
         ),
@@ -1314,6 +1313,136 @@ class _SettingsPageState extends State<SettingsPage> {
             child: const Text('Save'),
           ),
         ],
+      ),
+    );
+  }
+
+  Future<String?> _showConflictResolutionSheet(BuildContext context, AppLocalizations l10n) async {
+    final theme = Theme.of(context);
+    
+    return showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          border: Border.all(color: theme.dividerColor.withValues(alpha: 0.08)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: theme.dividerColor.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              l10n.selectRestoreMode,
+              style: GoogleFonts.dmSans(
+                fontSize: AppTypography.fontSizeLarge,
+                fontWeight: FontWeight.w800,
+                color: theme.colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              l10n.restoreModeDesc,
+              style: GoogleFonts.dmSans(
+                fontSize: AppTypography.fontSizeSmall,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
+            ),
+            const SizedBox(height: 24),
+            _buildResolutionOption(
+              context,
+              title: l10n.mergeSkipDuplicates,
+              desc: l10n.mergeSkipDesc,
+              icon: Icons.merge_type_rounded,
+              color: Colors.blueAccent,
+              value: 'merge',
+            ),
+            const SizedBox(height: 16),
+            _buildResolutionOption(
+              context,
+              title: l10n.overwriteConflicts,
+              desc: l10n.overwriteConflictsDesc,
+              icon: Icons.copy_all_rounded,
+              color: Colors.orangeAccent,
+              value: 'overwrite',
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildResolutionOption(
+    BuildContext context, {
+    required String title,
+    required String desc,
+    required IconData icon,
+    required Color color,
+    required String value,
+  }) {
+    final theme = Theme.of(context);
+    
+    return InkWell(
+      onTap: () => Navigator.pop(context, value),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.primary.withValues(alpha: 0.04),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: theme.dividerColor.withValues(alpha: 0.08)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.dmSans(
+                      fontWeight: FontWeight.bold,
+                      fontSize: AppTypography.fontSizeSmall,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    desc,
+                    style: GoogleFonts.dmSans(
+                      fontSize: 11,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.arrow_forward_ios_rounded, size: 14, color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
+          ],
+        ),
       ),
     );
   }

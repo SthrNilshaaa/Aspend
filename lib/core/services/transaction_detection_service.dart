@@ -6,6 +6,7 @@ import 'package:aspends_tracker/core/utils/transaction_parser.dart';
 import 'package:aspends_tracker/core/repositories/transaction_repository.dart';
 import 'package:aspends_tracker/core/repositories/settings_repository.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 
 import 'native_bridge.dart';
 import 'package:aspends_tracker/core/const/app_constants.dart';
@@ -18,12 +19,16 @@ class TransactionDetectionService {
 
   static Future<void> initialize() async {
     try {
+      // Register lifecycle observer to automatically check history on resume
+      WidgetsBinding.instance.addObserver(_LifecycleObserver());
+
       // Check if auto-detection is enabled
       final isEnabled = _settingsRepo.getUseAutoDetection();
 
       if (isEnabled) {
         await startMonitoring();
         await _processPendingNotifications();
+        await scanHistory();
       }
 
       // Load ignored patterns into parser
@@ -111,7 +116,7 @@ class TransactionDetectionService {
   static final Map<String, DateTime> _lastNotificationTimes = {};
 
   static Future<void> processNotification(String title, String body,
-      {String? packageName}) async {
+      {String? packageName, int? timestamp}) async {
     if (!(await isEnabled())) return;
     
     try {
@@ -146,17 +151,13 @@ class TransactionDetectionService {
         return;
       }
 
-      if (packageName != null) {
-        final monitoredApps = await NativeBridge.getMonitoredApps();
-        if (monitoredApps.isNotEmpty && !monitoredApps.contains(packageName)) {
-          return;
-        }
-      }
-
       final parsed = TransactionParser.parse(fullText, packageName: packageName);
 
       if (parsed != null) {
         final tx = parsed.toTransaction();
+        if (timestamp != null) {
+          tx.date = DateTime.fromMillisecondsSinceEpoch(timestamp);
+        }
         await _addDetectedTransaction(tx, 'Notification');
         await _recordDetection(
           text: fullText,
@@ -210,7 +211,7 @@ class TransactionDetectionService {
     return false;
   }
 
-  static Future<void> processSmsMessage(String body, {String? sender}) async {
+  static Future<void> processSmsMessage(String body, {String? sender, int? timestamp}) async {
     if (!(await isEnabled())) return;
     
     try {
@@ -220,6 +221,9 @@ class TransactionDetectionService {
       final parsed = TransactionParser.parse(body, packageName: sender);
       if (parsed != null) {
         final tx = parsed.toTransaction();
+        if (timestamp != null) {
+          tx.date = DateTime.fromMillisecondsSinceEpoch(timestamp);
+        }
         await _addDetectedTransaction(tx, 'SMS');
         await _recordDetection(
           text: body,
@@ -450,11 +454,80 @@ class TransactionDetectionService {
     }
   }
 
+  static Future<void> scanHistory() async {
+    if (!(await isEnabled())) return;
+
+    try {
+      NativeBridge.notifySyncStatus(true);
+      final lastActive = _settingsRepo.getLastActiveTime();
+      
+      // Default to 24 hours ago if no previous active timestamp was recorded
+      final now = DateTime.now().millisecondsSinceEpoch;
+      var since = lastActive ?? (now - const Duration(days: 1).inMilliseconds);
+      
+      // Safety Cap: Never query further back than 30 days to avoid performance issues
+      final thirtyDaysAgo = now - const Duration(days: 30).inMilliseconds;
+      if (since < thirtyDaysAgo) {
+        since = thirtyDaysAgo;
+      }
+      
+      debugPrint('Scanning history since timestamp: $since (Last Active: $lastActive)');
+
+      // 1. Scan SMS history from content provider
+      final smsPermission = await NativeBridge.checkSmsPermission();
+      if (smsPermission) {
+        final smsList = await NativeBridge.querySmsHistory(since);
+        debugPrint('Found ${smsList.length} historical SMS messages to process');
+        for (final sms in smsList) {
+          final body = sms['body'] as String? ?? '';
+          final sender = sms['sender'] as String? ?? '';
+          final timestamp = sms['timestamp'] as int?;
+          await processSmsMessage(body, sender: sender, timestamp: timestamp);
+        }
+      }
+
+      // 2. Scan active notification drawer
+      final notificationPermission = await NativeBridge.checkNotificationPermission();
+      if (notificationPermission) {
+        final notificationList = await NativeBridge.getActiveNotifications();
+        debugPrint('Found ${notificationList.length} active notifications in drawer');
+        int processedCount = 0;
+        for (final notification in notificationList) {
+          final timestampStr = notification['timestamp'] as String?;
+          final timestamp = timestampStr != null ? int.tryParse(timestampStr) : null;
+          
+          // Duplicate protection: skip if the notification was posted before our checkpoint
+          if (timestamp != null && timestamp < since) {
+            continue;
+          }
+          
+          final title = notification['title'] as String? ?? '';
+          final text = notification['text'] as String? ?? '';
+          final packageName = notification['packageName'] as String? ?? '';
+          await processNotification(title, text, packageName: packageName, timestamp: timestamp);
+          processedCount++;
+        }
+        debugPrint('Processed $processedCount of ${notificationList.length} active notifications');
+      }
+
+      // Save the current timestamp as the last active check time
+      await _settingsRepo.setLastActiveTime(now);
+      
+      // Clear old undetected history items (skipped/failed entries older than 12h)
+      await deleteOldUndetectedHistory();
+      
+      NativeBridge.notifySyncStatus(false);
+    } catch (e) {
+      NativeBridge.notifySyncStatus(false);
+      debugPrint('Error scanning transaction history: $e');
+    }
+  }
+
   // Method to manually process recent notifications
   static Future<void> processRecentSms() async {
     try {
-      // This will be handled through native bridge
-      debugPrint('Processing recent notifications through native bridge');
+      debugPrint('Manually processing recent notifications and SMS history');
+      await scanHistory();
     } catch (e) {
       debugPrint('Error processing recent notifications: $e');
     }
@@ -493,4 +566,14 @@ class TransactionDetectionService {
 @pragma('vm:entry-point')
 void backgroundMessageHandler(String messageBody) {
   TransactionDetectionService.processSmsMessage(messageBody);
+}
+
+class _LifecycleObserver extends WidgetsBindingObserver {
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      debugPrint('App resumed: Triggering auto historical scan...');
+      TransactionDetectionService.scanHistory();
+    }
+  }
 }

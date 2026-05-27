@@ -123,7 +123,7 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
         slivers: [
           GlassAppBar(
             title: _isSelectionMode
-                ? '${_selectedIndices.length} Selected'
+                ? l10n.selectedCount(_selectedIndices.length)
                 : l10n.autoDetection,
             centerTitle: true,
             leading: GestureDetector(
@@ -163,12 +163,12 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
               if (_isSelectionMode) ...[
                 IconButton(
                   icon: const Icon(Icons.block_flipped, color: Colors.orange),
-                  tooltip: 'Ignore Patterns',
+                  tooltip: l10n.ignorePatternsTooltip,
                   onPressed: () => _bulkIgnore(_selectedIndices.toList()),
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete_outline, color: Colors.red),
-                  tooltip: 'Delete Selected',
+                  tooltip: l10n.deleteSelectedTooltip,
                   onPressed: () => _bulkDelete(_selectedIndices.toList()),
                 ),
                 const SizedBox(width: 8),
@@ -529,22 +529,23 @@ class _DetectionHistoryPageState extends State<DetectionHistoryPage> {
   // }
 
   void _showClearConfirmation(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Clear History?'),
-        content: const Text('This will delete all saved detection logs.'),
+        title: Text(l10n.clearHistoryTitle),
+        content: Text(l10n.clearHistoryDesc),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () {
               Hive.box<DetectionHistory>('detection_history').clear();
               Navigator.pop(context);
             },
-            child: const Text('Clear', style: TextStyle(color: Colors.red)),
+            child: Text(l10n.clear, style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -567,14 +568,14 @@ class _HistoryCard extends StatelessWidget {
     this.onLongPress,
   });
 
-  String _getAppLabel(String? pkg) {
-    if (pkg == null) return 'Unknown App';
+  String _getAppLabel(String? pkg, AppLocalizations l10n) {
+    if (pkg == null) return l10n.unknownApp;
     if (pkg.contains('com.google.android.apps.nbu.paisa.user')) return 'Google Pay';
     if (pkg.contains('com.phonepe.app')) return 'PhonePe';
     if (pkg.contains('net.one97.paytm')) return 'Paytm';
     if (pkg.contains('com.whatsapp')) return 'WhatsApp';
     if (pkg.contains('com.amazon.mShop')) return 'Amazon';
-    if (pkg.contains('sms')) return 'SMS Message';
+    if (pkg.contains('sms')) return l10n.smsMessage;
     return pkg.split('.').last.toUpperCase();
   }
 
@@ -582,6 +583,7 @@ class _HistoryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
     
     // Parse on the fly for rich info
     final parsed = TransactionParser.parse(entry.text, packageName: entry.packageName);
@@ -622,9 +624,9 @@ class _HistoryCard extends StatelessWidget {
               title: Text(
                 isDetected 
                   ? (amount != null && amount > 0 
-                      ? '₹${amount.toStringAsFixed(0)} ${isIncome ? 'Received' : 'Paid'}' 
-                      : 'Transaction Detected')
-                  : (entry.reason ?? 'Notification Logged'),
+                      ? '₹${amount.toStringAsFixed(0)} ${isIncome ? l10n.received : l10n.paid}' 
+                      : l10n.transactionDetected)
+                  : (entry.reason ?? l10n.notificationLogged),
                 style: GoogleFonts.dmSans(
                   fontWeight: FontWeight.w800,
                   fontSize: AppTypography.fontSizeRegular,
@@ -640,7 +642,7 @@ class _HistoryCard extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          isDetected ? merchant : 'Pattern not matched',
+                          isDetected ? merchant : l10n.patternNotMatched,
                           style: GoogleFonts.dmSans(
                             fontSize: AppTypography.fontSizeXSmall,
                             fontWeight: FontWeight.w500,
@@ -668,7 +670,7 @@ class _HistoryCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      _getAppLabel(entry.packageName),
+                      _getAppLabel(entry.packageName, l10n),
                       style: GoogleFonts.dmSans(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
@@ -734,6 +736,7 @@ class _HistoryCard extends StatelessWidget {
   }
 
   Widget _buildDetails(BuildContext context, ThemeData theme, ParsedTransaction? parsed, bool isIncome) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: Column(
@@ -749,7 +752,7 @@ class _HistoryCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'NOTIFICATION DATA',
+                l10n.notificationDataTitle,
                 style: GoogleFonts.dmSans(
                   fontWeight: FontWeight.w800,
                   fontSize: 10,
@@ -762,7 +765,7 @@ class _HistoryCard extends StatelessWidget {
                   Clipboard.setData(ClipboardData(text: entry.text));
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Text('Message copied to clipboard'),
+                      content: Text(l10n.copiedToClipboard),
                       behavior: SnackBarBehavior.floating,
                       width: 200,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -781,7 +784,7 @@ class _HistoryCard extends StatelessWidget {
                       Icon(Icons.copy_rounded, size: 10, color: theme.colorScheme.primary),
                       const SizedBox(width: 4),
                       Text(
-                        'COPY',
+                        l10n.copy,
                         style: GoogleFonts.dmSans(
                           fontSize: 9,
                           fontWeight: FontWeight.bold,

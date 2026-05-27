@@ -1,65 +1,65 @@
 {
   "appName": "Aspends",
-  "appTagline": "Smart spending, simplified.",
-  "totalBalance": "Total Balance",
-  "income": "Income",
-  "expense": "Expense",
-  "monthlyBudget": "Monthly Budget",
-  "transactions": "Transactions",
-  "recentTransactions": "Recent Transactions",
-  "seeAll": "See All",
-  "settings": "Settings",
-  "language": "Language",
-  "theme": "Theme",
-  "darkMode": "Dark Mode",
-  "lightMode": "Light Mode",
-  "systemDefault": "System Default",
-  "adaptiveColor": "Adaptive Color",
-  "customColor": "Custom Color",
-  "backup": "Backup & Restore",
-  "export": "Export Data",
-  "import": "Import Data",
-  "privacyPolicy": "Privacy Policy",
-  "telegramSupport": "Telegram Support",
-  "addTransaction": "Add Transaction",
-  "editTransaction": "Edit Transaction",
-  "deleteTransaction": "Delete Transaction",
-  "amount": "Amount",
-  "category": "Category",
-  "account": "Account",
-  "date": "Date",
-  "note": "Note (Optional)",
-  "save": "Save",
-  "cancel": "Cancel",
-  "delete": "Delete",
-  "search": "Search transactions...",
-  "noTransactions": "No transactions found",
-  "voiceInput": "Voice Input",
-  "speechUnavailable": "Speech recognition unavailable",
-  "microPermissionDenied": "Microphone permission denied",
-  "appearance": "Appearance",
-  "security": "Security",
-  "autoDetection": "Auto Transaction Detection",
-  "backupExport": "Backup & Export",
-  "dataManagement": "Data Management",
-  "budgetingBalance": "Budgeting & Balance",
-  "customDropdowns": "Custom Dropdown Items",
-  "appInformation": "App Information",
-  "developedBy": "Developed with ❤️ by Sthrnilshaa",
-  "chooseTheme": "Choose your preferred theme",
-  "appLock": "App Lock",
-  "appLockDesc": "Require device authentication to open app",
-  "upiId": "UPI ID",
-  "upiIdDesc": "Set your UPI ID for money requests",
-  "upiName": "Display Name",
-  "upiNameDesc": "Optional: Name shown in UPI request",
-  "analytics": "Analytics",
-  "people": "People",
-  "charts": "Charts",
-  "sortBy": "Sort By",
-  "holdToRecord": "Hold to record transaction",
-  "couldNotFindAmount": "Couldn't find amount. Try: 'Spent 500 on Food'",
-  "savedAmount": "Saved ₹{amount} for {category}",
+  "appTagline": "Intelligente Ausgaben, vereinfacht.",
+  "totalBalance": "Gesamtsaldo",
+  "income": "Einkommen",
+  "expense": "Kosten",
+  "monthlyBudget": "Monatsbudget",
+  "transactions": "Transaktionen",
+  "recentTransactions": "Letzte Transaktionen",
+  "seeAll": "Alle anzeigen",
+  "settings": "Einstellungen",
+  "language": "Sprache",
+  "theme": "Thema",
+  "darkMode": "Dunkler Modus",
+  "lightMode": "Lichtmodus",
+  "systemDefault": "Systemstandard",
+  "adaptiveColor": "Adaptive Farbe",
+  "customColor": "Benutzerdefinierte Farbe",
+  "backup": "Sichern und Wiederherstellen",
+  "export": "Daten exportieren",
+  "import": "Daten importieren",
+  "privacyPolicy": "Datenschutzrichtlinie",
+  "telegramSupport": "Telegram-Unterstützung",
+  "addTransaction": "Transaktion hinzufügen",
+  "editTransaction": "Transaktion bearbeiten",
+  "deleteTransaction": "Transaktion löschen",
+  "amount": "Menge",
+  "category": "Kategorie",
+  "account": "Konto",
+  "date": "Datum",
+  "note": "Hinweis (optional)",
+  "save": "Speichern",
+  "cancel": "Stornieren",
+  "delete": "Löschen",
+  "search": "Transaktionen suchen...",
+  "noTransactions": "Keine Transaktionen gefunden",
+  "voiceInput": "Spracheingabe",
+  "speechUnavailable": "Spracherkennung nicht verfügbar",
+  "microPermissionDenied": "Mikrofonberechtigung verweigert",
+  "appearance": "Aussehen",
+  "security": "Sicherheit",
+  "autoDetection": "Automatische Transaktionserkennung",
+  "backupExport": "Sichern und Exportieren",
+  "dataManagement": "Datenmanagement",
+  "budgetingBalance": "Budgetierung und Bilanz",
+  "customDropdowns": "Benutzerdefinierte Dropdown-Elemente",
+  "appInformation": "App-Informationen",
+  "developedBy": "Entwickelt mit ❤️ von Sthrnilshaa",
+  "chooseTheme": "Wählen Sie Ihr bevorzugtes Thema",
+  "appLock": "App-Sperre",
+  "appLockDesc": "Zum Öffnen der App ist eine Geräteauthentifizierung erforderlich",
+  "upiId": "UPI-ID",
+  "upiIdDesc": "Legen Sie Ihre UPI-ID für Geldanfragen fest",
+  "upiName": "Anzeigename",
+  "upiNameDesc": "Optional: Name, der in der UPI-Anfrage angezeigt wird",
+  "analytics": "Analytik",
+  "people": "Menschen",
+  "charts": "Diagramme",
+  "sortBy": "Sortieren nach",
+  "holdToRecord": "Halten Sie gedrückt, um die Transaktion aufzuzeichnen",
+  "couldNotFindAmount": "Betrag konnte nicht gefunden werden. Versuchen Sie: „500 für Essen ausgegeben“",
+  "savedAmount": "₹{amount} für {category} gespart",
   "@savedAmount": {
     "placeholders": {
       "amount": {
@@ -70,7 +70,7 @@
       }
     }
   },
-  "logsDeleted": "Deleted {count} logs",
+  "logsDeleted": "{count} Protokolle wurden gelöscht",
   "@logsDeleted": {
     "placeholders": {
       "count": {
@@ -78,7 +78,7 @@
       }
     }
   },
-  "patternsIgnored": "Permanently ignored {count} patterns",
+  "patternsIgnored": "Dauerhaft ignorierte {count} Muster",
   "@patternsIgnored": {
     "placeholders": {
       "count": {
@@ -86,5 +86,238 @@
       }
     }
   },
-  "recheckComplete": "Recheck complete"
+  "recheckComplete": "Nachprüfung abgeschlossen",
+  "aboutApp": "Über Aspends",
+  "developerDesigner": "Entwickler & Designer",
+  "leadDesigner": "Leitender Designer",
+  "developer": "Entwickler",
+  "supportLegal": "Support & Recht",
+  "privacyPolicyDesc": "Lesen Sie unser Dokument mit den Datenschutzbestimmungen",
+  "helpSupport": "Hilfe und Support",
+  "telegramSupportDesc": "Nehmen Sie an unserem Telegram teil, um Unterstützung zu erhalten",
+  "projectInfo": "Projektinformationen",
+  "openSource": "Open Source",
+  "openSourceDesc": "Stolz Open Source auf GitHub",
+  "rateApp": "Bewerten Sie Aspends",
+  "rateAppDesc": "Unterstützen Sie uns mit einer 5-Sterne-Bewertung",
+  "howAspendWorks": "WIE ASPEND FUNKTIONIERT",
+  "howItWorksTitle1": "1. Intelligentes Abfangen",
+  "howItWorksDesc1": "Ein sicherer, batterieoptimierter Hintergrunddienst wartet auf eingehende SMS- und Bankbenachrichtigungen.",
+  "howItWorksTitle2": "2. Lokales Zero-Cloud-Parsing",
+  "howItWorksDesc2": "Intelligente Offline-Algorithmen extrahieren sofort Beträge, Kategorien und Händler – 100 % auf Ihrem Gerät.",
+  "howItWorksTitle3": "3. Automatische Offline-Wiederherstellung",
+  "howItWorksDesc3": "Jedes Mal, wenn Sie Aspend öffnen oder fortsetzen, durchsucht es den Verlauf automatisch nach verpassten Transaktionen während Ihrer Abwesenheit.",
+  "howItWorksTitle4": "4. Ultimative Privatsphärensperre",
+  "howItWorksDesc4": "Keine Server, keine Webanfragen. Ihre Finanzdaten werden lokal im verschlüsselten Hive-Speicher geschützt.",
+  "autoDetectionSetup": "Einrichtung der automatischen Erkennung",
+  "autoDetectionSetupDesc": "Um Transaktionen automatisch zu erkennen, benötigen wir bestimmte Berechtigungen. Alle Banking- und Transaktions-Apps werden sicher überwacht.",
+  "notificationAccess": "1. Benachrichtigungszugriff",
+  "notificationAccessDesc": "Ermöglicht uns das Lesen von Transaktionswarnungen von Bank- und Zahlungs-Apps.",
+  "smsPermission": "2. SMS-Erlaubnis",
+  "smsPermissionDesc": "Ermöglicht das Lesen von Transaktions-SMS Ihrer Bank.",
+  "finishSetup": "Beenden Sie die Einrichtung",
+  "grant": "Gewähren",
+  "appNameShort": "Aspends",
+  "splashTagline": "Intelligentes Geldmanagement",
+  "budget": "Budget",
+  "balanceDetailsTitle": "Kontostanddetails",
+  "editBalanceTitle": "Kontostand bearbeiten",
+  "newBalanceLabel": "Neue Balance",
+  "viewAll": "Alle anzeigen",
+  "searchHint": "Kategorien oder Notizen durchsuchen...",
+  "emptyWalletTitle": "Ihr Geldbeutel ist ruhig",
+  "emptyWalletDesc": "Fügen Sie zunächst manuell eine Transaktion hinzu oder aktivieren Sie die automatische Erkennung, um Ihre Ausgaben mühelos zu verfolgen.",
+  "addPerson": "Person hinzufügen",
+  "addNewPerson": "Neue Person hinzufügen",
+  "editPerson": "Person bearbeiten",
+  "addPhoto": "Foto hinzufügen",
+  "personName": "Personenname",
+  "youGet": "Sie besitzen",
+  "youGive": "Sie leihen",
+  "youWillGet": "Du wirst es besitzen",
+  "youWillGive": "Sie werden leihen",
+  "noPeopleYet": "Es wurden noch keine Personen hinzugefügt",
+  "searchPeople": "Personen suchen...",
+  "enterNameHint": "Geben Sie den Namen der Person ein, mit der Sie Transaktionen verfolgen möchten",
+  "updateDetailsHint": "Aktualisieren Sie die Details für diese Person",
+  "expenses": "Kosten",
+  "history": "Geschichte",
+  "overview": "Überblick",
+  "trends": "Trends",
+  "categories": "Kategorien",
+  "noDataFound": "Keine Datensätze gefunden",
+  "appColor": "App-Farbe",
+  "selectColor": "Wählen Sie eine benutzerdefinierte App-Farbe aus",
+  "welcomeTitle": "Willkommen bei Aspends Tracker",
+  "welcomeSubtitle": "Ihr persönlicher Finanzbegleiter",
+  "welcomeDesc": "Verfolgen Sie Ihre Einnahmen und Ausgaben und verwalten Sie Ihr Geld ganz einfach. Behalten Sie den Überblick über Ihre finanziellen Ziele.",
+  "smartTrackingTitle": "Intelligente Transaktionsverfolgung",
+  "smartTrackingSubtitle": "Organisieren Sie Ihre Finanzen",
+  "smartTrackingDesc": "Kategorisieren Sie Transaktionen, fügen Sie Notizen hinzu und erhalten Sie detaillierte Einblicke in Ihr Ausgabeverhalten.",
+  "peopleTrackingTitle": "Person-zu-Person-Tracking",
+  "peopleTrackingSubtitle": "Gemeinsame Ausgaben verwalten",
+  "peopleTrackingDesc": "Verfolgen Sie Geld, das Sie schulden oder das anderen schuldet. Perfekt für Mitbewohner, Freunde und Familie.",
+  "analyticsTitle": "Schöne Analytik",
+  "analyticsSubtitle": "Visualisieren Sie Ihre Daten",
+  "analyticsDesc": "Diagramme und Grafiken helfen Ihnen, Ihre Ausgabegewohnheiten und Finanztrends zu verstehen.",
+  "offlineTitle": "Vollständig offline",
+  "offlineSubtitle": "Ihre Daten bleiben privat",
+  "offlineDesc": "Alle Ihre Finanzdaten werden lokal auf Ihrem Gerät gespeichert. Kein Internet erforderlich, absolute Privatsphäre.",
+  "autoDetectTitle": "Automatische Transaktionserkennung",
+  "autoDetectSubtitle": "Intelligent und automatisiert",
+  "autoDetectDesc": "Erkennen Sie Transaktionen automatisch anhand von Bankbenachrichtigungen. Keine manuelle Eingabe mehr – Ihre Transaktionen werden sofort erfasst!",
+  "readyTitle": "Bereit zum Start?",
+  "readySubtitle": "Beginnen wir Ihre Reise",
+  "readyDesc": "Sie sind bereit! Beginnen Sie noch heute mit der Verfolgung Ihrer Finanzen und übernehmen Sie die Kontrolle über Ihr Geld.",
+  "settingUpApp": "Richten Sie Ihre App ein...",
+  "skip": "Überspringen",
+  "next": "Nächste",
+  "getStarted": "Legen Sie los",
+  "requestMoney": "Geld anfordern",
+  "generateQr": "Zahlungs-QR generieren",
+  "sortByNameAZ": "Name (A-Z)",
+  "sortByNameZA": "Name (Z-A)",
+  "sortByBalanceHighest": "Guthaben (höchste)",
+  "sortByBalanceLowest": "Saldo (niedrigster Wert)",
+  "upiIdNotSet": "Für diese Person ist keine UPI-ID festgelegt. Bitte fügen Sie es aus der Bearbeitung hinzu.",
+  "couldNotFindUpiApp": "Es konnte keine UPI-Zahlungs-App gefunden werden",
+  "noTransactionsYet": "Noch keine Transaktionen",
+  "addFirstTransaction": "Fügen Sie Ihre erste Transaktion mit der Person hinzu",
+  "settleBalance": "Saldo ausgleichen",
+  "settleBalanceDesc": "Dadurch wird eine Transaktion von ₹{amount} hinzugefügt, um den Saldo auf Null zu bringen. Weitermachen?",
+  "@settleBalanceDesc": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "settle": "Siedeln",
+  "deletePerson": "Person löschen",
+  "deletePersonDesc": "Sind Sie sicher, dass Sie {name} löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+  "@deletePersonDesc": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteTransactionDesc": "Sind Sie sicher, dass Sie diese Transaktion löschen möchten?",
+  "update": "Aktualisieren",
+  "sortTransactionsBy": "Transaktionen sortieren nach",
+  "sortByDateRecent": "Datum (aktuell)",
+  "sortByDateOldest": "Datum (ältestes)",
+  "sortByAmountHighest": "Betrag (höchster)",
+  "sortByAmountLowest": "Betrag (niedrigster)",
+  "rangeAll": "Alle",
+  "rangeDay": "Tag",
+  "rangeWeek": "Woche",
+  "rangeMonth": "Monat",
+  "rangeYear": "Jahr",
+  "topCategory": "Top-Kategorie",
+  "noSpending": "Keine Ausgaben",
+  "avgDailySpend": "Durchschn. Tägliche Ausgaben",
+  "perDay": "Pro Tag",
+  "monitoredApps": "Überwachte Apps",
+  "searchAppsHint": "Suchen Sie nach Zahlungs- oder Banking-Apps...",
+  "noEligibleApps": "Keine geeigneten Apps gefunden",
+  "noAppsMatchSearch": "Keine Apps entsprechen Ihrer Suche",
+  "unknownApp": "Unbekannte App",
+  "errorLoadingApps": "Fehler beim Laden von Apps: {error}",
+  "@errorLoadingApps": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "selectedCount": "{count} Ausgewählt",
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ignorePatternsTooltip": "Muster ignorieren",
+  "deleteSelectedTooltip": "Ausgewählte löschen",
+  "clearHistoryTitle": "Verlauf löschen?",
+  "clearHistoryDesc": "Dadurch werden alle gespeicherten Erkennungsprotokolle gelöscht.",
+  "clear": "Klar",
+  "transactionDetected": "Transaktion erkannt",
+  "notificationLogged": "Benachrichtigung protokolliert",
+  "patternNotMatched": "Muster nicht übereinstimmend",
+  "notificationDataTitle": "Benachrichtigungsdaten",
+  "copiedToClipboard": "Nachricht in die Zwischenablage kopiert",
+  "copy": "KOPIE",
+  "smsMessage": "SMS-Nachricht",
+  "received": "Erhalten",
+  "paid": "Bezahlt",
+  "listeningHint": "Hören...",
+  "keepSpeaking": "Sprich weiter...",
+  "done": "Erledigt",
+  "fullBackupTitle": "Vollständige Sicherung (JSON)",
+  "fullBackupDesc": "Sichern Sie alle Daten in JSON",
+  "restoreBackupTitle": "Backup wiederherstellen (JSON)",
+  "restoreBackupDesc": "Stellen Sie alle Daten aus der JSON-Sicherung wieder her",
+  "backupCompleted": "Sicherung abgeschlossen!",
+  "backupFailed": "Sicherung fehlgeschlagen: {error}",
+  "@backupFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "restoreCompleted": "Daten erfolgreich wiederhergestellt!",
+  "restoreFailedCancelled": "Wiederherstellung fehlgeschlagen oder abgebrochen",
+  "restoreFailed": "Wiederherstellung fehlgeschlagen: {error}",
+  "@restoreFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "pdfExported": "PDF erfolgreich exportiert!",
+  "pdfExportFailed": "PDF-Export fehlgeschlagen: {error}",
+  "@pdfExportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "peopleExported": "Personendaten exportiert!",
+  "peopleExportFailed": "Der Export von Personendaten ist fehlgeschlagen: {error}",
+  "@peopleExportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "allDataDeleted": "Alle Daten erfolgreich gelöscht!",
+  "introReset": "Intro erfolgreich zurückgesetzt!",
+  "selectRestoreMode": "Wählen Sie den Wiederherstellungsmodus",
+  "restoreModeDesc": "Wählen Sie aus, wie mit vorhandenen Transaktionsdatensätzen während der Datenwiederherstellung umgegangen werden soll.",
+  "mergeSkipDuplicates": "Duplikate zusammenführen und überspringen",
+  "mergeSkipDesc": "Vermeiden Sie doppelte Einträge und behalten Sie gleichzeitig alle einzigartigen neuen Artikel bei.",
+  "overwriteConflicts": "Konflikte überschreiben und aktualisieren",
+  "overwriteConflictsDesc": "Ersetzen Sie bei Konflikten vorhandene Transaktionsdatensätze durch Sicherungsversionen.",
+  "exportCsvTitle": "Transaktionen exportieren (CSV)",
+  "exportCsvDesc": "Exportieren Sie Ihre Transaktionen in CSV",
+  "exportCsvSuccess": "Export erfolgreich abgeschlossen!",
+  "exportCsvFailed": "Export fehlgeschlagen: {error}",
+  "@exportCsvFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "exportPeopleTitle": "Personendaten exportieren",
+  "exportPeopleDesc": "Sichern Sie Personentransaktionen",
+  "exportPdfTitle": "Als PDF exportieren",
+  "exportPdfDesc": "PDF-Berichte erstellen"
 }

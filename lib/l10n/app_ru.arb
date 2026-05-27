@@ -1,65 +1,65 @@
 {
-  "appName": "Aspends",
-  "appTagline": "Smart spending, simplified.",
-  "totalBalance": "Total Balance",
-  "income": "Income",
-  "expense": "Expense",
-  "monthlyBudget": "Monthly Budget",
-  "transactions": "Transactions",
-  "recentTransactions": "Recent Transactions",
-  "seeAll": "See All",
-  "settings": "Settings",
-  "language": "Language",
-  "theme": "Theme",
-  "darkMode": "Dark Mode",
-  "lightMode": "Light Mode",
-  "systemDefault": "System Default",
-  "adaptiveColor": "Adaptive Color",
-  "customColor": "Custom Color",
-  "backup": "Backup & Restore",
-  "export": "Export Data",
-  "import": "Import Data",
-  "privacyPolicy": "Privacy Policy",
-  "telegramSupport": "Telegram Support",
-  "addTransaction": "Add Transaction",
-  "editTransaction": "Edit Transaction",
-  "deleteTransaction": "Delete Transaction",
-  "amount": "Amount",
-  "category": "Category",
-  "account": "Account",
-  "date": "Date",
-  "note": "Note (Optional)",
-  "save": "Save",
-  "cancel": "Cancel",
-  "delete": "Delete",
-  "search": "Search transactions...",
-  "noTransactions": "No transactions found",
-  "voiceInput": "Voice Input",
-  "speechUnavailable": "Speech recognition unavailable",
-  "microPermissionDenied": "Microphone permission denied",
-  "appearance": "Appearance",
-  "security": "Security",
-  "autoDetection": "Auto Transaction Detection",
-  "backupExport": "Backup & Export",
-  "dataManagement": "Data Management",
-  "budgetingBalance": "Budgeting & Balance",
-  "customDropdowns": "Custom Dropdown Items",
-  "appInformation": "App Information",
-  "developedBy": "Developed with ❤️ by Sthrnilshaa",
-  "chooseTheme": "Choose your preferred theme",
-  "appLock": "App Lock",
-  "appLockDesc": "Require device authentication to open app",
-  "upiId": "UPI ID",
-  "upiIdDesc": "Set your UPI ID for money requests",
-  "upiName": "Display Name",
-  "upiNameDesc": "Optional: Name shown in UPI request",
-  "analytics": "Analytics",
-  "people": "People",
-  "charts": "Charts",
-  "sortBy": "Sort By",
-  "holdToRecord": "Hold to record transaction",
-  "couldNotFindAmount": "Couldn't find amount. Try: 'Spent 500 on Food'",
-  "savedAmount": "Saved ₹{amount} for {category}",
+  "appName": "Аспендирует",
+  "appTagline": "Разумные траты, упрощенные.",
+  "totalBalance": "Общий баланс",
+  "income": "Доход",
+  "expense": "Расход",
+  "monthlyBudget": "Ежемесячный бюджет",
+  "transactions": "Транзакции",
+  "recentTransactions": "Недавние транзакции",
+  "seeAll": "Посмотреть все",
+  "settings": "Настройки",
+  "language": "Язык",
+  "theme": "Тема",
+  "darkMode": "Темный режим",
+  "lightMode": "Светлый режим",
+  "systemDefault": "Системные настройки по умолчанию",
+  "adaptiveColor": "Адаптивный цвет",
+  "customColor": "Пользовательский цвет",
+  "backup": "Резервное копирование и восстановление",
+  "export": "Экспортировать данные",
+  "import": "Импортировать данные",
+  "privacyPolicy": "политика конфиденциальности",
+  "telegramSupport": "Поддержка Телеграм",
+  "addTransaction": "Добавить транзакцию",
+  "editTransaction": "Редактировать транзакцию",
+  "deleteTransaction": "Удалить транзакцию",
+  "amount": "Количество",
+  "category": "Категория",
+  "account": "Счет",
+  "date": "Дата",
+  "note": "Примечание (необязательно)",
+  "save": "Сохранять",
+  "cancel": "Отмена",
+  "delete": "Удалить",
+  "search": "Поиск транзакций...",
+  "noTransactions": "Транзакции не найдены",
+  "voiceInput": "Голосовой ввод",
+  "speechUnavailable": "Распознавание речи недоступно",
+  "microPermissionDenied": "Разрешение на использование микрофона отклонено",
+  "appearance": "Появление",
+  "security": "Безопасность",
+  "autoDetection": "Автоматическое обнаружение транзакций",
+  "backupExport": "Резервное копирование и экспорт",
+  "dataManagement": "Управление данными",
+  "budgetingBalance": "Бюджетирование и баланс",
+  "customDropdowns": "Пользовательские раскрывающиеся элементы",
+  "appInformation": "Информация о приложении",
+  "developedBy": "Разработано с ❤️ автором Sthrnilshaa",
+  "chooseTheme": "Выберите предпочитаемую тему",
+  "appLock": "Блокировка приложения",
+  "appLockDesc": "Требовать аутентификацию устройства для открытия приложения",
+  "upiId": "идентификатор УПИ",
+  "upiIdDesc": "Установите свой идентификатор UPI для запросов денег",
+  "upiName": "Отображаемое имя",
+  "upiNameDesc": "Необязательно: имя, отображаемое в запросе UPI.",
+  "analytics": "Аналитика",
+  "people": "Люди",
+  "charts": "Графики",
+  "sortBy": "Сортировать по",
+  "holdToRecord": "Удерживайте, чтобы записать транзакцию",
+  "couldNotFindAmount": "Не удалось найти сумму. Попробуйте: «Потратил 500 на еду»",
+  "savedAmount": "Сохранено ₹{amount} для {category}",
   "@savedAmount": {
     "placeholders": {
       "amount": {
@@ -70,7 +70,7 @@
       }
     }
   },
-  "logsDeleted": "Deleted {count} logs",
+  "logsDeleted": "Удалено {count} логов",
   "@logsDeleted": {
     "placeholders": {
       "count": {
@@ -78,7 +78,7 @@
       }
     }
   },
-  "patternsIgnored": "Permanently ignored {count} patterns",
+  "patternsIgnored": "Постоянно игнорируемые шаблоны: {count}",
   "@patternsIgnored": {
     "placeholders": {
       "count": {
@@ -86,5 +86,238 @@
       }
     }
   },
-  "recheckComplete": "Recheck complete"
+  "recheckComplete": "Повторная проверка завершена",
+  "aboutApp": "О Аспенде",
+  "developerDesigner": "Разработчик и дизайнер",
+  "leadDesigner": "Ведущий дизайнер",
+  "developer": "Разработчик",
+  "supportLegal": "Поддержка и юридическая поддержка",
+  "privacyPolicyDesc": "Прочтите наш документ о политике конфиденциальности",
+  "helpSupport": "Помощь и поддержка",
+  "telegramSupportDesc": "Присоединяйтесь к нашему Telegram для поддержки",
+  "projectInfo": "Информация о проекте",
+  "openSource": "Открытый исходный код",
+  "openSourceDesc": "С гордостью открытый исходный код на GitHub",
+  "rateApp": "Ставка расходов",
+  "rateAppDesc": "Поддержите нас, поставив 5-звездочный рейтинг",
+  "howAspendWorks": "КАК РАБОТАЕТ АСПЕНД",
+  "howItWorksTitle1": "1. Интеллектуальный перехват",
+  "howItWorksDesc1": "Безопасная фоновая служба, оптимизированная для работы от аккумулятора, прослушивает входящие SMS и банковские уведомления.",
+  "howItWorksTitle2": "2. Локальный анализ без облака",
+  "howItWorksDesc2": "Умные оффлайн-алгоритмы мгновенно извлекают суммы, категории и продавцов — 100% на вашем устройстве.",
+  "howItWorksTitle3": "3. Автономное автоматическое восстановление",
+  "howItWorksDesc3": "Каждый раз, когда вы открываете или возобновляете работу Aspend, он автоматически сканирует историю на предмет пропущенных транзакций во время вашего отсутствия.",
+  "howItWorksTitle4": "4. Полная блокировка конфиденциальности",
+  "howItWorksDesc4": "Никаких серверов, никаких веб-запросов. Ваши финансовые данные защищены локально в зашифрованном хранилище Hive.",
+  "autoDetectionSetup": "Настройка автоматического обнаружения",
+  "autoDetectionSetupDesc": "Для автоматического обнаружения транзакций нам нужны определенные разрешения. Все банковские и транзакционные приложения будут надежно контролироваться.",
+  "notificationAccess": "1. Доступ к уведомлениям",
+  "notificationAccessDesc": "Позволяет нам читать оповещения о транзакциях из банковских и платежных приложений.",
+  "smsPermission": "2. Разрешение по СМС",
+  "smsPermissionDesc": "Позволяет читать транзакционные SMS от вашего банка.",
+  "finishSetup": "Завершить настройку",
+  "grant": "Грант",
+  "appNameShort": "Аспендирует",
+  "splashTagline": "Умное управление деньгами",
+  "budget": "Бюджет",
+  "balanceDetailsTitle": "Детали баланса",
+  "editBalanceTitle": "Изменить баланс",
+  "newBalanceLabel": "Новый Баланс",
+  "viewAll": "Посмотреть все",
+  "searchHint": "Поиск по категориям или заметкам...",
+  "emptyWalletTitle": "Ваш кошелек молчит",
+  "emptyWalletDesc": "Начните с добавления транзакции вручную или включите автоматическое обнаружение, чтобы легко отслеживать свои расходы.",
+  "addPerson": "Добавить человека",
+  "addNewPerson": "Добавить нового человека",
+  "editPerson": "Редактировать человека",
+  "addPhoto": "Добавить фото",
+  "personName": "Имя человека",
+  "youGet": "Вы владеете",
+  "youGive": "Вы берете взаймы",
+  "youWillGet": "Вы будете владеть",
+  "youWillGive": "Вы будете брать взаймы",
+  "noPeopleYet": "Никто еще не добавил людей",
+  "searchPeople": "Поиск людей...",
+  "enterNameHint": "Введите имя человека, с которым вы хотите отслеживать транзакции",
+  "updateDetailsHint": "Обновить данные этого человека",
+  "expenses": "Затраты",
+  "history": "История",
+  "overview": "Обзор",
+  "trends": "Тенденции",
+  "categories": "Категории",
+  "noDataFound": "Записи данных не найдены",
+  "appColor": "Цвет приложения",
+  "selectColor": "Выберите собственный цвет приложения",
+  "welcomeTitle": "Добро пожаловать в Aspends Tracker",
+  "welcomeSubtitle": "Ваш личный финансовый помощник",
+  "welcomeDesc": "Отслеживайте свои доходы, расходы и с легкостью управляйте своими деньгами. Будьте в курсе своих финансовых целей.",
+  "smartTrackingTitle": "Интеллектуальное отслеживание транзакций",
+  "smartTrackingSubtitle": "Организуйте свои финансы",
+  "smartTrackingDesc": "Классифицируйте транзакции, добавляйте примечания и получайте подробную информацию о своей структуре расходов.",
+  "peopleTrackingTitle": "Индивидуальное отслеживание",
+  "peopleTrackingSubtitle": "Управляйте общими расходами",
+  "peopleTrackingDesc": "Отслеживайте деньги, которые вы должны или вам должны другие. Идеально подходит для соседей по комнате, друзей и семьи.",
+  "analyticsTitle": "Красивая аналитика",
+  "analyticsSubtitle": "Визуализируйте свои данные",
+  "analyticsDesc": "Диаграммы и графики помогут вам понять ваши привычки расходования средств и финансовые тенденции.",
+  "offlineTitle": "Полностью оффлайн",
+  "offlineSubtitle": "Ваши данные остаются конфиденциальными",
+  "offlineDesc": "Все ваши финансовые данные хранятся локально на вашем устройстве. Интернет не требуется, полная конфиденциальность.",
+  "autoDetectTitle": "Автоматическое обнаружение транзакций",
+  "autoDetectSubtitle": "Умный и автоматизированный",
+  "autoDetectDesc": "Автоматически обнаруживайте транзакции из банковских уведомлений. Больше никакого ручного ввода — ваши транзакции фиксируются мгновенно!",
+  "readyTitle": "Готовы начать?",
+  "readySubtitle": "Давайте начнем ваше путешествие",
+  "readyDesc": "Все готово! Начните отслеживать свои финансы и возьмите под контроль свои деньги уже сегодня.",
+  "settingUpApp": "Настройка приложения...",
+  "skip": "Пропускать",
+  "next": "Следующий",
+  "getStarted": "Начать",
+  "requestMoney": "Запросить деньги",
+  "generateQr": "Создать платежный QR-код",
+  "sortByNameAZ": "Имя (А-Я)",
+  "sortByNameZA": "Имя (Я-А)",
+  "sortByBalanceHighest": "Баланс (самый высокий)",
+  "sortByBalanceLowest": "Баланс (самый низкий)",
+  "upiIdNotSet": "Идентификатор UPI не установлен для этого человека. Пожалуйста, добавьте его из редактирования.",
+  "couldNotFindUpiApp": "Не удалось найти платежное приложение UPI.",
+  "noTransactionsYet": "Транзакций пока нет",
+  "addFirstTransaction": "Добавьте свою первую транзакцию с человеком",
+  "settleBalance": "Погасить баланс",
+  "settleBalanceDesc": "Это добавит транзакцию на сумму ₹{amount} чтобы свести баланс к нулю. Продолжать?",
+  "@settleBalanceDesc": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "settle": "Решить",
+  "deletePerson": "Удалить человека",
+  "deletePersonDesc": "Вы уверены, что хотите удалить {name}? Это действие невозможно отменить.",
+  "@deletePersonDesc": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteTransactionDesc": "Вы уверены, что хотите удалить эту транзакцию?",
+  "update": "Обновлять",
+  "sortTransactionsBy": "Сортировать транзакции по",
+  "sortByDateRecent": "Дата (недавняя)",
+  "sortByDateOldest": "Дата (самая старая)",
+  "sortByAmountHighest": "Сумма (максимальная)",
+  "sortByAmountLowest": "Сумма (самая низкая)",
+  "rangeAll": "Все",
+  "rangeDay": "День",
+  "rangeWeek": "Неделя",
+  "rangeMonth": "Месяц",
+  "rangeYear": "Год",
+  "topCategory": "Высшая категория",
+  "noSpending": "Нет расходов",
+  "avgDailySpend": "Среднее Ежедневные расходы",
+  "perDay": "в день",
+  "monitoredApps": "Контролируемые приложения",
+  "searchAppsHint": "Поиск платежных или банковских приложений...",
+  "noEligibleApps": "Подходящие приложения не найдены",
+  "noAppsMatchSearch": "Нет приложений, соответствующих вашему запросу",
+  "unknownApp": "Неизвестное приложение",
+  "errorLoadingApps": "Ошибка загрузки приложений: {error}",
+  "@errorLoadingApps": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "selectedCount": "{count} Выбрано",
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ignorePatternsTooltip": "Игнорировать шаблоны",
+  "deleteSelectedTooltip": "Удалить выбранное",
+  "clearHistoryTitle": "Очистить историю?",
+  "clearHistoryDesc": "При этом будут удалены все сохраненные журналы обнаружения.",
+  "clear": "Прозрачный",
+  "transactionDetected": "Транзакция обнаружена",
+  "notificationLogged": "Уведомление зарегистрировано",
+  "patternNotMatched": "Шаблон не совпадает",
+  "notificationDataTitle": "ДАННЫЕ УВЕДОМЛЕНИЯ",
+  "copiedToClipboard": "Сообщение скопировано в буфер обмена",
+  "copy": "КОПИРОВАТЬ",
+  "smsMessage": "SMS-сообщение",
+  "received": "Полученный",
+  "paid": "Оплаченный",
+  "listeningHint": "Слушаю...",
+  "keepSpeaking": "Продолжайте говорить...",
+  "done": "Сделанный",
+  "fullBackupTitle": "Полное резервное копирование (JSON)",
+  "fullBackupDesc": "Резервное копирование всех данных в JSON",
+  "restoreBackupTitle": "Восстановить резервную копию (JSON)",
+  "restoreBackupDesc": "Восстановить все данные из резервной копии JSON",
+  "backupCompleted": "Резервное копирование завершено!",
+  "backupFailed": "Не удалось выполнить резервное копирование: {error}",
+  "@backupFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "restoreCompleted": "Данные успешно восстановлены!",
+  "restoreFailedCancelled": "Восстановление не выполнено или отменено",
+  "restoreFailed": "Не удалось восстановить: {error}",
+  "@restoreFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "pdfExported": "PDF успешно экспортирован!",
+  "pdfExportFailed": "Не удалось экспортировать PDF: {error}",
+  "@pdfExportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "peopleExported": "Данные о людях экспортированы!",
+  "peopleExportFailed": "Не удалось экспортировать данные о людях: {error}",
+  "@peopleExportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "allDataDeleted": "Все данные успешно удалены!",
+  "introReset": "Интро сброшено успешно!",
+  "selectRestoreMode": "Выберите режим восстановления",
+  "restoreModeDesc": "Выберите, как обрабатывать существующие записи транзакций во время восстановления данных.",
+  "mergeSkipDuplicates": "Объединить и пропустить дубликаты",
+  "mergeSkipDesc": "Избегайте дублирования записей, сохраняя при этом все уникальные новые элементы.",
+  "overwriteConflicts": "Конфликты перезаписи и обновления",
+  "overwriteConflictsDesc": "Замените существующие записи транзакций резервными версиями в случае конфликтов.",
+  "exportCsvTitle": "Экспортные транзакции (CSV)",
+  "exportCsvDesc": "Экспортируйте свои транзакции в CSV",
+  "exportCsvSuccess": "Экспорт успешно завершен!",
+  "exportCsvFailed": "Не удалось экспортировать: {error}",
+  "@exportCsvFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "exportPeopleTitle": "Экспорт данных о людях",
+  "exportPeopleDesc": "Резервное копирование транзакций людей",
+  "exportPdfTitle": "Экспортировать в PDF",
+  "exportPdfDesc": "Создание отчетов в формате PDF"
 }

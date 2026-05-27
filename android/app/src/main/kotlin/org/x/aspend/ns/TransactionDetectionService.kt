@@ -13,15 +13,54 @@ class TransactionDetectionService : NotificationListenerService() {
         private const val CHANNEL_NAME = "transaction_detection"
 
         private var methodChannel: MethodChannel? = null
+        private var instance: TransactionDetectionService? = null
 
         fun setMethodChannel(channel: MethodChannel) {
             methodChannel = channel
+        }
+
+        fun getActiveNotifications(): List<Map<String, String>> {
+            val inst = instance ?: return emptyList()
+            val list = mutableListOf<Map<String, String>>()
+            try {
+                val active = inst.activeNotifications
+                if (active != null) {
+                    for (sbn in active) {
+                        val notification = sbn.notification
+                        val extras = notification.extras
+                        val title = extras.getString(Notification.EXTRA_TITLE) ?: ""
+                        val text = extras.getString(Notification.EXTRA_TEXT) ?: ""
+                        val bigText = extras.getString(Notification.EXTRA_BIG_TEXT) ?: ""
+                        val fullText = "$title $text $bigText".trim()
+                        
+                        list.add(mapOf(
+                            "title" to title,
+                            "text" to text,
+                            "bigText" to bigText,
+                            "fullText" to fullText,
+                            "packageName" to sbn.packageName,
+                            "timestamp" to sbn.postTime.toString()
+                        ))
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error getting active notifications: ${e.message}")
+            }
+            return list
         }
     }
 
     override fun onCreate() {
         super.onCreate()
+        instance = this
         Log.d(TAG, "TransactionDetectionService created")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (instance == this) {
+            instance = null
+        }
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {

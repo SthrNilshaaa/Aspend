@@ -9,6 +9,11 @@ import android.util.Log
 import android.os.PowerManager
 import android.net.Uri
 import android.provider.Settings.System
+import android.content.Context
+import android.content.pm.PackageManager
+import android.Manifest
+import androidx.core.content.ContextCompat
+import androidx.core.app.ActivityCompat
 
 class MainActivity : FlutterFragmentActivity() {
     companion object {
@@ -132,6 +137,77 @@ class MainActivity : FlutterFragmentActivity() {
                     } catch (e: Exception) {
                         Log.e(TAG, "Error getting pending notifications: ${e.message}")
                         result.success(emptyList<String>())
+                    }
+                }
+
+                "checkSmsPermission" -> {
+                    try {
+                        val hasRead = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED
+                        val hasReceive = ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_SMS) == PackageManager.PERMISSION_GRANTED
+                        result.success(hasRead && hasReceive)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error checking SMS permission: ${e.message}")
+                        result.success(false)
+                    }
+                }
+
+                "requestSmsPermission" -> {
+                    try {
+                        ActivityCompat.requestPermissions(
+                            this,
+                            arrayOf(Manifest.permission.READ_SMS, Manifest.permission.RECEIVE_SMS),
+                            101
+                        )
+                        result.success(true)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error requesting SMS permission: ${e.message}")
+                        result.error("SMS_PERMISSION_ERROR", e.message, null)
+                    }
+                }
+
+                "querySmsHistory" -> {
+                    try {
+                        val sinceTimestamp = call.argument<Long>("sinceTimestamp") ?: 0L
+                        val smsList = mutableListOf<Map<String, Any>>()
+                        
+                        val uri = Uri.parse("content://sms/inbox")
+                        val projection = arrayOf("_id", "address", "body", "date")
+                        val selection = "date > ?"
+                        val selectionArgs = arrayOf(sinceTimestamp.toString())
+                        val sortOrder = "date ASC"
+                        
+                        val cursor = contentResolver.query(uri, projection, selection, selectionArgs, sortOrder)
+                        cursor?.use { c ->
+                            val addressIndex = c.getColumnIndex("address")
+                            val bodyIndex = c.getColumnIndex("body")
+                            val dateIndex = c.getColumnIndex("date")
+                            
+                            while (c.moveToNext()) {
+                                val sender = if (addressIndex != -1) c.getString(addressIndex) ?: "" else ""
+                                val body = if (bodyIndex != -1) c.getString(bodyIndex) ?: "" else ""
+                                val date = if (dateIndex != -1) c.getLong(dateIndex) else 0L
+                                
+                                smsList.add(mapOf(
+                                    "sender" to sender,
+                                    "body" to body,
+                                    "timestamp" to date
+                                ))
+                            }
+                        }
+                        result.success(smsList)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error querying SMS history: ${e.message}")
+                        result.error("SMS_QUERY_ERROR", e.message, null)
+                    }
+                }
+
+                "getActiveNotifications" -> {
+                    try {
+                        val notifications = TransactionDetectionService.getActiveNotifications()
+                        result.success(notifications)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error getting active notifications: ${e.message}")
+                        result.error("ACTIVE_NOTIFICATIONS_ERROR", e.message, null)
                     }
                 }
 

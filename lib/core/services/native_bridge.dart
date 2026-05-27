@@ -238,4 +238,28 @@ class NativeBridge {
       return [];
     }
   }
+
+  static Future<List<Map<String, dynamic>>> querySmsHistory(int sinceTimestamp) async {
+    try {
+      final List<dynamic>? result = await _channel.invokeMethod('querySmsHistory', {
+        'sinceTimestamp': sinceTimestamp,
+      });
+      if (result == null) return [];
+      return result.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    } catch (e) {
+      debugPrint('Error querying SMS history: $e');
+      return [];
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getActiveNotifications() async {
+    try {
+      final List<dynamic>? result = await _channel.invokeMethod('getActiveNotifications');
+      if (result == null) return [];
+      return result.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    } catch (e) {
+      debugPrint('Error getting active notifications: $e');
+      return [];
+    }
+  }
 }

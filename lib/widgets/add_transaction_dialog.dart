@@ -46,10 +46,12 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
   late String _account;
   late DateTime _selectedDate;
   final List<String> _images = [];
+  late FocusNode _amountFocusNode;
 
   @override
   void initState() {
     super.initState();
+    _amountFocusNode = FocusNode();
     final tx = widget.existingTransaction;
     final ctx = widget.existingPersonTransaction;
     _category = tx?.category ?? (widget.isIncome ? 'Salary' : 'Food');
@@ -66,6 +68,27 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
     } else {
       _note.text = widget.initialNote ?? '';
       _amount.text = widget.initialAmount?.abs().toStringAsFixed(2) ?? '';
+    }
+  }
+
+  @override
+  void dispose() {
+    _amountFocusNode.dispose();
+    _amount.dispose();
+    _note.dispose();
+    super.dispose();
+  }
+
+  double _getDynamicFontSize(String text) {
+    final len = text.isEmpty ? 1 : text.length;
+    if (len <= 4) {
+      return AppTypography.fontSizeGigantic + 10;
+    } else if (len <= 7) {
+      return AppTypography.fontSizeGigantic - 5;
+    } else if (len <= 10) {
+      return AppTypography.fontSizeXXLarge;
+    } else {
+      return AppTypography.fontSizeLarge;
     }
   }
 
@@ -173,11 +196,11 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // Stylized Amount Header
-                GestureDetector(
+                 GestureDetector(
                   // tap to enable show input for amount
                   onTap: () {
-                    // show input for amount in nTextformfield  if amount is 0.00
-                    if (_amount.text == '0.00') {
+                    _amountFocusNode.requestFocus();
+                    if (_amount.text == '0.00' || _amount.text == '0') {
                       _amount.text = '';
                     }
                   },
@@ -245,9 +268,13 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                             IntrinsicWidth(
                               child: TextFormField(
                                 controller: _amount,
+                                focusNode: _amountFocusNode,
                                 keyboardType: TextInputType.number,
+                                onChanged: (val) {
+                                  setState(() {});
+                                },
                                 style: GoogleFonts.bayon(
-                                  fontSize: AppTypography.fontSizeGigantic + 10,
+                                  fontSize: _getDynamicFontSize(_amount.text),
                                   color: widget.isIncome
                                       ? AppColors.accentGreen
                                       : AppColors.accentRed,

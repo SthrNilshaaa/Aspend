@@ -235,4 +235,12 @@ class SettingsRepository {
       await _settingsBox.put(AppConstants.localeKey, localeCode);
     }
   }
+
+  int? getLastActiveTime() {
+    return _settingsBox.get('lastActiveTime');
+  }
+
+  Future<void> setLastActiveTime(int timestamp) async {
+    await _settingsBox.put('lastActiveTime', timestamp);
+  }
 }

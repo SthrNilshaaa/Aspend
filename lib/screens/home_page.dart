@@ -28,6 +28,7 @@ import '../../widgets/header_delegate.dart';
 import '../../widgets/add_transaction_dialog.dart';
 import '../../widgets/empty_state_view.dart';
 import '../../widgets/glass_action_button.dart';
+import '../../widgets/monitoring_setup_dialog.dart';
 import '../../widgets/recording_hud.dart';
 import '../core/view_models/person_view_model.dart';
 import '../core/models/person_transaction.dart';
@@ -512,40 +513,85 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Widget _buildEmptyState() {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return EmptyStateView(
       icon: Icons.account_balance_wallet_outlined,
-      title: AppStrings.emptyWalletTitle,
-      description: AppStrings.emptyWalletDesc,
+      title: l10n.emptyWalletTitle,
+      description: l10n.emptyWalletDesc,
       action: FutureBuilder<bool>(
         future: TransactionDetectionService.isEnabled(),
         builder: (context, snapshot) {
           final isEnabled = snapshot.data ?? false;
-          if (isEnabled) return const SizedBox.shrink();
+          if (isEnabled) {
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              decoration: BoxDecoration(
+                color: AppColors.primaryGreen.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusMedium),
+                border: Border.all(
+                  color: AppColors.primaryGreen.withValues(alpha: 0.25),
+                  width: 1.5,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const _PulsingDot(),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Auto-Detection Active',
+                    style: GoogleFonts.dmSans(
+                      color: isDark ? AppColors.accentGreen : AppColors.primaryGreen,
+                      fontWeight: AppTypography.fontWeightBold,
+                      fontSize: AppTypography.fontSizeSmall + 1,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
 
           return ZoomTapAnimation(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SettingsPage()),
+            onTap: () async {
+              HapticFeedback.mediumImpact();
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (context) => BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                  child: const MonitoringSetupDialog(),
+                ),
               );
+
+              if (confirmed == true) {
+                await TransactionDetectionService.setEnabled(true);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Auto-detection enabled successfully!'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                  setState(() {});
+                }
+              }
             },
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Theme.of(context).colorScheme.primary,
-                    Theme.of(context).colorScheme.secondary,
+                    theme.colorScheme.primary,
+                    theme.colorScheme.secondary,
                   ],
                 ),
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadiusLarge),
                 boxShadow: [
                   BoxShadow(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .primary
-                        .withValues(alpha: 0.3),
+                    color: theme.colorScheme.primary.withValues(alpha: 0.3),
                     blurRadius: AppDimensions.blurRadiusStandard,
                     offset: const Offset(0, 8),
                   ),
@@ -616,6 +662,64 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _PulsingDot extends StatefulWidget {
+  const _PulsingDot();
+
+  @override
+  State<_PulsingDot> createState() => _PulsingDotState();
+}
+
+class _PulsingDotState extends State<_PulsingDot>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Container(
+          width: 8,
+          height: 8,
+          decoration: const BoxDecoration(
+            color: AppColors.accentGreen,
+            shape: BoxShape.circle,
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.accentGreen.withValues(
+                    alpha: 0.3 + (_controller.value * 0.5),
+                  ),
+                  blurRadius: 4 + (_controller.value * 8),
+                  spreadRadius: _controller.value * 3,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

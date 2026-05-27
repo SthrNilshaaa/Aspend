@@ -1,65 +1,65 @@
 {
-  "appName": "Aspends",
-  "appTagline": "Smart spending, simplified.",
-  "totalBalance": "Total Balance",
-  "income": "Income",
-  "expense": "Expense",
-  "monthlyBudget": "Monthly Budget",
-  "transactions": "Transactions",
-  "recentTransactions": "Recent Transactions",
-  "seeAll": "See All",
-  "settings": "Settings",
-  "language": "Language",
-  "theme": "Theme",
-  "darkMode": "Dark Mode",
-  "lightMode": "Light Mode",
-  "systemDefault": "System Default",
-  "adaptiveColor": "Adaptive Color",
-  "customColor": "Custom Color",
-  "backup": "Backup & Restore",
-  "export": "Export Data",
-  "import": "Import Data",
-  "privacyPolicy": "Privacy Policy",
-  "telegramSupport": "Telegram Support",
-  "addTransaction": "Add Transaction",
-  "editTransaction": "Edit Transaction",
-  "deleteTransaction": "Delete Transaction",
-  "amount": "Amount",
-  "category": "Category",
-  "account": "Account",
-  "date": "Date",
-  "note": "Note (Optional)",
-  "save": "Save",
-  "cancel": "Cancel",
-  "delete": "Delete",
-  "search": "Search transactions...",
-  "noTransactions": "No transactions found",
-  "voiceInput": "Voice Input",
-  "speechUnavailable": "Speech recognition unavailable",
-  "microPermissionDenied": "Microphone permission denied",
-  "appearance": "Appearance",
-  "security": "Security",
-  "autoDetection": "Auto Transaction Detection",
-  "backupExport": "Backup & Export",
-  "dataManagement": "Data Management",
-  "budgetingBalance": "Budgeting & Balance",
-  "customDropdowns": "Custom Dropdown Items",
-  "appInformation": "App Information",
-  "developedBy": "Developed with ❤️ by Sthrnilshaa",
-  "chooseTheme": "Choose your preferred theme",
-  "appLock": "App Lock",
-  "appLockDesc": "Require device authentication to open app",
-  "upiId": "UPI ID",
-  "upiIdDesc": "Set your UPI ID for money requests",
-  "upiName": "Display Name",
-  "upiNameDesc": "Optional: Name shown in UPI request",
-  "analytics": "Analytics",
-  "people": "People",
-  "charts": "Charts",
-  "sortBy": "Sort By",
-  "holdToRecord": "Hold to record transaction",
-  "couldNotFindAmount": "Couldn't find amount. Try: 'Spent 500 on Food'",
-  "savedAmount": "Saved ₹{amount} for {category}",
+  "appName": "阿斯彭德斯",
+  "appTagline": "智能支出，简化。",
+  "totalBalance": "总余额",
+  "income": "收入",
+  "expense": "费用",
+  "monthlyBudget": "每月预算",
+  "transactions": "交易",
+  "recentTransactions": "最近交易",
+  "seeAll": "查看全部",
+  "settings": "设置",
+  "language": "语言",
+  "theme": "主题",
+  "darkMode": "深色模式",
+  "lightMode": "灯光模式",
+  "systemDefault": "系统默认值",
+  "adaptiveColor": "自适应颜色",
+  "customColor": "定制颜色",
+  "backup": "备份与恢复",
+  "export": "导出数据",
+  "import": "导入数据",
+  "privacyPolicy": "隐私政策",
+  "telegramSupport": "电报支持",
+  "addTransaction": "添加交易",
+  "editTransaction": "编辑交易",
+  "deleteTransaction": "删除交易",
+  "amount": "数量",
+  "category": "类别",
+  "account": "帐户",
+  "date": "日期",
+  "note": "注意（可选）",
+  "save": "节省",
+  "cancel": "取消",
+  "delete": "删除",
+  "search": "搜索交易...",
+  "noTransactions": "未找到交易",
+  "voiceInput": "语音输入",
+  "speechUnavailable": "语音识别不可用",
+  "microPermissionDenied": "麦克风权限被拒绝",
+  "appearance": "外貌",
+  "security": "安全",
+  "autoDetection": "自动交易检测",
+  "backupExport": "备份与导出",
+  "dataManagement": "数据管理",
+  "budgetingBalance": "预算与平衡",
+  "customDropdowns": "自定义下拉项",
+  "appInformation": "应用信息",
+  "developedBy": "由 Sthrnilshaa 与 ❤️ 一起开发",
+  "chooseTheme": "选择您喜欢的主题",
+  "appLock": "应用锁",
+  "appLockDesc": "需要设备身份验证才能打开应用程序",
+  "upiId": "统一识别​​码",
+  "upiIdDesc": "为付款请求设置您的 UPI ID",
+  "upiName": "显示名称",
+  "upiNameDesc": "可选：UPI 请求中显示的名称",
+  "analytics": "分析",
+  "people": "人们",
+  "charts": "图表",
+  "sortBy": "排序方式",
+  "holdToRecord": "按住记录交易",
+  "couldNotFindAmount": "找不到金额。尝试：“在食物上花了 500 美元”",
+  "savedAmount": "为 {category} 节省了 卢比{amount}",
   "@savedAmount": {
     "placeholders": {
       "amount": {
@@ -70,7 +70,7 @@
       }
     }
   },
-  "logsDeleted": "Deleted {count} logs",
+  "logsDeleted": "已删除 {count} 条日志",
   "@logsDeleted": {
     "placeholders": {
       "count": {
@@ -78,7 +78,7 @@
       }
     }
   },
-  "patternsIgnored": "Permanently ignored {count} patterns",
+  "patternsIgnored": "永久忽略 {count} 模式",
   "@patternsIgnored": {
     "placeholders": {
       "count": {
@@ -86,5 +86,238 @@
       }
     }
   },
-  "recheckComplete": "Recheck complete"
+  "recheckComplete": "复检完成",
+  "aboutApp": "关于阿斯彭德斯",
+  "developerDesigner": "开发商及设计师",
+  "leadDesigner": "首席设计师",
+  "developer": "开发商",
+  "supportLegal": "支持与法律",
+  "privacyPolicyDesc": "阅读我们的隐私政策文件",
+  "helpSupport": "帮助与支持",
+  "telegramSupportDesc": "加入我们的 Telegram 以获得支持",
+  "projectInfo": "项目信息",
+  "openSource": "开源",
+  "openSourceDesc": "自豪地在 GitHub 上开源",
+  "rateApp": "费率上升",
+  "rateAppDesc": "支持我们并给予 5 星评级",
+  "howAspendWorks": "ASPEND 如何运作",
+  "howItWorksTitle1": "1. 智能拦截",
+  "howItWorksDesc1": "安全、电池优化的后台服务监听传入的短信和银行通知。",
+  "howItWorksTitle2": "2. 零云本地解析",
+  "howItWorksDesc2": "智能离线算法可在您的设备上 100% 即时提取金额、类别和商家。",
+  "howItWorksTitle3": "3. 离线自动恢复",
+  "howItWorksDesc3": "每次您打开或恢复 Aspend 时，它都会自动扫描历史记录以查找您不在期间错过的交易。",
+  "howItWorksTitle4": "4.终极隐私锁",
+  "howItWorksDesc4": "没有服务器，没有网络请求。您的财务数据在加密的 Hive 存储中受到本地保护。",
+  "autoDetectionSetup": "自动检测设置",
+  "autoDetectionSetupDesc": "为了自动检测交易，我们需要特定的权限。所有银行和交易应用程序都将受到安全监控。",
+  "notificationAccess": "1. 通知访问",
+  "notificationAccessDesc": "允许我们读取来自银行和支付应用程序的交易警报。",
+  "smsPermission": "2.短信权限",
+  "smsPermissionDesc": "启用从银行读取交易短信。",
+  "finishSetup": "完成设置",
+  "grant": "授予",
+  "appNameShort": "阿斯彭德斯",
+  "splashTagline": "智能资金管理",
+  "budget": "预算",
+  "balanceDetailsTitle": "余额详情",
+  "editBalanceTitle": "编辑余额",
+  "newBalanceLabel": "新百伦",
+  "viewAll": "查看全部",
+  "searchHint": "搜索类别或注释...",
+  "emptyWalletTitle": "你的钱包很安静",
+  "emptyWalletDesc": "首先手动添加交易或启用自动检测以轻松跟踪您的支出。",
+  "addPerson": "添加人员",
+  "addNewPerson": "添加新人",
+  "editPerson": "编辑人物",
+  "addPhoto": "添加照片",
+  "personName": "人名",
+  "youGet": "你拥有",
+  "youGive": "你借",
+  "youWillGet": "你将拥有",
+  "youWillGive": "你会借",
+  "noPeopleYet": "尚未添加人员",
+  "searchPeople": "搜人...",
+  "enterNameHint": "输入您想要跟踪交易的人员的姓名",
+  "updateDetailsHint": "更新此人的详细信息",
+  "expenses": "开支",
+  "history": "历史",
+  "overview": "概述",
+  "trends": "趋势",
+  "categories": "类别",
+  "noDataFound": "没有找到数据记录",
+  "appColor": "应用程序颜色",
+  "selectColor": "选择自定义应用程序颜色",
+  "welcomeTitle": "欢迎来到阿斯彭德跟踪器",
+  "welcomeSubtitle": "您的个人理财伴侣",
+  "welcomeDesc": "跟踪您的收入、支出并轻松管理您的资金。掌控您的财务目标。",
+  "smartTrackingTitle": "智能交易追踪",
+  "smartTrackingSubtitle": "整理你的财务",
+  "smartTrackingDesc": "对交易进行分类、添加注释并详细了解您的支出模式。",
+  "peopleTrackingTitle": "人对人追踪",
+  "peopleTrackingSubtitle": "管理共享费用",
+  "peopleTrackingDesc": "跟踪您欠下的钱或别人欠下的钱。非常适合室友、朋友和家人。",
+  "analyticsTitle": "美丽的分析",
+  "analyticsSubtitle": "可视化您的数据",
+  "analyticsDesc": "图表和图表可帮助您了解您的消费习惯和财务趋势。",
+  "offlineTitle": "完全离线",
+  "offlineSubtitle": "您的数据保持私密",
+  "offlineDesc": "您的所有财务数据都存储在您的本地设备上。无需互联网，完全隐私。",
+  "autoDetectTitle": "自动交易检测",
+  "autoDetectSubtitle": "智能自动化",
+  "autoDetectDesc": "自动检测银行通知中的交易。不再需要手动输入 - 您的交易会立即被捕获！",
+  "readyTitle": "准备好开始了吗？",
+  "readySubtitle": "让我们开始你的旅程",
+  "readyDesc": "你都准备好了！从今天开始跟踪您的财务状况并掌控您的资金。",
+  "settingUpApp": "正在设置您的应用程序...",
+  "skip": "跳过",
+  "next": "下一个",
+  "getStarted": "开始使用",
+  "requestMoney": "索要钱",
+  "generateQr": "生成支付二维码",
+  "sortByNameAZ": "姓名（A-Z）",
+  "sortByNameZA": "姓名（Z-A）",
+  "sortByBalanceHighest": "余额（最高）",
+  "sortByBalanceLowest": "余额（最低）",
+  "upiIdNotSet": "未为此人设置 UPI ID。请从编辑中添加它。",
+  "couldNotFindUpiApp": "找不到 UPI 支付应用",
+  "noTransactionsYet": "还没有交易",
+  "addFirstTransaction": "添加您与此人的第一笔交易",
+  "settleBalance": "结算余额",
+  "settleBalanceDesc": "这将添加 卢比{amount} 的交易，使余额为零。继续？",
+  "@settleBalanceDesc": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "settle": "定居",
+  "deletePerson": "删除人员",
+  "deletePersonDesc": "您确定要删除{name}吗？此操作无法撤消。",
+  "@deletePersonDesc": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteTransactionDesc": "您确定要删除此交易吗？",
+  "update": "更新",
+  "sortTransactionsBy": "交易排序依据",
+  "sortByDateRecent": "日期（最近）",
+  "sortByDateOldest": "日期（最早的）",
+  "sortByAmountHighest": "金额（最高）",
+  "sortByAmountLowest": "金额（最低）",
+  "rangeAll": "全部",
+  "rangeDay": "天",
+  "rangeWeek": "星期",
+  "rangeMonth": "月",
+  "rangeYear": "年",
+  "topCategory": "顶级类别",
+  "noSpending": "没有支出",
+  "avgDailySpend": "平均。每日消费",
+  "perDay": "每天",
+  "monitoredApps": "受监控的应用程序",
+  "searchAppsHint": "搜索支付或银行应用程序...",
+  "noEligibleApps": "找不到符合条件的应用程序",
+  "noAppsMatchSearch": "没有与您的搜索匹配的应用",
+  "unknownApp": "未知应用程序",
+  "errorLoadingApps": "加载应用程序时出错：{error}",
+  "@errorLoadingApps": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "selectedCount": "{count} 已选择",
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ignorePatternsTooltip": "忽略模式",
+  "deleteSelectedTooltip": "删除所选内容",
+  "clearHistoryTitle": "清除历史记录？",
+  "clearHistoryDesc": "这将删除所有保存的检测日志。",
+  "clear": "清除",
+  "transactionDetected": "检测到交易",
+  "notificationLogged": "已记录通知",
+  "patternNotMatched": "模式不匹配",
+  "notificationDataTitle": "通知数据",
+  "copiedToClipboard": "消息已复制到剪贴板",
+  "copy": "复制",
+  "smsMessage": "短信",
+  "received": "已收到",
+  "paid": "有薪酬的",
+  "listeningHint": "听...",
+  "keepSpeaking": "继续说...",
+  "done": "完毕",
+  "fullBackupTitle": "完整备份 (JSON)",
+  "fullBackupDesc": "备份所有数据到JSON",
+  "restoreBackupTitle": "恢复备份 (JSON)",
+  "restoreBackupDesc": "从 JSON 备份恢复所有数据",
+  "backupCompleted": "备份完成！",
+  "backupFailed": "备份失败：{error}",
+  "@backupFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "restoreCompleted": "数据恢复成功！",
+  "restoreFailedCancelled": "恢复失败或取消",
+  "restoreFailed": "恢复失败：{error}",
+  "@restoreFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "pdfExported": "PDF导出成功！",
+  "pdfExportFailed": "PDF 导出失败：{error}",
+  "@pdfExportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "peopleExported": "人员数据导出！",
+  "peopleExportFailed": "人员数据导出失败：{error}",
+  "@peopleExportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "allDataDeleted": "全部数据删除成功！",
+  "introReset": "简介重置成功！",
+  "selectRestoreMode": "选择恢复模式",
+  "restoreModeDesc": "选择在数据恢复期间如何处理现有事务记录。",
+  "mergeSkipDuplicates": "合并和跳过重复项",
+  "mergeSkipDesc": "避免重复条目，同时保留所有独特的新项目。",
+  "overwriteConflicts": "覆盖和更新冲突",
+  "overwriteConflictsDesc": "如果发生冲突，请用备份版本替换现有事务记录。",
+  "exportCsvTitle": "出口交易 (CSV)",
+  "exportCsvDesc": "将您的交易导出为 CSV",
+  "exportCsvSuccess": "导出成功！",
+  "exportCsvFailed": "导出失败：{error}",
+  "@exportCsvFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "exportPeopleTitle": "导出人员数据",
+  "exportPeopleDesc": "备份人员交易",
+  "exportPdfTitle": "导出为 PDF",
+  "exportPdfDesc": "生成 PDF 报告"
 }

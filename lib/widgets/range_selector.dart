@@ -11,6 +11,7 @@ import '../core/view_models/theme_view_model.dart';
 class RangeSelector extends StatelessWidget {
   final List<String> ranges;
   final String selectedRange;
+  final Map<String, String>? labels;
   final Function(String) onRangeSelected;
   final EdgeInsets? padding;
 
@@ -18,6 +19,7 @@ class RangeSelector extends StatelessWidget {
     super.key,
     required this.ranges,
     required this.selectedRange,
+    this.labels,
     required this.onRangeSelected,
     this.padding,
   });
@@ -70,7 +72,7 @@ class RangeSelector extends StatelessWidget {
                       : null,
                 ),
                 child: Text(
-                  range,
+                  labels?[range] ?? range,
                   style: GoogleFonts.dmSans(
                     fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                     color: isSelected

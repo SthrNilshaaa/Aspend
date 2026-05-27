@@ -16,8 +16,11 @@ import 'settings_page.dart';
 import '../core/utils/responsive_utils.dart';
 import '../core/const/app_dimensions.dart';
 import '../shared/widgets/native_glass_navbar.dart';
-
 import '../core/view_models/liquid_navbar_view_model.dart';
+import 'package:hive/hive.dart';
+import 'package:local_auth/local_auth.dart';
+import '../core/const/app_constants.dart';
+import '../core/const/app_typography.dart';
 
 class RootNavigation extends StatefulWidget {
   const RootNavigation({super.key});
@@ -30,6 +33,11 @@ class _RootNavigationState extends State<RootNavigation>
     with TickerProviderStateMixin, WidgetsBindingObserver {
   int _selectedIndex = 0;
   StreamSubscription<String>? _uiEventSubscription;
+  late final PageController _pageController;
+  late final AnimationController _pulseController;
+
+  DateTime? _backgroundTime;
+  bool _isLocked = false;
 
   // Cache screens to avoid rebuilds and glitching
   final List<Widget> _screens = [
@@ -42,6 +50,11 @@ class _RootNavigationState extends State<RootNavigation>
   @override
   void initState() {
     super.initState();
+    _pageController = PageController(initialPage: _selectedIndex);
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1),
+    )..repeat(reverse: true);
 
     _uiEventSubscription = NativeBridge.uiEvents.listen((event) {
       if (event == 'SHOW_ADD_INCOME' || event == 'SHOW_ADD_EXPENSE') {
@@ -50,19 +63,65 @@ class _RootNavigationState extends State<RootNavigation>
     });
 
     WidgetsBinding.instance.addObserver(this);
-    // Initial check
   }
 
   @override
   void dispose() {
     _uiEventSubscription?.cancel();
+    _pageController.dispose();
+    _pulseController.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {}
+    final settingsBox = Hive.box(AppConstants.settingsBox);
+    final appLockEnabled = settingsBox.get('appLockEnabled', defaultValue: false);
+
+    if (!appLockEnabled) return;
+
+    if (state == AppLifecycleState.paused) {
+      _backgroundTime = DateTime.now();
+    } else if (state == AppLifecycleState.resumed) {
+      if (_backgroundTime != null) {
+        final elapsed = DateTime.now().difference(_backgroundTime!);
+        if (elapsed.inSeconds >= 15) {
+          setState(() {
+            _isLocked = true;
+          });
+          _authenticate();
+        }
+      }
+      _backgroundTime = null;
+    }
+  }
+
+  Future<void> _authenticate() async {
+    try {
+      final localAuth = LocalAuthentication();
+      final canCheckDeviceSupport = await localAuth.isDeviceSupported();
+
+      if (canCheckDeviceSupport && mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        final didAuthenticate = await localAuth.authenticate(
+          localizedReason: l10n.appLockDesc,
+          biometricOnly: false,
+          persistAcrossBackgrounding: true,
+        );
+        if (didAuthenticate) {
+          setState(() {
+            _isLocked = false;
+          });
+        }
+      } else {
+        setState(() {
+          _isLocked = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('RootNavigation: Authentication error: $e');
+    }
   }
 
   void _onItemTapped(int index) {
@@ -70,7 +129,11 @@ class _RootNavigationState extends State<RootNavigation>
       setState(() {
         _selectedIndex = index;
       });
-      // HapticFeedback.lightImpact();
+      _pageController.animateToPage(
+        index,
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeInOutCubic,
+      );
     }
   }
 
@@ -78,11 +141,10 @@ class _RootNavigationState extends State<RootNavigation>
   Widget build(BuildContext context) {
     ThemeData theme = Theme.of(context);
     final isDark = context.watch<ThemeViewModel>().isDarkMode;
-
     final isLargeScreen = !ResponsiveUtils.isMobile(context);
-
     final l10n = AppLocalizations.of(context)!;
-    return ChangeNotifierProvider(
+
+    Widget mainContent = ChangeNotifierProvider(
       create: (_) => LiquidNavbarViewModel(),
       child: Scaffold(
         body: Row(
@@ -151,8 +213,9 @@ class _RootNavigationState extends State<RootNavigation>
             Expanded(
               child: Stack(
                 children: [
-                  IndexedStack(
-                    index: _selectedIndex,
+                  PageView(
+                    controller: _pageController,
+                    physics: const NeverScrollableScrollPhysics(),
                     children: _screens,
                   ),
                   if (!isLargeScreen) ...[
@@ -163,11 +226,11 @@ class _RootNavigationState extends State<RootNavigation>
                       height: 100,
                       child: Container(
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(
+                           gradient: LinearGradient(
                             colors: [
                               isDark
                                   ? Colors.black.withValues(
-                                      alpha: 0.05) //theme.primaryColor.withValues(alpha: 0.5)
+                                      alpha: 0.05)
                                   : Colors.white.withValues(alpha: 0.05),
                               Colors.transparent,
                             ],
@@ -217,5 +280,93 @@ class _RootNavigationState extends State<RootNavigation>
         ),
       ),
     );
+
+    if (_isLocked) {
+      return Stack(
+        children: [
+          mainContent,
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: Container(
+                color: theme.scaffoldBackgroundColor.withValues(alpha: 0.9),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ScaleTransition(
+                        scale: Tween(begin: 1.0, end: 1.1).animate(_pulseController),
+                        child: Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                              width: 2,
+                            ),
+                          ),
+                          child: Icon(
+                            Icons.lock_outline_rounded,
+                            size: 48,
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        l10n.appLock,
+                        style: GoogleFonts.dmSans(
+                          fontSize: AppTypography.fontSizeLarge,
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.onSurface,
+                          decoration: TextDecoration.none,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        l10n.appLockDesc,
+                        style: GoogleFonts.dmSans(
+                          fontSize: AppTypography.fontSizeSmall,
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                          decoration: TextDecoration.none,
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      ZoomTapAnimation(
+                        onTap: _authenticate,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                theme.colorScheme.primary,
+                                theme.colorScheme.secondary,
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            'Tap to Unlock',
+                            style: GoogleFonts.dmSans(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              decoration: TextDecoration.none,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return mainContent;
   }
 }

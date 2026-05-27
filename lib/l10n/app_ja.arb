@@ -1,65 +1,65 @@
 {
-  "appName": "Aspends",
-  "appTagline": "Smart spending, simplified.",
-  "totalBalance": "Total Balance",
-  "income": "Income",
-  "expense": "Expense",
-  "monthlyBudget": "Monthly Budget",
-  "transactions": "Transactions",
-  "recentTransactions": "Recent Transactions",
-  "seeAll": "See All",
-  "settings": "Settings",
-  "language": "Language",
-  "theme": "Theme",
-  "darkMode": "Dark Mode",
-  "lightMode": "Light Mode",
-  "systemDefault": "System Default",
-  "adaptiveColor": "Adaptive Color",
-  "customColor": "Custom Color",
-  "backup": "Backup & Restore",
-  "export": "Export Data",
-  "import": "Import Data",
-  "privacyPolicy": "Privacy Policy",
-  "telegramSupport": "Telegram Support",
-  "addTransaction": "Add Transaction",
-  "editTransaction": "Edit Transaction",
-  "deleteTransaction": "Delete Transaction",
-  "amount": "Amount",
-  "category": "Category",
-  "account": "Account",
-  "date": "Date",
-  "note": "Note (Optional)",
-  "save": "Save",
-  "cancel": "Cancel",
-  "delete": "Delete",
-  "search": "Search transactions...",
-  "noTransactions": "No transactions found",
-  "voiceInput": "Voice Input",
-  "speechUnavailable": "Speech recognition unavailable",
-  "microPermissionDenied": "Microphone permission denied",
-  "appearance": "Appearance",
-  "security": "Security",
-  "autoDetection": "Auto Transaction Detection",
-  "backupExport": "Backup & Export",
-  "dataManagement": "Data Management",
-  "budgetingBalance": "Budgeting & Balance",
-  "customDropdowns": "Custom Dropdown Items",
-  "appInformation": "App Information",
-  "developedBy": "Developed with ❤️ by Sthrnilshaa",
-  "chooseTheme": "Choose your preferred theme",
-  "appLock": "App Lock",
-  "appLockDesc": "Require device authentication to open app",
+  "appName": "アスペンド",
+  "appTagline": "賢い支出をシンプルに。",
+  "totalBalance": "合計残高",
+  "income": "所得",
+  "expense": "費用",
+  "monthlyBudget": "月次予算",
+  "transactions": "取引",
+  "recentTransactions": "最近の取引",
+  "seeAll": "すべて見る",
+  "settings": "設定",
+  "language": "言語",
+  "theme": "テーマ",
+  "darkMode": "ダークモード",
+  "lightMode": "ライトモード",
+  "systemDefault": "システムのデフォルト",
+  "adaptiveColor": "アダプティブカラー",
+  "customColor": "カスタムカラー",
+  "backup": "バックアップと復元",
+  "export": "データのエクスポート",
+  "import": "データのインポート",
+  "privacyPolicy": "プライバシーポリシー",
+  "telegramSupport": "電報サポート",
+  "addTransaction": "トランザクションの追加",
+  "editTransaction": "トランザクションの編集",
+  "deleteTransaction": "トランザクションの削除",
+  "amount": "額",
+  "category": "カテゴリ",
+  "account": "アカウント",
+  "date": "日付",
+  "note": "注記 (オプション)",
+  "save": "保存",
+  "cancel": "キャンセル",
+  "delete": "消去",
+  "search": "トランザクションを検索...",
+  "noTransactions": "トランザクションが見つかりませんでした",
+  "voiceInput": "音声入力",
+  "speechUnavailable": "音声認識は利用できません",
+  "microPermissionDenied": "マイクの許可が拒否されました",
+  "appearance": "外観",
+  "security": "安全",
+  "autoDetection": "自動トランザクション検出",
+  "backupExport": "バックアップとエクスポート",
+  "dataManagement": "データ管理",
+  "budgetingBalance": "予算とバランス",
+  "customDropdowns": "カスタムドロップダウン項目",
+  "appInformation": "アプリ情報",
+  "developedBy": "Sthrnilshaa による ❤️ で開発されました",
+  "chooseTheme": "好みのテーマを選択してください",
+  "appLock": "アプリロック",
+  "appLockDesc": "アプリを開くにはデバイス認証が必要です",
   "upiId": "UPI ID",
-  "upiIdDesc": "Set your UPI ID for money requests",
-  "upiName": "Display Name",
-  "upiNameDesc": "Optional: Name shown in UPI request",
-  "analytics": "Analytics",
-  "people": "People",
-  "charts": "Charts",
-  "sortBy": "Sort By",
-  "holdToRecord": "Hold to record transaction",
-  "couldNotFindAmount": "Couldn't find amount. Try: 'Spent 500 on Food'",
-  "savedAmount": "Saved ₹{amount} for {category}",
+  "upiIdDesc": "送金リクエスト用の UPI ID を設定する",
+  "upiName": "表示名",
+  "upiNameDesc": "オプション: UPI リクエストに表示される名前",
+  "analytics": "分析",
+  "people": "人々",
+  "charts": "チャート",
+  "sortBy": "並べ替え",
+  "holdToRecord": "長押ししてトランザクションを記録する",
+  "couldNotFindAmount": "金額が見つかりませんでした。試してください: 「食費に 500 を費やしました」",
+  "savedAmount": "{category} で ₹{amount} を節約しました",
   "@savedAmount": {
     "placeholders": {
       "amount": {
@@ -70,7 +70,7 @@
       }
     }
   },
-  "logsDeleted": "Deleted {count} logs",
+  "logsDeleted": "{count} 個のログが削除されました",
   "@logsDeleted": {
     "placeholders": {
       "count": {
@@ -78,7 +78,7 @@
       }
     }
   },
-  "patternsIgnored": "Permanently ignored {count} patterns",
+  "patternsIgnored": "{count} パターンを永久に無視します",
   "@patternsIgnored": {
     "placeholders": {
       "count": {
@@ -86,5 +86,238 @@
       }
     }
   },
-  "recheckComplete": "Recheck complete"
+  "recheckComplete": "再チェック完了",
+  "aboutApp": "アスペンズについて",
+  "developerDesigner": "開発者＆デザイナー",
+  "leadDesigner": "リードデザイナー",
+  "developer": "開発者",
+  "supportLegal": "サポートと法務",
+  "privacyPolicyDesc": "当社のプライバシーポリシー文書を読む",
+  "helpSupport": "ヘルプとサポート",
+  "telegramSupportDesc": "Telegram に参加してサポートを受けてください",
+  "projectInfo": "プロジェクト情報",
+  "openSource": "オープンソース",
+  "openSourceDesc": "GitHub で堂々とオープンソース",
+  "rateApp": "レートの上昇",
+  "rateAppDesc": "5 つ星の評価でサポートしてください",
+  "howAspendWorks": "アスペンドの仕組み",
+  "howItWorksTitle1": "1. インテリジェントな傍受",
+  "howItWorksDesc1": "安全でバッテリーが最適化されたバックグラウンド サービスは、SMS および銀行通知の受信を待機します。",
+  "howItWorksTitle2": "2.ゼロクラウドローカル解析",
+  "howItWorksDesc2": "スマートなオフライン アルゴリズムにより、金額、カテゴリ、販売者が即座に、100% デバイス上で抽出されます。",
+  "howItWorksTitle3": "3. オフライン自動回復",
+  "howItWorksDesc3": "Aspend を開いたり再開したりするたびに、不在中に見逃した取引の履歴が自動スキャンされます。",
+  "howItWorksTitle4": "4.究極のプライバシーロック",
+  "howItWorksDesc4": "サーバーも Web リクエストもありません。財務データは、暗号化された Hive ストレージ内でローカルに保護されます。",
+  "autoDetectionSetup": "自動検出のセットアップ",
+  "autoDetectionSetupDesc": "トランザクションを自動的に検出するには、特定の権限が必要です。すべてのバンキングおよびトランザクション アプリは安全に監視されます。",
+  "notificationAccess": "1. 通知へのアクセス",
+  "notificationAccessDesc": "銀行や支払いアプリからの取引アラートを読み取ることができます。",
+  "smsPermission": "2.SMSの許可",
+  "smsPermissionDesc": "銀行からのトランザクション SMS の読み取りを有効にします。",
+  "finishSetup": "セットアップを完了する",
+  "grant": "付与",
+  "appNameShort": "アスペンド",
+  "splashTagline": "スマートなお金の管理",
+  "budget": "予算",
+  "balanceDetailsTitle": "残高詳細",
+  "editBalanceTitle": "残高の編集",
+  "newBalanceLabel": "ニューバランス",
+  "viewAll": "すべて見る",
+  "searchHint": "カテゴリまたはメモを検索...",
+  "emptyWalletTitle": "あなたの財布は静かです",
+  "emptyWalletDesc": "まずトランザクションを手動で追加するか、自動検出を有効にして支出を簡単に追跡します。",
+  "addPerson": "人物を追加",
+  "addNewPerson": "新しい人を追加",
+  "editPerson": "人物の編集",
+  "addPhoto": "写真を追加",
+  "personName": "人名",
+  "youGet": "あなたが所有する",
+  "youGive": "あなたが借りる",
+  "youWillGet": "あなたが所有するでしょう",
+  "youWillGive": "あなたは借ります",
+  "noPeopleYet": "まだ人が追加されていません",
+  "searchPeople": "人を検索...",
+  "enterNameHint": "取引を追跡したい人の名前を入力してください",
+  "updateDetailsHint": "この人の詳細を更新します",
+  "expenses": "経費",
+  "history": "歴史",
+  "overview": "概要",
+  "trends": "トレンド",
+  "categories": "カテゴリー",
+  "noDataFound": "データレコードが見つかりませんでした",
+  "appColor": "アプリの色",
+  "selectColor": "カスタムアプリの色を選択してください",
+  "welcomeTitle": "アスペンズトラッカーへようこそ",
+  "welcomeSubtitle": "あなたのパーソナルファイナンスパートナー",
+  "welcomeDesc": "収入と支出を追跡し、お金を簡単に管理します。財務目標を常に把握しましょう。",
+  "smartTrackingTitle": "スマートなトランザクション追跡",
+  "smartTrackingSubtitle": "財務を整理する",
+  "smartTrackingDesc": "取引を分類し、メモを追加し、支出パターンに関する詳細な洞察を取得します。",
+  "peopleTrackingTitle": "個人間の追跡",
+  "peopleTrackingSubtitle": "共有経費を管理する",
+  "peopleTrackingDesc": "あなたが借りているお金、または他人が借りているお金を追跡します。ルームメイト、友人、家族に最適です。",
+  "analyticsTitle": "美しい分析",
+  "analyticsSubtitle": "データを視覚化する",
+  "analyticsDesc": "チャートやグラフは、支出習慣や財務傾向を理解するのに役立ちます。",
+  "offlineTitle": "完全にオフライン",
+  "offlineSubtitle": "データは機密性を保ちます",
+  "offlineDesc": "すべての財務データはデバイス上にローカルに保存されます。インターネットは不要で、完全なプライバシーが保たれます。",
+  "autoDetectTitle": "自動トランザクション検出",
+  "autoDetectSubtitle": "スマートかつ自動化",
+  "autoDetectDesc": "銀行通知からトランザクションを自動的に検出します。手動入力はもう必要ありません - 取引は即座に記録されます。",
+  "readyTitle": "始める準備はできていますか?",
+  "readySubtitle": "旅を始めましょう",
+  "readyDesc": "準備は完了です!今すぐ家計の追跡を始めて、お金を管理しましょう。",
+  "settingUpApp": "アプリをセットアップしています...",
+  "skip": "スキップ",
+  "next": "次",
+  "getStarted": "始めましょう",
+  "requestMoney": "お金を要求する",
+  "generateQr": "支払いQRの生成",
+  "sortByNameAZ": "名前 (A ～ Z)",
+  "sortByNameZA": "名前 (Z-A)",
+  "sortByBalanceHighest": "バランス（最高）",
+  "sortByBalanceLowest": "残高（最低）",
+  "upiIdNotSet": "この人には UPI ID が設定されていません。編集から追加してください。",
+  "couldNotFindUpiApp": "UPI 支払いアプリが見つかりませんでした",
+  "noTransactionsYet": "まだ取引はありません",
+  "addFirstTransaction": "その人との最初のトランザクションを追加します",
+  "settleBalance": "残高の決済",
+  "settleBalanceDesc": "これにより、₹{amount} のトランザクションが追加され、残高がゼロになります。続く？",
+  "@settleBalanceDesc": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "settle": "解決する",
+  "deletePerson": "個人の削除",
+  "deletePersonDesc": "{name} を削除してもよろしいですか?この操作は元に戻すことができません。",
+  "@deletePersonDesc": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteTransactionDesc": "このトランザクションを削除してもよろしいですか?",
+  "update": "アップデート",
+  "sortTransactionsBy": "トランザクションの並べ替え基準",
+  "sortByDateRecent": "日付 (最近)",
+  "sortByDateOldest": "日付 (最も古いもの)",
+  "sortByAmountHighest": "金額（最高額）",
+  "sortByAmountLowest": "金額（最低額）",
+  "rangeAll": "全て",
+  "rangeDay": "日",
+  "rangeWeek": "週",
+  "rangeMonth": "月",
+  "rangeYear": "年",
+  "topCategory": "トップカテゴリー",
+  "noSpending": "支出なし",
+  "avgDailySpend": "平均毎日の支出",
+  "perDay": "1日あたり",
+  "monitoredApps": "監視対象アプリ",
+  "searchAppsHint": "支払いアプリや銀行アプリを検索...",
+  "noEligibleApps": "対象となるアプリが見つかりませんでした",
+  "noAppsMatchSearch": "検索に一致するアプリはありません",
+  "unknownApp": "不明なアプリ",
+  "errorLoadingApps": "アプリの読み込みエラー: {error}",
+  "@errorLoadingApps": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "selectedCount": "{count} 個が選択されました",
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ignorePatternsTooltip": "パターンを無視する",
+  "deleteSelectedTooltip": "選択したものを削除",
+  "clearHistoryTitle": "履歴をクリアしますか?",
+  "clearHistoryDesc": "これにより、保存されているすべての検出ログが削除されます。",
+  "clear": "クリア",
+  "transactionDetected": "トランザクションが検出されました",
+  "notificationLogged": "通知が記録されました",
+  "patternNotMatched": "パターンが一致しません",
+  "notificationDataTitle": "通知データ",
+  "copiedToClipboard": "メッセージがクリップボードにコピーされました",
+  "copy": "コピー",
+  "smsMessage": "SMSメッセージ",
+  "received": "受け取った",
+  "paid": "有料",
+  "listeningHint": "リスニング...",
+  "keepSpeaking": "話し続けてください...",
+  "done": "終わり",
+  "fullBackupTitle": "フルバックアップ(JSON)",
+  "fullBackupDesc": "すべてのデータを JSON にバックアップする",
+  "restoreBackupTitle": "バックアップの復元 (JSON)",
+  "restoreBackupDesc": "JSONバックアップからすべてのデータを復元します",
+  "backupCompleted": "バックアップが完了しました！",
+  "backupFailed": "バックアップに失敗しました: {error}",
+  "@backupFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "restoreCompleted": "データは無事復元されました！",
+  "restoreFailedCancelled": "復元が失敗したか、キャンセルされました",
+  "restoreFailed": "復元に失敗しました: {error}",
+  "@restoreFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "pdfExported": "PDF が正常にエクスポートされました。",
+  "pdfExportFailed": "PDF のエクスポートに失敗しました: {error}",
+  "@pdfExportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "peopleExported": "人物データがエクスポートされました!",
+  "peopleExportFailed": "人物データのエクスポートに失敗しました: {error}",
+  "@peopleExportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "allDataDeleted": "すべてのデータが正常に削除されました。",
+  "introReset": "イントロリセット成功！",
+  "selectRestoreMode": "復元モードの選択",
+  "restoreModeDesc": "データの復元中に既存のトランザクション レコードを処理する方法を選択します。",
+  "mergeSkipDuplicates": "重複のマージとスキップ",
+  "mergeSkipDesc": "すべての一意の新しいアイテムを維持しながら、重複したエントリを回避します。",
+  "overwriteConflicts": "上書きと更新の競合",
+  "overwriteConflictsDesc": "競合が発生した場合に備えて、既存のトランザクション レコードをバックアップ バージョンに置き換えます。",
+  "exportCsvTitle": "トランザクションのエクスポート (CSV)",
+  "exportCsvDesc": "トランザクションを CSV にエクスポートする",
+  "exportCsvSuccess": "エクスポートは正常に完了しました。",
+  "exportCsvFailed": "エクスポートに失敗しました: {error}",
+  "@exportCsvFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "exportPeopleTitle": "人物データのエクスポート",
+  "exportPeopleDesc": "人のトランザクションをバックアップする",
+  "exportPdfTitle": "PDFとしてエクスポート",
+  "exportPdfDesc": "PDF レポートを生成する"
 }
