@@ -1,205 +1,184 @@
 name: Flutter Android Release Build
 
 on:
-workflow_dispatch:
-push:
-branches:
-- main
+  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 permissions:
-contents: write
+  contents: write
 
 jobs:
-build:
-name: Build and Release APKs
-runs-on: ubuntu-latest
+  build:
+    name: Build and Release APKs
+    runs-on: ubuntu-latest
 
-steps:
-  # =========================
-  # CHECKOUT
-  # =========================
+    steps:
+      # ============================================
+      # CHECKOUT REPOSITORY
+      # ============================================
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-  - name: Checkout repository
-    uses: actions/checkout@v4
-    with:
-      fetch-depth: 0
+      # ============================================
+      # SETUP JAVA
+      # ============================================
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
 
-  # =========================
-  # JAVA
-  # =========================
+      # ============================================
+      # SETUP FLUTTER
+      # ============================================
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.32.4
+          cache: true
 
-  - name: Setup Java
-    uses: actions/setup-java@v4
-    with:
-      distribution: temurin
-      java-version: 17
+      # ============================================
+      # VERIFY FLUTTER
+      # ============================================
+      - name: Flutter Doctor
+        run: flutter doctor -v
 
-  # =========================
-  # FLUTTER
-  # =========================
+      # ============================================
+      # RESTORE KEYSTORE
+      # ============================================
+      - name: Restore Android Keystore
+        run: |
+          mkdir -p android/app
+          echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > android/app/release.keystore
+          echo "Keystore restored successfully"
 
-  - name: Setup Flutter
-    uses: subosito/flutter-action@v2
-    with:
-      flutter-version: 3.32.4
-      cache: true
+      # ============================================
+      # CREATE KEY.PROPERTIES
+      # ============================================
+      - name: Create key.properties
+        run: |
+          cat <<EOF > android/key.properties
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          storeFile=../app/release.keystore
+          EOF
+          echo "key.properties created"
 
-  # =========================
-  # KEYSTORE
-  # =========================
+      # ============================================
+      # INSTALL DEPENDENCIES
+      # ============================================
+      - name: Install Dependencies
+        run: flutter pub get
 
-  - name: Restore Android keystore
-    run: |
-      mkdir -p android/app
+      # ============================================
+      # GENERATE VERSION INFO
+      # ============================================
+      - name: Generate Version Info
+        id: version
+        run: |
+          VERSION=$(grep "version:" pubspec.yaml | head -1 | awk '{print $2}')
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "BUILD_NUMBER=${{ github.run_number }}" >> $GITHUB_OUTPUT
+          
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "LAST_TAG=$LAST_TAG" >> $GITHUB_OUTPUT
+          
+          echo "Version: $VERSION"
+          echo "Build Number: ${{ github.run_number }}"
+          echo "Last Tag: $LAST_TAG"
 
-      echo "${{ secrets.ANDROID_KEYSTORE }}" \
-        | base64 --decode \
-        > android/app/release.keystore
+      # ============================================
+      # GENERATE CHANGELOG
+      # ============================================
+      - name: Generate Changelog
+        id: changelog
+        run: |
+          LAST_TAG="${{ steps.version.outputs.LAST_TAG }}"
+          
+          if [ "$LAST_TAG" != "v0.0.0" ]; then
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges $LAST_TAG..HEAD)
+          else
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges -20)
+          fi
+          
+          if [ -z "$CHANGELOG" ]; then
+            CHANGELOG="No changes detected."
+          fi
+          
+          # Modern and safe multi-line string handling for GITHUB_OUTPUT
+          echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
-  # =========================
-  # KEY PROPERTIES
-  # =========================
+      # ============================================
+      # BUILD APKs
+      # ============================================
+      - name: Build Release APKs
+        run: flutter build apk --release --split-per-abi
 
-  - name: Create key.properties
-    run: |
-      cat <<EOF > android/key.properties
-      storePassword=${{ secrets.KEYSTORE_PASSWORD }}
-      keyPassword=${{ secrets.KEY_PASSWORD }}
-      keyAlias=${{ secrets.KEY_ALIAS }}
-      storeFile=../app/release.keystore
-      EOF
+      # ============================================
+      # SHOW OUTPUT FILES & SIZE INFO
+      # ============================================
+      - name: Show Build Outputs & Size Info
+        run: |
+          echo "Generated APKs:"
+          ls -la build/app/outputs/flutter-apk/
+          echo -e "\nAPK Sizes:"
+          du -h build/app/outputs/flutter-apk/*.apk | sort -hr
 
-  # =========================
-  # CLEAN + DEPENDENCIES
-  # =========================
+      # ============================================
+      # UPLOAD ARTIFACTS
+      # ============================================
+      - name: Upload APK Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: split-apks-v${{ steps.version.outputs.VERSION }}
+          path: build/app/outputs/flutter-apk/*.apk
+          retention-days: 30
 
-  - name: Clean project
-    run: flutter clean
+      # ============================================
+      # CREATE GITHUB RELEASE
+      # ============================================
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: success()
+        with:
+          tag_name: v${{ steps.version.outputs.VERSION }}-${{ github.run_number }}
+          name: Aspend v${{ steps.version.outputs.VERSION }} (Build ${{ github.run_number }})
+          body: |
+            ## 🚀 Release Information
+            
+            **Version:** v${{ steps.version.outputs.VERSION }}
+            **Build Number:** ${{ github.run_number }}
+            **Repository:** https://github.com/${{ github.repository }}
+            
+            ---
+            
+            ## 📋 Changelog
+            ${{ steps.changelog.outputs.CHANGELOG }}
+            
+            ---
+            
+            ## 🛠 Build Information
+            Built automatically using GitHub Actions with Flutter **3.32.4**.
+          files: build/app/outputs/flutter-apk/*.apk
+          draft: false
+          prerelease: false
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  - name: Install dependencies
-    run: flutter pub get
-
-  # =========================
-  # VERSION INFO
-  # =========================
-
-  - name: Generate version info
-    id: version
-    run: |
-      VERSION=$(grep "version:" pubspec.yaml | head -1 | awk '{print $2}')
-
-      echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-      echo "BUILD_NUMBER=${{ github.run_number }}" >> $GITHUB_OUTPUT
-
-      LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-
-      echo "LAST_TAG=$LAST_TAG" >> $GITHUB_OUTPUT
-
-  # =========================
-  # CHANGELOG
-  # =========================
-
-  - name: Generate changelog
-    id: changelog
-    run: |
-      LAST_TAG="${{ steps.version.outputs.LAST_TAG }}"
-
-      if [ "$LAST_TAG" != "v0.0.0" ]; then
-        CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges $LAST_TAG..HEAD)
-      else
-        CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges -20)
-      fi
-
-      if [ -z "$CHANGELOG" ]; then
-        CHANGELOG="No changes detected."
-      fi
-
-      CHANGELOG="${CHANGELOG//$'\n'/'%0A'}"
-
-      echo "CHANGELOG=$CHANGELOG" >> $GITHUB_OUTPUT
-
-  # =========================
-  # BUILD APK
-  # =========================
-
-  - name: Build split APKs
-    run: |
-      flutter build apk --release --split-per-abi
-
-  # =========================
-  # VERIFY OUTPUTS
-  # =========================
-
-  - name: Show build outputs
-    run: |
-      ls -la build/app/outputs/flutter-apk/
-
-  # =========================
-  # UPLOAD ARTIFACTS
-  # =========================
-
-  - name: Upload APK artifacts
-    uses: actions/upload-artifact@v4
-    with:
-      name: split-apks-v${{ steps.version.outputs.VERSION }}
-      path: build/app/outputs/flutter-apk/*.apk
-      retention-days: 30
-
-  # =========================
-  # CREATE RELEASE
-  # =========================
-
-  - name: Create GitHub Release
-    uses: softprops/action-gh-release@v2
-    if: success()
-
-    with:
-      tag_name: v${{ steps.version.outputs.VERSION }}-${{ github.run_number }}
-
-      name: |
-        Aspend v${{ steps.version.outputs.VERSION }}
-        (Build ${{ github.run_number }})
-
-      body: |
-        ## 🚀 Release Information
-
-        **Version:** v${{ steps.version.outputs.VERSION }}
-        **Build:** ${{ github.run_number }}
-
-        ## 📱 Included APKs
-
-        - arm64-v8a
-        - armeabi-v7a
-        - x86_64
-
-        ## 📋 Changelog
-
-        ${{ steps.changelog.outputs.CHANGELOG }}
-
-        ## 🛠 Build Information
-
-        - Flutter 3.32.4
-        - Automatically generated by GitHub Actions
-
-      files: |
-        build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
-        build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
-        build/app/outputs/flutter-apk/app-x86_64-release.apk
-
-      draft: false
-      prerelease: false
-      generate_release_notes: false
-
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  # =========================
-  # SUCCESS MESSAGE
-  # =========================
-
-  - name: Success message
-    if: success()
-    run: |
-      echo "✅ Release created successfully"
-      echo "📱 APKs uploaded to GitHub Releases"
-
+      # ============================================
+      # SUCCESS MESSAGE
+      # ============================================
+      - name: Success Message
+        if: success()
+        run: |
+          echo "Release created successfully"
+          echo "APKs uploaded to GitHub Releases"
+          echo "Workflow completed"
