@@ -38,15 +38,33 @@ class VoiceParser {
   ];
 
   static const _incomeKeywords = [
+    // English
     'salary', 'received', 'got', 'get', 'income', 'bonus', 'cashback', 'won', 
     'refund', 'added', 'credited', 'took', 'borrowed', 'earn', 'earned', 'positive',
-    'mila', 'aaya', 'mile', 'reward', 'stipend', ..._requestKeywords
+    'reward', 'stipend',
+    // Spanish
+    'recibido', 'obtuve', 'salario', 'ingreso', 'ganado', 'bono',
+    // Russian
+    'получил', 'пришло', 'зарплата', 'доход', 'выиграл', 'заработал',
+    // Arabic
+    'استلمت', 'حصلت', 'دخل', 'راتب', 'جائزة', 'كسبت', 'وارد',
+    // Hindi/Hinglish
+    'mila', 'aaya', 'mile', 'kamaya', 'stipend', 'udhaar',
+    ..._requestKeywords
   ];
   
   static const _expenseKeywords = [
+    // English
     'spent', 'paid', 'buy', 'expense', 'gave', 'purchased', 'sent', 'negative',
-    'debited', 'bill', 'lend', 'lent', 'kharcha', 'diya', 'bheja', 
-    'fees', 'bought', 'pay', 'checkout', 'nuksan', 'loss'
+    'debited', 'bill', 'lend', 'lent', 'fees', 'bought', 'pay', 'checkout', 'nuksan', 'loss',
+    // Spanish
+    'gasté', 'pagado', 'pagó', 'gasto', 'compré', 'enviado', 'pagué',
+    // Russian
+    'потратил', 'оплатил', 'купил', 'расход', 'отправил',
+    // Arabic
+    'صرفت', 'دفعت', 'شريت', 'مصروف', 'أرسلت',
+    // Hindi/Hinglish
+    'kharcha', 'diya', 'bheja', 'kharida', 'bhugtan'
   ];
 
   static VoiceParsedResult parse(String text, {List<String>? knownPeople}) {

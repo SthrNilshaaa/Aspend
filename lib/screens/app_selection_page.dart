@@ -12,6 +12,7 @@ import '../../widgets/glass_app_bar.dart';
 import '../../widgets/empty_state_view.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../core/const/app_assets.dart';
+import 'package:aspends_tracker/l10n/generated/app_localizations.dart';
 
 class AppSelectionPage extends StatefulWidget {
   const AppSelectionPage({super.key});
@@ -80,9 +81,10 @@ class _AppSelectionPageState extends State<AppSelectionPage> {
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading apps: $e')),
+          SnackBar(content: Text(l10n.errorLoadingApps(e.toString()))),
         );
       }
     }
@@ -119,13 +121,14 @@ class _AppSelectionPageState extends State<AppSelectionPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
           GlassAppBar(
-            title: 'Monitored Apps',
+            title: l10n.monitoredApps,
             centerTitle: true,
             leading: GestureDetector(
               onTap: () {
@@ -164,19 +167,19 @@ class _AppSelectionPageState extends State<AppSelectionPage> {
               child: Center(child: CircularProgressIndicator()),
             )
           else if (_allApps.isEmpty)
-            const SliverFillRemaining(
+            SliverFillRemaining(
               hasScrollBody: false,
               child: EmptyStateView(
                 icon: Icons.apps_outage_rounded,
-                title: 'No eligible apps found',
+                title: l10n.noEligibleApps,
               ),
             )
           else if (_filteredApps.isEmpty)
-            const SliverFillRemaining(
+            SliverFillRemaining(
               hasScrollBody: false,
               child: EmptyStateView(
                 icon: Icons.search_off_rounded,
-                title: 'No apps match your search',
+                title: l10n.noAppsMatchSearch,
               ),
             )
           else
@@ -210,6 +213,7 @@ class _AppSelectionPageState extends State<AppSelectionPage> {
   Widget _buildSearchSection(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = context.watch<ThemeViewModel>().isDarkMode;
+    final l10n = AppLocalizations.of(context)!;
 
     return Padding(
       padding: const EdgeInsets.all(AppDimensions.paddingStandard),
@@ -236,7 +240,7 @@ class _AppSelectionPageState extends State<AppSelectionPage> {
               child: TextField(
                 onChanged: _filterApps,
                 decoration: InputDecoration(
-                  hintText: 'Search payment or banking apps...',
+                  hintText: l10n.searchAppsHint,
                   hintStyle: GoogleFonts.dmSans(
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
                     fontSize: AppTypography.fontSizeSmall,
@@ -279,6 +283,7 @@ class _AppListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     Uint8List? iconBytes;
     if (app['icon'] != null && app['icon']!.isNotEmpty) {
@@ -330,7 +335,7 @@ class _AppListTile extends StatelessWidget {
           ),
         ),
         title: Text(
-          app['appName'] ?? 'Unknown App',
+          app['appName'] ?? l10n.unknownApp,
           style: GoogleFonts.dmSans(
             fontWeight: FontWeight.bold,
             fontSize: AppTypography.fontSizeSmall,

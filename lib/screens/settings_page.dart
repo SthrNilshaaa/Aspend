@@ -2,12 +2,14 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:local_auth/local_auth.dart';
 import '../core/view_models/theme_view_model.dart';
 import 'package:flutter/services.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:aspends_tracker/l10n/generated/app_localizations.dart';
 import 'package:hive/hive.dart';
 //import 'dart:io';
 
@@ -15,6 +17,7 @@ import '../core/services/backup_service.dart';
 import '../core/view_models/transaction_view_model.dart';
 import '../core/view_models/person_view_model.dart';
 import '../core/services/pdf_service.dart';
+import '../core/const/app_typography.dart';
 import '../core/services/transaction_detection_service.dart';
 import '../core/services/native_bridge.dart';
 import '../core/utils/transaction_parser.dart';
@@ -116,15 +119,15 @@ class _SettingsPageState extends State<SettingsPage> {
     final themeViewModel = context.watch<ThemeViewModel>();
     final theme = Theme.of(context);
     final isDark = themeViewModel.isDarkMode;
-
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       body: CustomScrollView(
         //controller: _scrollController,
         physics: const BouncingScrollPhysics(),
         slivers: [
-          const GlassAppBar(
-            title: AppStrings.settings,
+          GlassAppBar(
+            title: l10n.settings,
             centerTitle: true,
           ),
 
@@ -141,22 +144,18 @@ class _SettingsPageState extends State<SettingsPage> {
                     children: [
                       // Theme Section
                       TitledSection(
-                        title: AppStrings.appearance,
+                        title: l10n.appearance,
                         icon: Icons.palette,
                         children: [
                           _buildThemeCard(context, isDark),
-                          // if (!useAdaptive) ...[
-                          //   const SizedBox(height: 12),
-                          //   _buildColorPickerTile(context),
-                          // ],
-                          // const SizedBox(height: 12),
-                          // _buildAdaptiveColorSwitch(context),
+                          const SizedBox(height: 12),
+                          _buildLanguagePicker(context),
                         ],
                       ),
                       const SizedBox(height: 24),
 
                        TitledSection(
-                        title: AppStrings.security,
+                        title: l10n.security,
                         icon: Icons.security,
                         children: [
                           _buildAppLockSection(context),
@@ -167,7 +166,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
                       // Auto Detection Section
                       TitledSection(
-                        title: AppStrings.autoDetection,
+                        title: l10n.autoDetection,
                         icon: Icons.auto_awesome,
                         children: [
                           _buildAutoDetectionSection(context),
@@ -177,7 +176,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
                       // Backup & Export Section
                       TitledSection(
-                        title: AppStrings.backupExport,
+                        title: l10n.backupExport,
                         icon: Icons.backup,
                         children: [
                           _buildBackupSection(context, isDark),
@@ -187,7 +186,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
                       // Data Management Section
                       TitledSection(
-                        title: AppStrings.dataManagement,
+                        title: l10n.dataManagement,
                         icon: Icons.storage,
                         children: [
                           _buildDataManagementSection(context, isDark),
@@ -196,7 +195,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       const SizedBox(height: 24),
 
                       TitledSection(
-                        title: AppStrings.budgetingBalance,
+                        title: l10n.budgetingBalance,
                         icon: Icons.wallet_membership,
                         children: [
                           _buildBudgetSection(context),
@@ -208,7 +207,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
                       // Custom Dropdown Items Section
                       TitledSection(
-                        title: AppStrings.customDropdowns,
+                        title: l10n.customDropdowns,
                         icon: Icons.list_alt,
                         children: [
                           _buildCustomOptionsSection(context),
@@ -218,7 +217,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
                       // App Info Section
                       TitledSection(
-                        title: AppStrings.appInformation,
+                        title: l10n.appInformation,
                         icon: Icons.info,
                         children: [
                           _buildAppInfoSection(context, isDark),
@@ -260,6 +259,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildThemeCard(BuildContext context, bool isDark) {
     final theme = Theme.of(context);
     final useAdaptive = context.watch<ThemeViewModel>().useAdaptiveColor;
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -280,14 +280,14 @@ class _SettingsPageState extends State<SettingsPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        AppStrings.theme,
+                        l10n.theme,
                         style: GoogleFonts.dmSans(
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
                         ),
                       ),
                       Text(
-                        AppStrings.chooseTheme,
+                        l10n.chooseTheme,
                         style: GoogleFonts.dmSans(
                           fontSize: 14,
                           color: Colors.grey.shade600,
@@ -306,7 +306,88 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  Widget _buildLanguagePicker(BuildContext context) {
+    final themeViewModel = context.watch<ThemeViewModel>();
+    final l10n = AppLocalizations.of(context)!;
+
+    String languageName = l10n.systemDefault;
+    if (themeViewModel.locale?.languageCode == 'en') languageName = 'English';
+    if (themeViewModel.locale?.languageCode == 'hi') languageName = 'हिन्दी';
+    if (themeViewModel.locale?.languageCode == 'es') languageName = 'Español';
+    if (themeViewModel.locale?.languageCode == 'fr') languageName = 'Français';
+    if (themeViewModel.locale?.languageCode == 'de') languageName = 'Deutsch';
+    if (themeViewModel.locale?.languageCode == 'ja') languageName = '日本語';
+    if (themeViewModel.locale?.languageCode == 'zh') languageName = '中文';
+    if (themeViewModel.locale?.languageCode == 'ar') languageName = 'العربية';
+    if (themeViewModel.locale?.languageCode == 'pt') languageName = 'Português';
+    if (themeViewModel.locale?.languageCode == 'ru') languageName = 'Русский';
+
+    return SettingTile(
+      icon: Icons.language_rounded,
+      title: l10n.language,
+      subtitle: languageName,
+      onTap: () {
+        _showLanguageDialog(context);
+      },
+    );
+  }
+
+  void _showLanguageDialog(BuildContext context) {
+    final themeViewModel = context.read<ThemeViewModel>();
+    final l10n = AppLocalizations.of(context)!;
+
+    final List<Map<String, String>> langs = [
+      {'code': 'en', 'name': 'English'},
+      {'code': 'hi', 'name': 'हिन्दी'},
+      {'code': 'es', 'name': 'Español'},
+      {'code': 'fr', 'name': 'Français'},
+      {'code': 'de', 'name': 'Deutsch'},
+      {'code': 'ja', 'name': '日本語'},
+      {'code': 'zh', 'name': '中文'},
+      {'code': 'ar', 'name': 'العربية'},
+      {'code': 'pt', 'name': 'Português'},
+      {'code': 'ru', 'name': 'Русский'},
+    ];
+
+    BlurUtils.showBlurredDialog(
+      context: context,
+      child: AlertDialog(
+        title: Text(l10n.language),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              ListTile(
+                title: Text(l10n.systemDefault),
+                trailing: themeViewModel.locale == null
+                    ? const Icon(Icons.check, color: Colors.green)
+                    : null,
+                onTap: () {
+                  themeViewModel.setLocale(null);
+                  Navigator.pop(context);
+                },
+              ),
+              ...langs.map((l) => ListTile(
+                title: Text(l['name']!),
+                trailing: themeViewModel.locale?.languageCode == l['code']
+                    ? const Icon(Icons.check, color: Colors.green)
+                    : null,
+                onTap: () {
+                  themeViewModel.setLocale(Locale(l['code']!, ''));
+                  Navigator.pop(context);
+                },
+              )),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildThemeSegmentedControl(BuildContext context) {
+    final viewModel = context.watch<ThemeViewModel>();
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     
     return Container(
@@ -317,9 +398,9 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
       child: Row(
         children: [
-          _buildThemeOption(context, ThemeMode.system, Icons.settings_suggest_rounded, 'System'),
-          _buildThemeOption(context, ThemeMode.light, Icons.light_mode_rounded, 'Light'),
-          _buildThemeOption(context, ThemeMode.dark, Icons.dark_mode_rounded, 'Dark'),
+          _buildThemeOption(context, ThemeMode.system, Icons.settings_suggest_rounded, l10n.systemDefault),
+          _buildThemeOption(context, ThemeMode.light, Icons.light_mode_rounded, l10n.lightMode),
+          _buildThemeOption(context, ThemeMode.dark, Icons.dark_mode_rounded, l10n.darkMode),
         ],
       ),
     );
@@ -374,6 +455,83 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  Widget _buildAdaptiveColorSwitch(BuildContext context) {
+    final viewModel = context.watch<ThemeViewModel>();
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.color_lens, color: Colors.teal.shade600, size: 24),
+            const SizedBox(width: 12),
+            Text(
+              AppStrings.adaptiveColor,
+              style: GoogleFonts.dmSans(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+        Switch(
+          value: viewModel.useAdaptiveColor,
+          onChanged: (value) {
+            HapticFeedback.lightImpact();
+            viewModel.setUseAdaptiveColor(value);
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildColorPickerTile(BuildContext context) {
+    final viewModel = context.watch<ThemeViewModel>();
+    final currentColor = viewModel.customSeedColor ?? Colors.green;
+    return SettingTile(
+      icon: Icons.color_lens,
+      title: AppStrings.appColor,
+      subtitle: AppStrings.selectColor,
+      onTap: () async {
+        Color selectedColor = currentColor;
+        BlurUtils.showBlurredDialog(
+          context: context,
+          child: AlertDialog(
+            title: const Text('Pick App Color'),
+            content: SingleChildScrollView(
+              child: BlockPicker(
+                pickerColor: selectedColor,
+                onColorChanged: (color) {
+                  selectedColor = color;
+                },
+              ),
+            ),
+            actions: [
+              TextButton(
+                child: const Text('Reset'),
+                onPressed: () {
+                  viewModel.setCustomSeedColor(null);
+                  Navigator.of(context).pop();
+                  _showSnackBar(context, 'App color reset to default!');
+                },
+              ),
+              TextButton(
+                child: const Text('Cancel'),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              ElevatedButton(
+                child: const Text('Select'),
+                onPressed: () {
+                  viewModel.setCustomSeedColor(selectedColor);
+                  Navigator.of(context).pop();
+                  // Removed snackbar as it might trigger lint and is redundant with the UI update
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   Widget _buildAppLockSection(BuildContext context) {
     return SettingTile(
@@ -503,10 +661,11 @@ class _SettingsPageState extends State<SettingsPage> {
                       HapticFeedback.lightImpact();
                       try {
                         if (value) {
-                          final hasPermission =
+                          final hasNotification =
                               await NativeBridge.checkNotificationPermission();
+                          final hasSms = await NativeBridge.checkSmsPermission();
 
-                          if (!hasPermission) {
+                          if (!hasNotification && !hasSms) {
                             final confirmed = await showDialog<bool>(
                               context: context,
                               builder: (context) => BackdropFilter(
@@ -595,18 +754,7 @@ class _SettingsPageState extends State<SettingsPage> {
           subtitle: 'Simulate a notification to verify parsing',
           onTap: () => _showTestDetectionDialog(context),
         ),
-        SettingTile(
-          icon: Icons.app_registration_rounded,
-          title: 'Monitored Apps',
-          subtitle: 'Choose which apps to monitor for transactions',
-          onTap: () {
-            HapticFeedback.lightImpact();
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const AppSelectionPage()),
-            );
-          },
-        ),
+
         SettingTile(
           icon: Icons.manage_history,
           title: 'Show Detection History',
@@ -736,66 +884,74 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildBackupSection(BuildContext context, bool isDark) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
         SettingTile(
           icon: Icons.upload_file,
-          title: 'Export Transactions (CSV)',
-          subtitle: 'Export your transactions to CSV',
+          title: l10n.exportCsvTitle,
+          subtitle: l10n.exportCsvDesc,
           onTap: () async {
             HapticFeedback.lightImpact();
             try {
               await BackupService.exportToCsvAndShare();
               if (!mounted) return;
-              _showSnackBar(context, 'Export completed successfully!');
+              _showSnackBar(context, l10n.exportCsvSuccess);
             } catch (e) {
               if (!mounted) return;
-              _showSnackBar(context, 'Export failed: $e');
+              _showSnackBar(context, l10n.exportCsvFailed(e.toString()));
             }
           },
         ),
         SettingTile(
           icon: Icons.backup,
-          title: 'Full Backup (JSON)',
-          subtitle: 'Backup all data to JSON',
+          title: l10n.fullBackupTitle,
+          subtitle: l10n.fullBackupDesc,
           onTap: () async {
             HapticFeedback.lightImpact();
             try {
               await BackupService.exportAllDataJsonAndShare();
               if (!mounted) return;
-              _showSnackBar(context, 'Backup completed!');
+              _showSnackBar(context, l10n.backupCompleted);
             } catch (e) {
               if (!mounted) return;
-              _showSnackBar(context, 'Backup failed: $e');
+              _showSnackBar(context, l10n.backupFailed(e.toString()));
             }
           },
         ),
         SettingTile(
           icon: Icons.restore,
-          title: 'Restore Backup (JSON)',
-          subtitle: 'Restore all data from JSON backup',
+          title: l10n.restoreBackupTitle,
+          subtitle: l10n.restoreBackupDesc,
           onTap: () async {
             HapticFeedback.lightImpact();
             try {
-              final success = await BackupService.importDataFromJson(context);
+              final strategy = await _showConflictResolutionSheet(context, l10n);
+              if (strategy == null) {
+                if (!mounted) return;
+                _showSnackBar(context, l10n.restoreFailedCancelled);
+                return;
+              }
+              final success = await BackupService.importDataFromJson(
+                context,
+                conflictResolutionStrategy: strategy,
+              );
               if (!mounted) return;
               if (success) {
-                _showSnackBar(context, 'Data restored successfully!');
-                // Restart app or reload all data might be needed,
-                // but since we are using reactive Hive watchers, it should work.
+                _showSnackBar(context, l10n.restoreCompleted);
               } else {
-                _showSnackBar(context, 'Restore failed or cancelled');
+                _showSnackBar(context, l10n.restoreFailedCancelled);
               }
             } catch (e) {
               if (!mounted) return;
-              _showSnackBar(context, 'Restore failed: $e');
+              _showSnackBar(context, l10n.restoreFailed(e.toString()));
             }
           },
         ),
         SettingTile(
           icon: Icons.picture_as_pdf,
-          title: 'Export as PDF',
-          subtitle: 'Generate PDF reports',
+          title: l10n.exportPdfTitle,
+          subtitle: l10n.exportPdfDesc,
           onTap: () async {
             HapticFeedback.lightImpact();
             try {
@@ -805,17 +961,17 @@ class _SettingsPageState extends State<SettingsPage> {
                   bytes: await file.readAsBytes(),
                   filename: 'home_transactions.pdf');
               if (!mounted) return;
-              _showSnackBar(context, 'PDF exported successfully!');
+              _showSnackBar(context, l10n.pdfExported);
             } catch (e) {
               if (!mounted) return;
-              _showSnackBar(context, 'PDF export failed: $e');
+              _showSnackBar(context, l10n.pdfExportFailed(e.toString()));
             }
           },
         ),
         SettingTile(
           icon: Icons.groups,
-          title: 'Export People Data',
-          subtitle: 'Backup people transactions',
+          title: l10n.exportPeopleTitle,
+          subtitle: l10n.exportPeopleDesc,
           onTap: () async {
             HapticFeedback.lightImpact();
             try {
@@ -825,10 +981,10 @@ class _SettingsPageState extends State<SettingsPage> {
                   bytes: await file.readAsBytes(),
                   filename: 'person_transactions.pdf');
               if (!mounted) return;
-              _showSnackBar(context, 'People data exported!');
+              _showSnackBar(context, l10n.peopleExported);
             } catch (e) {
               if (!mounted) return;
-              _showSnackBar(context, 'People data export failed: $e');
+              _showSnackBar(context, l10n.peopleExportFailed(e.toString()));
             }
           },
         ),
@@ -1157,6 +1313,136 @@ class _SettingsPageState extends State<SettingsPage> {
             child: const Text('Save'),
           ),
         ],
+      ),
+    );
+  }
+
+  Future<String?> _showConflictResolutionSheet(BuildContext context, AppLocalizations l10n) async {
+    final theme = Theme.of(context);
+    
+    return showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          border: Border.all(color: theme.dividerColor.withValues(alpha: 0.08)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: theme.dividerColor.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              l10n.selectRestoreMode,
+              style: GoogleFonts.dmSans(
+                fontSize: AppTypography.fontSizeLarge,
+                fontWeight: FontWeight.w800,
+                color: theme.colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              l10n.restoreModeDesc,
+              style: GoogleFonts.dmSans(
+                fontSize: AppTypography.fontSizeSmall,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
+            ),
+            const SizedBox(height: 24),
+            _buildResolutionOption(
+              context,
+              title: l10n.mergeSkipDuplicates,
+              desc: l10n.mergeSkipDesc,
+              icon: Icons.merge_type_rounded,
+              color: Colors.blueAccent,
+              value: 'merge',
+            ),
+            const SizedBox(height: 16),
+            _buildResolutionOption(
+              context,
+              title: l10n.overwriteConflicts,
+              desc: l10n.overwriteConflictsDesc,
+              icon: Icons.copy_all_rounded,
+              color: Colors.orangeAccent,
+              value: 'overwrite',
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildResolutionOption(
+    BuildContext context, {
+    required String title,
+    required String desc,
+    required IconData icon,
+    required Color color,
+    required String value,
+  }) {
+    final theme = Theme.of(context);
+    
+    return InkWell(
+      onTap: () => Navigator.pop(context, value),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.primary.withValues(alpha: 0.04),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: theme.dividerColor.withValues(alpha: 0.08)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.dmSans(
+                      fontWeight: FontWeight.bold,
+                      fontSize: AppTypography.fontSizeSmall,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    desc,
+                    style: GoogleFonts.dmSans(
+                      fontSize: 11,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.arrow_forward_ios_rounded, size: 14, color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
+          ],
+        ),
       ),
     );
   }

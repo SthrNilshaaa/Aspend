@@ -13,6 +13,7 @@ import '../core/const/app_strings.dart';
 import '../core/const/app_constants.dart';
 import '../core/const/app_dimensions.dart';
 import '../core/const/app_typography.dart';
+import 'package:aspends_tracker/l10n/generated/app_localizations.dart';
 
 class SplashScreen extends StatefulWidget {
   final bool isDarkMode;
@@ -73,9 +74,10 @@ class _SplashScreenState extends State<SplashScreen>
         final localAuth = LocalAuthentication();
         final canCheckDeviceSupport = await localAuth.isDeviceSupported();
 
-        if (canCheckDeviceSupport) {
+        if (canCheckDeviceSupport && mounted) {
+          final l10n = AppLocalizations.of(context)!;
           final didAuthenticate = await localAuth.authenticate(
-            localizedReason: 'Authenticate to access Aspends Tracker',
+            localizedReason: l10n.appLockDesc,
             biometricOnly: false,
             persistAcrossBackgrounding: true,
           );
@@ -167,7 +169,7 @@ class _SplashScreenState extends State<SplashScreen>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              AppStrings.appName,
+                              AppLocalizations.of(context)!.appName,
                               style: GoogleFonts.dmSans(
                                 fontSize: ResponsiveUtils.getResponsiveFontSize(
                                     context,
@@ -175,26 +177,26 @@ class _SplashScreenState extends State<SplashScreen>
                                     tablet: AppTypography.fontSizeHuge,
                                     desktop:
                                         AppTypography.fontSizeXXLarge + 12),
-                                color: Colors.white,
+                                color: widget.isDarkMode ? Colors.white : Colors.black,
                                 fontWeight: AppTypography.fontWeightBold,
                                 letterSpacing: 1.2,
-                              ),
-                            ),
-                            SizedBox(
-                                height: ResponsiveUtils.getResponsiveSpacing(
-                                    context,
-                                    mobile: AppDimensions.paddingSmall,
-                                    tablet: AppDimensions.borderRadiusSmall,
-                                    desktop: AppDimensions.paddingStandard)),
-                            Text(
-                              AppStrings.splashTagline,
+                                  ),
+                                ),
+                                SizedBox(
+                                    height: ResponsiveUtils.getResponsiveSpacing(
+                                        context,
+                                        mobile: AppDimensions.paddingSmall,
+                                        tablet: AppDimensions.borderRadiusSmall,
+                                        desktop: AppDimensions.paddingStandard)),
+                                Text(
+                                  AppLocalizations.of(context)!.splashTagline,
                               style: GoogleFonts.dmSans(
                                 fontSize: ResponsiveUtils.getResponsiveFontSize(
                                     context,
                                     mobile: AppTypography.fontSizeMedium,
                                     tablet: AppTypography.fontSizeSmall + 4,
                                     desktop: AppTypography.fontSizeLarge),
-                                color: Colors.white.withValues(alpha: 0.9),
+                                color: (widget.isDarkMode ? Colors.white : Colors.black).withValues(alpha: 0.9),
                                 fontWeight: AppTypography.fontWeightMedium,
                               ),
                             ),
@@ -204,7 +206,7 @@ class _SplashScreenState extends State<SplashScreen>
                               width: AppDimensions.avatarSizeStandard,
                               height: AppDimensions.avatarSizeStandard,
                               child: LoadingAnimationWidget.halfTriangleDot(
-                                color: Colors.white.withValues(alpha: 0.8),
+                                color: (widget.isDarkMode ? Colors.white : Colors.black).withValues(alpha: 0.8),
                                 size: AppDimensions.avatarSizeStandard,
                               ),
                             ),

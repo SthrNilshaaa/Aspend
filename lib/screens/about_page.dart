@@ -10,6 +10,7 @@ import '../core/const/app_dimensions.dart';
 import '../core/const/app_strings.dart';
 import '../core/view_models/theme_view_model.dart';
 import '../widgets/settings_widgets.dart';
+import 'package:aspends_tracker/l10n/generated/app_localizations.dart';
 
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
@@ -20,6 +21,7 @@ class AboutPage extends StatelessWidget {
     final isDark = themeViewModel.isDarkMode;
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -35,7 +37,7 @@ class AboutPage extends StatelessWidget {
             flexibleSpace: FlexibleSpaceBar(
               titlePadding: const EdgeInsets.only(left: 48, bottom: 16),
               title: Text(
-                'About ${AppStrings.appNameShort}',
+                l10n.aboutApp,
                 style: GoogleFonts.dmSans(
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
@@ -137,41 +139,42 @@ class AboutPage extends StatelessWidget {
             padding: const EdgeInsets.all(AppDimensions.paddingLarge),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                _buildSectionHeader(context, 'Developer & Designer'),
-                _buildDeveloperCard(context, 'SthrKaran', 'Lead Designer',
+                _buildHowItWorksSection(context),
+                _buildSectionHeader(context, l10n.developerDesigner),
+                _buildDeveloperCard(context, 'SthrKaran', l10n.leadDesigner,
                     'SK'),
                 const SizedBox(height: 8),
-                _buildDeveloperCard(context, 'nilshaaa', 'Developer',
+                _buildDeveloperCard(context, 'nilshaaa', l10n.developer,
                     'N'),
                 const SizedBox(height: 32),
-                _buildSectionHeader(context, 'Support & Legal'),
+                _buildSectionHeader(context, l10n.supportLegal),
                 SettingTile(
                   icon: Icons.description_outlined,
-                  title: 'Privacy Policy',
-                  subtitle: 'Read our privacy policy document',
+                  title: l10n.privacyPolicy,
+                  subtitle: l10n.privacyPolicyDesc,
                   onTap: () =>
                       _launchUrl(context, AppConstants.privacyPolicyUrl),
                 ),
                 SettingTile(
                   icon: Icons.help_outline_rounded,
-                  title: 'Help & Support',
-                  subtitle: 'Join our Telegram for support',
+                  title: l10n.helpSupport,
+                  subtitle: l10n.telegramSupportDesc,
                   onTap: () =>
                       _launchUrl(context, AppConstants.supportTelegramUrl),
                 ),
                 const SizedBox(height: 32),
-                _buildSectionHeader(context, 'Project Info'),
+                _buildSectionHeader(context, l10n.projectInfo),
                 SettingTile(
                   icon: Icons.code_rounded,
-                  title: 'Open Source',
-                  subtitle: 'Proudly open source on GitHub',
+                  title: l10n.openSource,
+                  subtitle: l10n.openSourceDesc,
                   onTap: () => _launchUrl(
                       context, 'https://github.com/SthrNilshaaa/Aspend'),
                 ),
                 SettingTile(
                   icon: Icons.star_outline_rounded,
-                  title: 'Rate Aspends',
-                  subtitle: 'Support us with a 5-star rating',
+                  title: l10n.rateApp,
+                  subtitle: l10n.rateAppDesc,
                   onTap: () {
                     // Placeholder for store link
                   },
@@ -189,7 +192,7 @@ class AboutPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        AppStrings.developedBy,
+                        l10n.developedBy,
                         style: GoogleFonts.dmSans(
                           fontSize: 11,
                           fontWeight: FontWeight.w500,
@@ -328,5 +331,115 @@ class AboutPage extends StatelessWidget {
         );
       }
     }
+  }
+
+  Widget _buildHowItWorksSection(BuildContext context) {
+    final isDark = context.watch<ThemeViewModel>().isDarkMode;
+    final primaryColor = Theme.of(context).colorScheme.primary;
+    final l10n = AppLocalizations.of(context)!;
+
+    final steps = [
+      {
+        'icon': Icons.notifications_active_rounded,
+        'title': l10n.howItWorksTitle1,
+        'desc': l10n.howItWorksDesc1,
+      },
+      {
+        'icon': Icons.psychology_rounded,
+        'title': l10n.howItWorksTitle2,
+        'desc': l10n.howItWorksDesc2,
+      },
+      {
+        'icon': Icons.sync_rounded,
+        'title': l10n.howItWorksTitle3,
+        'desc': l10n.howItWorksDesc3,
+      },
+      {
+        'icon': Icons.security_rounded,
+        'title': l10n.howItWorksTitle4,
+        'desc': l10n.howItWorksDesc4,
+      },
+    ];
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 32),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: primaryColor.withValues(alpha: 0.03),
+        borderRadius: BorderRadius.circular(AppDimensions.borderRadiusLarge),
+        border: Border.all(
+          color: primaryColor.withValues(alpha: 0.08),
+          width: 1.5,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.auto_awesome_rounded, color: primaryColor, size: 22),
+              const SizedBox(width: 8),
+              Text(
+                l10n.howAspendWorks,
+                style: GoogleFonts.dmSans(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                  color: primaryColor,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          ...steps.map((step) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: primaryColor.withValues(alpha: 0.08),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      step['icon'] as IconData,
+                      color: primaryColor,
+                      size: 18,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          step['title'] as String,
+                          style: GoogleFonts.dmSans(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white : Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          step['desc'] as String,
+                          style: GoogleFonts.dmSans(
+                            fontSize: 12,
+                            height: 1.4,
+                            color: isDark ? Colors.white54 : Colors.black54,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
   }
 }

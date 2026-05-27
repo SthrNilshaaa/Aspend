@@ -511,13 +511,26 @@ class CurrencyText extends StatelessWidget {
     final integerPart = parts[0];
     final decimalPart = parts.length > 1 ? parts[1] : '00';
 
+    double scaleFactor = 1.0;
+    final digits = integerPart.replaceAll(RegExp(r'[^0-9]'), '').length;
+    if (digits > 9) {
+      scaleFactor = 0.55;
+    } else if (digits > 7) {
+      scaleFactor = 0.70;
+    } else if (digits > 5) {
+      scaleFactor = 0.85;
+    }
+
+    final computedSymbolSize = symbolSize * scaleFactor;
+    final computedIntegerSize = integerSize * scaleFactor;
+
     return RichText(
       text: TextSpan(
         children: [
           TextSpan(
             text: '₹',
             style: GoogleFonts.dmSans(
-              fontSize: symbolSize,
+              fontSize: computedSymbolSize,
               fontWeight: AppTypography.fontWeightSemiBold,
               color: isDark
                   ? Colors.white.withValues(alpha: 0.9)
@@ -528,7 +541,7 @@ class CurrencyText extends StatelessWidget {
           TextSpan(
             text: integerPart,
             style: fontName.copyWith(
-              fontSize: integerSize,
+              fontSize: computedIntegerSize,
               height: 1,
               fontWeight: AppTypography.fontWeightMedium,
               color: extraColor,
@@ -539,7 +552,7 @@ class CurrencyText extends StatelessWidget {
           TextSpan(
             text: '.$decimalPart',
             style: fontName.copyWith(
-              fontSize: integerSize * 0.63,
+              fontSize: computedIntegerSize * 0.63,
               fontWeight: AppTypography.fontWeightMedium,
               color: extraColor,
               // color: isNegative ? AppColors.accentRed : AppColors.accentGreen,

@@ -1,0 +1,323 @@
+{
+  "appName": "يصعد",
+  "appTagline": "الإنفاق الذكي، مبسط.",
+  "totalBalance": "الرصيد الإجمالي",
+  "income": "دخل",
+  "expense": "حساب",
+  "monthlyBudget": "الميزانية الشهرية",
+  "transactions": "المعاملات",
+  "recentTransactions": "المعاملات الأخيرة",
+  "seeAll": "رؤية الكل",
+  "settings": "إعدادات",
+  "language": "لغة",
+  "theme": "سمة",
+  "darkMode": "الوضع المظلم",
+  "lightMode": "وضع الضوء",
+  "systemDefault": "النظام الافتراضي",
+  "adaptiveColor": "اللون التكيفي",
+  "customColor": "لون مخصص",
+  "backup": "النسخ الاحتياطي والاستعادة",
+  "export": "تصدير البيانات",
+  "import": "استيراد البيانات",
+  "privacyPolicy": "سياسة الخصوصية",
+  "telegramSupport": "دعم برقية",
+  "addTransaction": "إضافة المعاملة",
+  "editTransaction": "تحرير المعاملة",
+  "deleteTransaction": "حذف المعاملة",
+  "amount": "كمية",
+  "category": "فئة",
+  "account": "حساب",
+  "date": "تاريخ",
+  "note": "ملاحظة (اختياري)",
+  "save": "يحفظ",
+  "cancel": "يلغي",
+  "delete": "يمسح",
+  "search": "بحث المعاملات...",
+  "noTransactions": "لم يتم العثور على أي معاملات",
+  "voiceInput": "الإدخال الصوتي",
+  "speechUnavailable": "التعرف على الكلام غير متوفر",
+  "microPermissionDenied": "تم رفض إذن الميكروفون",
+  "appearance": "مظهر",
+  "security": "حماية",
+  "autoDetection": "الكشف التلقائي عن المعاملات",
+  "backupExport": "النسخ الاحتياطي والتصدير",
+  "dataManagement": "إدارة البيانات",
+  "budgetingBalance": "الميزانية والتوازن",
+  "customDropdowns": "العناصر المنسدلة المخصصة",
+  "appInformation": "معلومات التطبيق",
+  "developedBy": "تم تطويره بواسطة ❤️ بواسطة Sthrnilshaa",
+  "chooseTheme": "اختر الموضوع المفضل لديك",
+  "appLock": "قفل التطبيق",
+  "appLockDesc": "يتطلب مصادقة الجهاز لفتح التطبيق",
+  "upiId": "معرف واجهة الدفعات الموحدة (UPI).",
+  "upiIdDesc": "قم بتعيين معرف UPI الخاص بك لطلبات الأموال",
+  "upiName": "اسم العرض",
+  "upiNameDesc": "اختياري: الاسم الموضح في طلب UPI",
+  "analytics": "التحليلات",
+  "people": "الناس",
+  "charts": "الرسوم البيانية",
+  "sortBy": "فرز حسب",
+  "holdToRecord": "اضغط لتسجيل المعاملة",
+  "couldNotFindAmount": "تعذر العثور على المبلغ. جرّب: \"أنفق 500 دولار على الطعام\"",
+  "savedAmount": "تم حفظ {amount} لـ {category}",
+  "@savedAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "logsDeleted": "تم حذف {count} من السجلات",
+  "@logsDeleted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "patternsIgnored": "تم تجاهل أنماط {count} بشكل دائم",
+  "@patternsIgnored": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recheckComplete": "اكتملت عملية إعادة الفحص",
+  "aboutApp": "حول اسبندس",
+  "developerDesigner": "المطور والمصمم",
+  "leadDesigner": "المصمم الرئيسي",
+  "developer": "المطور",
+  "supportLegal": "الدعم والشؤون القانونية",
+  "privacyPolicyDesc": "اقرأ وثيقة سياسة الخصوصية الخاصة بنا",
+  "helpSupport": "المساعدة والدعم",
+  "telegramSupportDesc": "انضم إلى Telegram للحصول على الدعم",
+  "projectInfo": "معلومات المشروع",
+  "openSource": "مفتوح المصدر",
+  "openSourceDesc": "مصدر مفتوح بفخر على جيثب",
+  "rateApp": "معدل تصاعدي",
+  "rateAppDesc": "ادعمنا بتقييم 5 نجوم",
+  "howAspendWorks": "كيف يعمل أسبيند",
+  "howItWorksTitle1": "1. الاعتراض الذكي",
+  "howItWorksDesc1": "تستمع خدمة الخلفية الآمنة والمُحسّنة للبطارية إلى الرسائل النصية القصيرة والإشعارات المصرفية الواردة.",
+  "howItWorksTitle2": "2. التحليل المحلي للسحابة الصفرية",
+  "howItWorksDesc2": "تقوم الخوارزميات الذكية غير المتصلة بالإنترنت باستخراج المبالغ والفئات والتجار على الفور - بنسبة 100% على جهازك.",
+  "howItWorksTitle3": "3. الاسترداد التلقائي دون اتصال بالإنترنت",
+  "howItWorksDesc3": "في كل مرة تقوم فيها بفتح Aspend أو استئنافه، يقوم تلقائيًا بمسح سجل المعاملات المفقودة أثناء غيابك.",
+  "howItWorksTitle4": "4. قفل الخصوصية المطلق",
+  "howItWorksDesc4": "لا توجد خوادم ولا طلبات الويب. تتم حماية بياناتك المالية محليًا داخل وحدة تخزين الخلية المشفرة.",
+  "autoDetectionSetup": "إعداد الكشف التلقائي",
+  "autoDetectionSetupDesc": "لاكتشاف المعاملات تلقائيًا، نحتاج إلى أذونات محددة. سيتم مراقبة جميع التطبيقات المصرفية والمعاملات بشكل آمن.",
+  "notificationAccess": "1. الوصول إلى الإخطار",
+  "notificationAccessDesc": "يسمح لنا بقراءة تنبيهات المعاملات من تطبيقات البنك والدفع.",
+  "smsPermission": "2. إذن الرسائل القصيرة",
+  "smsPermissionDesc": "تمكن من قراءة الرسائل القصيرة الخاصة بالمعاملات من البنك الذي تتعامل معه.",
+  "finishSetup": "إنهاء الإعداد",
+  "grant": "منحة",
+  "appNameShort": "يصعد",
+  "splashTagline": "إدارة الأموال الذكية",
+  "budget": "ميزانية",
+  "balanceDetailsTitle": "تفاصيل الرصيد",
+  "editBalanceTitle": "تحرير الرصيد",
+  "newBalanceLabel": "توازن جديد",
+  "viewAll": "عرض الكل",
+  "searchHint": "البحث في الفئات أو الملاحظات...",
+  "emptyWalletTitle": "محفظتك هادئة",
+  "emptyWalletDesc": "ابدأ بإضافة معاملة يدويًا أو قم بتمكين الاكتشاف التلقائي لتتبع إنفاقك دون عناء.",
+  "addPerson": "إضافة شخص",
+  "addNewPerson": "إضافة شخص جديد",
+  "editPerson": "تحرير الشخص",
+  "addPhoto": "إضافة صورة",
+  "personName": "اسم الشخص",
+  "youGet": "أنت تملك",
+  "youGive": "أنت تقترض",
+  "youWillGet": "سوف تمتلك",
+  "youWillGive": "سوف تقترض",
+  "noPeopleYet": "لم تتم إضافة أي أشخاص حتى الآن",
+  "searchPeople": "بحث عن الناس...",
+  "enterNameHint": "أدخل اسم الشخص الذي تريد متابعة المعاملات معه",
+  "updateDetailsHint": "تحديث التفاصيل لهذا الشخص",
+  "expenses": "نفقات",
+  "history": "تاريخ",
+  "overview": "ملخص",
+  "trends": "الاتجاهات",
+  "categories": "فئات",
+  "noDataFound": "لم يتم العثور على سجلات البيانات",
+  "appColor": "لون التطبيق",
+  "selectColor": "حدد لون التطبيق المخصص",
+  "welcomeTitle": "مرحبًا بك في Aspends Tracker",
+  "welcomeSubtitle": "رفيقك المالي الشخصي",
+  "welcomeDesc": "تتبع دخلك ونفقاتك وإدارة أموالك بكل سهولة. البقاء على رأس أهدافك المالية.",
+  "smartTrackingTitle": "تتبع المعاملات الذكية",
+  "smartTrackingSubtitle": "تنظيم اموالك",
+  "smartTrackingDesc": "قم بتصنيف المعاملات وإضافة الملاحظات والحصول على رؤى تفصيلية حول أنماط الإنفاق الخاصة بك.",
+  "peopleTrackingTitle": "تتبع من شخص لآخر",
+  "peopleTrackingSubtitle": "إدارة النفقات المشتركة",
+  "peopleTrackingDesc": "تتبع الأموال المستحقة عليك أو المستحقة على الآخرين. مثالية لزملاء السكن والأصدقاء والعائلة.",
+  "analyticsTitle": "تحليلات جميلة",
+  "analyticsSubtitle": "تصور البيانات الخاصة بك",
+  "analyticsDesc": "تساعدك المخططات والرسوم البيانية على فهم عادات الإنفاق والاتجاهات المالية لديك.",
+  "offlineTitle": "غير متصل بالكامل",
+  "offlineSubtitle": "تظل بياناتك خاصة",
+  "offlineDesc": "يتم تخزين جميع بياناتك المالية محليًا على جهازك. لا حاجة للإنترنت، خصوصية كاملة.",
+  "autoDetectTitle": "الكشف التلقائي عن المعاملات",
+  "autoDetectSubtitle": "ذكية وآلية",
+  "autoDetectDesc": "كشف المعاملات تلقائيا من الإخطارات المصرفية. لا مزيد من الإدخال اليدوي - سيتم تسجيل معاملاتك على الفور!",
+  "readyTitle": "هل أنت مستعد للبدء؟",
+  "readySubtitle": "لنبدأ رحلتك",
+  "readyDesc": "أنت جاهز تمامًا! ابدأ بتتبع أموالك وتحكم في أموالك اليوم.",
+  "settingUpApp": "جارٍ إعداد تطبيقك...",
+  "skip": "يتخطى",
+  "next": "التالي",
+  "getStarted": "ابدأ",
+  "requestMoney": "طلب المال",
+  "generateQr": "إنشاء QR للدفع",
+  "sortByNameAZ": "الاسم (أ-ي)",
+  "sortByNameZA": "الاسم (ي-أ)",
+  "sortByBalanceHighest": "الرصيد (الأعلى)",
+  "sortByBalanceLowest": "الرصيد (الأدنى)",
+  "upiIdNotSet": "لم يتم تعيين معرف UPI لهذا الشخص. الرجاء إضافتها من التحرير.",
+  "couldNotFindUpiApp": "تعذر العثور على تطبيق دفع UPI",
+  "noTransactionsYet": "لا توجد معاملات حتى الآن",
+  "addFirstTransaction": "أضف معاملتك الأولى مع الشخص",
+  "settleBalance": "تسوية الرصيد",
+  "settleBalanceDesc": "سيؤدي هذا إلى إضافة معاملة بقيمة ₹{amount} ليصل الرصيد إلى الصفر. يكمل؟",
+  "@settleBalanceDesc": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "settle": "يستقر",
+  "deletePerson": "حذف الشخص",
+  "deletePersonDesc": "هل أنت متأكد من رغبتك في حذف {name}؟ لا يمكن التراجع عن هذا الإجراء.",
+  "@deletePersonDesc": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteTransactionDesc": "هل أنت متأكد أنك تريد حذف هذه المعاملة؟",
+  "update": "تحديث",
+  "sortTransactionsBy": "فرز المعاملات حسب",
+  "sortByDateRecent": "التاريخ (الأخير)",
+  "sortByDateOldest": "التاريخ (الأقدم)",
+  "sortByAmountHighest": "المبلغ (الأعلى)",
+  "sortByAmountLowest": "المبلغ (الأدنى)",
+  "rangeAll": "الجميع",
+  "rangeDay": "يوم",
+  "rangeWeek": "أسبوع",
+  "rangeMonth": "شهر",
+  "rangeYear": "سنة",
+  "topCategory": "الفئة الأعلى",
+  "noSpending": "لا الإنفاق",
+  "avgDailySpend": "متوسط الإنفاق اليومي",
+  "perDay": "في اليوم الواحد",
+  "monitoredApps": "التطبيقات المراقبة",
+  "searchAppsHint": "البحث في تطبيقات الدفع أو الخدمات المصرفية...",
+  "noEligibleApps": "لم يتم العثور على تطبيقات مؤهلة",
+  "noAppsMatchSearch": "لا توجد تطبيقات تطابق بحثك",
+  "unknownApp": "تطبيق غير معروف",
+  "errorLoadingApps": "حدث خطأ أثناء تحميل التطبيقات: {error}",
+  "@errorLoadingApps": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "selectedCount": "{count} تم التحديد",
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ignorePatternsTooltip": "تجاهل الأنماط",
+  "deleteSelectedTooltip": "حذف المحدد",
+  "clearHistoryTitle": "مسح التاريخ؟",
+  "clearHistoryDesc": "سيؤدي هذا إلى حذف كافة سجلات الكشف المحفوظة.",
+  "clear": "واضح",
+  "transactionDetected": "تم الكشف عن المعاملة",
+  "notificationLogged": "تم تسجيل الإخطار",
+  "patternNotMatched": "النمط غير متطابق",
+  "notificationDataTitle": "بيانات الإخطار",
+  "copiedToClipboard": "تم نسخ الرسالة إلى الحافظة",
+  "copy": "ينسخ",
+  "smsMessage": "رسالة نصية قصيرة",
+  "received": "تلقى",
+  "paid": "مدفوع",
+  "listeningHint": "جاري الاستماع...",
+  "keepSpeaking": "استمر في الحديث...",
+  "done": "منتهي",
+  "fullBackupTitle": "النسخ الاحتياطي الكامل (JSON)",
+  "fullBackupDesc": "النسخ الاحتياطي لجميع البيانات إلى JSON",
+  "restoreBackupTitle": "استعادة النسخة الاحتياطية (JSON)",
+  "restoreBackupDesc": "استعادة كافة البيانات من النسخة الاحتياطية JSON",
+  "backupCompleted": "اكتمل النسخ الاحتياطي!",
+  "backupFailed": "فشل النسخ الاحتياطي: {error}",
+  "@backupFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "restoreCompleted": "تمت استعادة البيانات بنجاح!",
+  "restoreFailedCancelled": "فشلت عملية الاستعادة أو تم إلغاؤها",
+  "restoreFailed": "فشلت الاستعادة: {error}",
+  "@restoreFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "pdfExported": "تم تصدير ملف PDF بنجاح!",
+  "pdfExportFailed": "فشل تصدير ملف PDF: {error}",
+  "@pdfExportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "peopleExported": "تم تصدير بيانات الأشخاص!",
+  "peopleExportFailed": "فشل تصدير بيانات الأشخاص: {error}",
+  "@peopleExportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "allDataDeleted": "تم حذف كافة البيانات بنجاح!",
+  "introReset": "تمت إعادة ضبط المقدمة بنجاح!",
+  "selectRestoreMode": "حدد وضع الاستعادة",
+  "restoreModeDesc": "اختر كيفية التعامل مع سجلات المعاملات الموجودة أثناء استعادة البيانات.",
+  "mergeSkipDuplicates": "دمج وتخطي التكرارات",
+  "mergeSkipDesc": "تجنب الإدخالات المكررة مع الاحتفاظ بجميع العناصر الجديدة الفريدة.",
+  "overwriteConflicts": "الكتابة فوق وتحديث الصراعات",
+  "overwriteConflictsDesc": "استبدل سجلات المعاملات الحالية بإصدارات احتياطية في حالة حدوث تعارضات.",
+  "exportCsvTitle": "معاملات التصدير (CSV)",
+  "exportCsvDesc": "تصدير المعاملات الخاصة بك إلى CSV",
+  "exportCsvSuccess": "اكتمل التصدير بنجاح!",
+  "exportCsvFailed": "فشل التصدير: {error}",
+  "@exportCsvFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "exportPeopleTitle": "تصدير بيانات الأشخاص",
+  "exportPeopleDesc": "النسخ الاحتياطي للمعاملات الناس",
+  "exportPdfTitle": "تصدير بصيغة PDF",
+  "exportPdfDesc": "إنشاء تقارير PDF"
+}
