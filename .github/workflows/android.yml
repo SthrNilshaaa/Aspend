@@ -1,7 +1,6 @@
 name: Flutter Android Release Build
 
 on:
-<<<<<<< HEAD
   workflow_dispatch:  # Allows manual trigger
   push:
     branches:
@@ -9,7 +8,6 @@ on:
 
 permissions:
   contents: write  # Required to create GitHub Release and upload assets
-=======
   workflow_dispatch:
   push:
     branches:
@@ -17,7 +15,6 @@ permissions:
 
 permissions:
   contents: write
->>>>>>> master
 
 jobs:
   build:
@@ -25,26 +22,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-<<<<<<< HEAD
       - name: Checkout code
         uses: actions/checkout@v4
-=======
+
       - name: Checkout code with full history
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Fetch all history for changelog
+        fetch-depth: 0 # Fetch all history for changelog
 
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
->>>>>>> master
+
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-<<<<<<< HEAD
           flutter-version: '3.32.4'  # Set your Flutter version
 
       # 🔓 Step 1: Re-create the keystore from secret
@@ -81,7 +76,6 @@ jobs:
         with:
           tag_name: v8 # Change version tag as needed
           name: Release v8
-=======
           channel: stable
           cache: true
           cache-key: flutter-cache
@@ -227,15 +221,13 @@ jobs:
             ---
             
             *Automatically built and released by GitHub Actions*
->>>>>>> master
           files: |
             build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
             build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
             build/app/outputs/flutter-apk/app-x86_64-release.apk
-<<<<<<< HEAD
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-=======
             build/app/outputs/flutter-apk/app-release.apk
           draft: false
           prerelease: false
@@ -249,4 +241,4 @@ jobs:
           echo "✅ Release v${{ steps.version.outputs.VERSION }}-${{ github.run_number }} created successfully!"
           echo "📱 APKs available in GitHub Releases"
           echo "🔗 https://github.com/${{ github.repository }}/releases/tag/v${{ steps.version.outputs.VERSION }}-${{ github.run_number }}"
->>>>>>> master
+
