@@ -8,8 +8,9 @@ import 'package:provider/provider.dart';
 import '../core/view_models/theme_view_model.dart';
 import '../core/services/transaction_detection_service.dart';
 import '../core/services/native_bridge.dart';
-import '../core/const/app_strings.dart';
 import '../core/const/app_constants.dart';
+import 'package:aspends_tracker/l10n/generated/app_localizations.dart';
+import '../widgets/monitoring_setup_dialog.dart';
 
 class IntroPage extends StatefulWidget {
   const IntroPage({super.key});
@@ -24,57 +25,60 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
   late Animation<double> _fadeAnimation;
   int _currentPage = 0;
 
-  final List<IntroSlide> _slides = [
-    IntroSlide(
-      title: AppStrings.welcomeTitle,
-      subtitle: AppStrings.welcomeSubtitle,
-      description: AppStrings.welcomeDesc,
-      icon: Icons.account_balance_wallet,
-      color: Colors.green,
-    ),
-    IntroSlide(
-      title: AppStrings.smartTrackingTitle,
-      subtitle: AppStrings.smartTrackingSubtitle,
-      description: AppStrings.smartTrackingDesc,
-      icon: Icons.analytics,
-      color: Colors.blue,
-    ),
-    IntroSlide(
-      title: AppStrings.peopleTrackingTitle,
-      subtitle: AppStrings.peopleTrackingSubtitle,
-      description: AppStrings.peopleTrackingDesc,
-      icon: Icons.people,
-      color: Colors.green,
-    ),
-    IntroSlide(
-      title: AppStrings.analyticsTitle,
-      subtitle: AppStrings.analyticsSubtitle,
-      description: AppStrings.analyticsDesc,
-      icon: Icons.pie_chart,
-      color: Colors.orange,
-    ),
-    IntroSlide(
-      title: AppStrings.offlineTitle,
-      subtitle: AppStrings.offlineSubtitle,
-      description: AppStrings.offlineDesc,
-      icon: Icons.security,
-      color: Colors.purple,
-    ),
-    IntroSlide(
-      title: AppStrings.autoDetectTitle,
-      subtitle: AppStrings.autoDetectSubtitle,
-      description: AppStrings.autoDetectDesc,
-      icon: Icons.auto_awesome,
-      color: Colors.amber,
-    ),
-    IntroSlide(
-      title: AppStrings.readyTitle,
-      subtitle: AppStrings.readySubtitle,
-      description: AppStrings.readyDesc,
-      icon: Icons.rocket_launch,
-      color: Colors.indigo,
-    ),
-  ];
+  List<IntroSlide> _getSlides(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      IntroSlide(
+        title: l10n.welcomeTitle,
+        subtitle: l10n.welcomeSubtitle,
+        description: l10n.welcomeDesc,
+        icon: Icons.account_balance_wallet,
+        color: Colors.green,
+      ),
+      IntroSlide(
+        title: l10n.smartTrackingTitle,
+        subtitle: l10n.smartTrackingSubtitle,
+        description: l10n.smartTrackingDesc,
+        icon: Icons.analytics,
+        color: Colors.blue,
+      ),
+      IntroSlide(
+        title: l10n.peopleTrackingTitle,
+        subtitle: l10n.peopleTrackingSubtitle,
+        description: l10n.peopleTrackingDesc,
+        icon: Icons.people,
+        color: Colors.green,
+      ),
+      IntroSlide(
+        title: l10n.analyticsTitle,
+        subtitle: l10n.analyticsSubtitle,
+        description: l10n.analyticsDesc,
+        icon: Icons.pie_chart,
+        color: Colors.orange,
+      ),
+      IntroSlide(
+        title: l10n.offlineTitle,
+        subtitle: l10n.offlineSubtitle,
+        description: l10n.offlineDesc,
+        icon: Icons.security,
+        color: Colors.purple,
+      ),
+      IntroSlide(
+        title: l10n.autoDetectTitle,
+        subtitle: l10n.autoDetectSubtitle,
+        description: l10n.autoDetectDesc,
+        icon: Icons.auto_awesome,
+        color: Colors.amber,
+      ),
+      IntroSlide(
+        title: l10n.readyTitle,
+        subtitle: l10n.readySubtitle,
+        description: l10n.readyDesc,
+        icon: Icons.rocket_launch,
+        color: Colors.indigo,
+      ),
+    ];
+  }
 
   @override
   void initState() {
@@ -107,6 +111,7 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
   void _completeIntro() async {
     HapticFeedback.lightImpact();
     try {
+      final l10n = AppLocalizations.of(context)!;
       // Show loading indicator
       showDialog(
         context: context,
@@ -132,7 +137,7 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      AppStrings.settingUpApp,
+                      l10n.settingUpApp,
                       style: GoogleFonts.dmSans(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -156,8 +161,6 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
         Navigator.of(context).pop(); // Close loading dialog
         await _showAutoDetectionSetup(context);
       }
-
-      // Navigation will be handled by _showAutoDetectionSetup or _navigateToMainApp
     } catch (e) {
       // Close loading dialog if there's an error
       if (mounted) {
@@ -202,139 +205,16 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
   }
 
   Future<void> _showAutoDetectionSetup(BuildContext context) async {
-    final theme = Theme.of(context);
-    final isDark = context.watch<ThemeViewModel>().isDarkMode;
-
-    return showDialog(
+    final result = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: theme.colorScheme.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            const Icon(Icons.auto_awesome, color: Colors.amber, size: 24),
-            const SizedBox(width: 8),
-            Text(
-              'Enable Auto Detection?',
-              style: GoogleFonts.dmSans(
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.black,
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Would you like to enable automatic transaction detection?',
-              style: GoogleFonts.dmSans(
-                fontWeight: FontWeight.w600,
-                color: isDark ? Colors.white70 : Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 12),
-            _buildFeatureItem('🔔 Monitor notifications',
-                'Detects banking transactions automatically'),
-            _buildFeatureItem('💰 Smart categorization',
-                'Categorizes transactions based on bank keywords'),
-            _buildFeatureItem('⚡ Real-time detection',
-                'Captures transactions as they happen'),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.amber.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
-              ),
-              child: Text(
-                '💡 You can enable this later in Settings if you skip now.',
-                style: GoogleFonts.dmSans(
-                  fontSize: 12,
-                  color: Colors.amber.shade700,
-                ),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            child: Text(
-              'Skip for now',
-              style: TextStyle(color: theme.colorScheme.primary),
-            ),
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              Navigator.pop(context);
-              _navigateToMainApp();
-            },
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.amber,
-              foregroundColor: Colors.white,
-            ),
-            onPressed: () async {
-              HapticFeedback.lightImpact();
-              try {
-                // Request permissions
-                await NativeBridge.requestBatteryOptimization();
-                await NativeBridge.requestNotificationPermission();
-
-                // Enable auto-detection
-                await TransactionDetectionService.setEnabled(true);
-
-                if (!context.mounted) return;
-                Navigator.pop(context);
-                _navigateToMainApp();
-              } catch (e) {
-                // If there's an error, still proceed to main app
-                if (!context.mounted) return;
-                Navigator.pop(context);
-                _navigateToMainApp();
-              }
-            },
-            child: const Text("Enable"),
-          ),
-        ],
-      ),
+      builder: (context) => const MonitoringSetupDialog(),
     );
-  }
 
-  Widget _buildFeatureItem(String title, String subtitle) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: GoogleFonts.dmSans(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                ),
-                Text(
-                  subtitle,
-                  style: GoogleFonts.dmSans(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+    if (result == true) {
+      await TransactionDetectionService.setEnabled(true);
+    }
+    _navigateToMainApp();
   }
 
   void _navigateToMainApp() {
@@ -348,6 +228,8 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
+    final slides = _getSlides(context);
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -366,7 +248,7 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
                     _completeIntro();
                   },
                   child: Text(
-                    AppStrings.skip,
+                    l10n.skip,
                     style: GoogleFonts.dmSans(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -382,9 +264,9 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
               child: PageView.builder(
                 controller: _pageController,
                 onPageChanged: _onPageChanged,
-                itemCount: _slides.length,
+                itemCount: slides.length,
                 itemBuilder: (context, index) {
-                  final slide = _slides[index];
+                  final slide = slides[index];
                   return _buildSlide(slide, theme, isDark);
                 },
               ),
@@ -399,7 +281,7 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
-                      _slides.length,
+                      slides.length,
                       (index) => AnimatedContainer(
                         duration: const Duration(milliseconds: 300),
                         margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -407,7 +289,7 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
                         height: 8,
                         decoration: BoxDecoration(
                           color: _currentPage == index
-                              ? _slides[index].color
+                              ? slides[index].color
                               : theme.colorScheme.outline
                                   .withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(4),
@@ -448,7 +330,7 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
                       ElevatedButton(
                         onPressed: () {
                           HapticFeedback.lightImpact();
-                          if (_currentPage < _slides.length - 1) {
+                          if (_currentPage < slides.length - 1) {
                             _pageController.nextPage(
                               duration: const Duration(milliseconds: 300),
                               curve: Curves.easeInOut,
@@ -458,7 +340,7 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: _slides[_currentPage].color,
+                          backgroundColor: slides[_currentPage].color,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(
                               horizontal: 32, vertical: 16),
@@ -468,9 +350,9 @@ class _IntroPageState extends State<IntroPage> with TickerProviderStateMixin {
                           elevation: 4,
                         ),
                         child: Text(
-                          _currentPage < _slides.length - 1
-                              ? AppStrings.next
-                              : AppStrings.getStarted,
+                          _currentPage < slides.length - 1
+                              ? l10n.next
+                              : l10n.getStarted,
                           style: GoogleFonts.dmSans(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,

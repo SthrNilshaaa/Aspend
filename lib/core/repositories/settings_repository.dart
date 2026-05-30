@@ -223,4 +223,24 @@ class SettingsRepository {
       await _settingsBox.put(AppConstants.upiNameKey, upiName);
     }
   }
+
+  String? getLocale() {
+    return _settingsBox.get(AppConstants.localeKey);
+  }
+
+  Future<void> setLocale(String? localeCode) async {
+    if (localeCode == null) {
+      await _settingsBox.delete(AppConstants.localeKey);
+    } else {
+      await _settingsBox.put(AppConstants.localeKey, localeCode);
+    }
+  }
+
+  int? getLastActiveTime() {
+    return _settingsBox.get('lastActiveTime');
+  }
+
+  Future<void> setLastActiveTime(int timestamp) async {
+    await _settingsBox.put('lastActiveTime', timestamp);
+  }
 }

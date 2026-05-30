@@ -7,6 +7,7 @@ import '../core/utils/voice_parser.dart';
 import '../core/const/app_typography.dart';
 import '../core/utils/blur_utils.dart';
 import 'add_transaction_dialog.dart';
+import 'package:aspends_tracker/l10n/generated/app_localizations.dart';
 
 class VoiceInputOverlay extends StatefulWidget {
   const VoiceInputOverlay({super.key});
@@ -17,7 +18,7 @@ class VoiceInputOverlay extends StatefulWidget {
 
 class _VoiceInputOverlayState extends State<VoiceInputOverlay> with SingleTickerProviderStateMixin {
   final SpeechService _speechService = SpeechService();
-  String _currentText = "Listening...";
+  String _currentText = "";
   late AnimationController _pulseController;
 
   @override
@@ -37,7 +38,7 @@ class _VoiceInputOverlayState extends State<VoiceInputOverlay> with SingleTicker
       _startRecording();
     } else {
       if (mounted) {
-        setState(() => _currentText = "Speech recognition unavaiable");
+        setState(() => _currentText = "speech_unavailable_flag");
       }
     }
   }
@@ -46,15 +47,13 @@ class _VoiceInputOverlayState extends State<VoiceInputOverlay> with SingleTicker
     _speechService.startListening((text) {
       if (mounted) {
         setState(() {
-          _currentText = text.isEmpty ? "Listening..." : text;
+          _currentText = text;
         });
       }
     });
   }
 
   void _finishRecording() {
-    //wait s after stopt recording
-    
     _speechService.stopListening();
     final result = VoiceParser.parse(_currentText);
     
@@ -81,7 +80,15 @@ class _VoiceInputOverlayState extends State<VoiceInputOverlay> with SingleTicker
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     
+    String displayText = _currentText;
+    if (displayText.isEmpty) {
+      displayText = l10n.listeningHint;
+    } else if (displayText == "speech_unavailable_flag") {
+      displayText = l10n.speechUnavailable;
+    }
+
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
       child: Container(
@@ -124,7 +131,7 @@ class _VoiceInputOverlayState extends State<VoiceInputOverlay> with SingleTicker
             ),
             const SizedBox(height: 32),
             Text(
-              "Keep speaking...",
+              l10n.keepSpeaking,
               style: GoogleFonts.dmSans(
                 fontSize: AppTypography.fontSizeSmall,
                 color: theme.colorScheme.primary,
@@ -135,7 +142,7 @@ class _VoiceInputOverlayState extends State<VoiceInputOverlay> with SingleTicker
             Container(
               constraints: const BoxConstraints(minHeight: 100),
               child: Text(
-                _currentText,
+                displayText,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.dmSans(
                   fontSize: AppTypography.fontSizeLarge,
@@ -151,7 +158,7 @@ class _VoiceInputOverlayState extends State<VoiceInputOverlay> with SingleTicker
                   child: TextButton(
                     onPressed: () => Navigator.pop(context),
                     child: Text(
-                      "Cancel",
+                      l10n.cancel,
                       style: GoogleFonts.dmSans(color: Colors.grey),
                     ),
                   ),
@@ -173,7 +180,7 @@ class _VoiceInputOverlayState extends State<VoiceInputOverlay> with SingleTicker
                       ),
                       child: Center(
                         child: Text(
-                          "Done",
+                          l10n.done,
                           style: GoogleFonts.dmSans(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -192,3 +199,4 @@ class _VoiceInputOverlayState extends State<VoiceInputOverlay> with SingleTicker
     );
   }
 }
+

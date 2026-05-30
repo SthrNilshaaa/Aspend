@@ -19,11 +19,11 @@ import '../../widgets/header_delegate.dart';
 import '../../widgets/modern_card.dart';
 import '../../widgets/glass_app_bar.dart';
 import '../../widgets/empty_state_view.dart';
-import '../core/const/app_strings.dart';
 import '../core/const/app_colors.dart';
 import '../core/const/app_dimensions.dart';
 import '../core/const/app_typography.dart';
 import '../core/utils/blur_utils.dart';
+import 'package:aspends_tracker/l10n/generated/app_localizations.dart';
 
 class PeopleTab extends StatefulWidget {
   const PeopleTab({super.key});
@@ -82,6 +82,7 @@ class _PeopleTabState extends State<PeopleTab> {
     final controller = TextEditingController(text: existingPerson?.name);
     final upiController = TextEditingController(text: existingPerson?.upiId);
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     String? selectedPhotoPath = existingPerson?.photoPath;
 
     BlurUtils.showBlurredDialog(
@@ -93,8 +94,8 @@ class _PeopleTabState extends State<PeopleTab> {
                   BorderRadius.circular(AppDimensions.borderRadiusLarge)),
           title: Text(
             existingPerson == null
-                ? AppStrings.addNewPerson
-                : AppStrings.editPerson,
+                ? l10n.addNewPerson
+                : l10n.editPerson,
             style: GoogleFonts.dmSans(
               fontSize: AppTypography.fontSizeLarge,
               fontWeight: AppTypography.fontWeightBold,
@@ -160,7 +161,7 @@ class _PeopleTabState extends State<PeopleTab> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                AppStrings.addPhoto,
+                                l10n.addPhoto,
                                 style: GoogleFonts.dmSans(
                                   fontSize: AppTypography.fontSizeXSmall,
                                   color: theme.colorScheme.primary,
@@ -176,8 +177,8 @@ class _PeopleTabState extends State<PeopleTab> {
               const SizedBox(height: 20),
               Text(
                 existingPerson == null
-                    ? AppStrings.enterNameHint
-                    : AppStrings.updateDetailsHint,
+                    ? l10n.enterNameHint
+                    : l10n.updateDetailsHint,
                 style: GoogleFonts.dmSans(
                   fontSize: AppTypography.fontSizeSmall,
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
@@ -188,7 +189,7 @@ class _PeopleTabState extends State<PeopleTab> {
               TextField(
                 controller: controller,
                 decoration: InputDecoration(
-                  labelText: AppStrings.personName,
+                  labelText: l10n.personName,
                   labelStyle: GoogleFonts.dmSans(
                       fontSize: AppTypography.fontSizeSmall),
                   border: OutlineInputBorder(
@@ -207,7 +208,7 @@ class _PeopleTabState extends State<PeopleTab> {
               TextField(
                 controller: upiController,
                 decoration: InputDecoration(
-                  labelText: AppStrings.upiId,
+                  labelText: l10n.upiId,
                   labelStyle: GoogleFonts.dmSans(
                       fontSize: AppTypography.fontSizeSmall),
                   border: OutlineInputBorder(
@@ -474,6 +475,7 @@ class _PeopleTabState extends State<PeopleTab> {
             p.name.toLowerCase().contains(_searchQuery!.toLowerCase()))
         .toList();
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -484,8 +486,8 @@ class _PeopleTabState extends State<PeopleTab> {
             controller: _scrollController,
             physics: const BouncingScrollPhysics(),
             slivers: [
-              const GlassAppBar(
-                title: AppStrings.people,
+              GlassAppBar(
+                title: l10n.people,
                 centerTitle: true,
               ),
               SliverPersistentHeader(
@@ -498,11 +500,11 @@ class _PeopleTabState extends State<PeopleTab> {
                 ),
               ),
               if (people.isEmpty)
-                const SliverFillRemaining(
+                SliverFillRemaining(
                   hasScrollBody: false,
                   child: EmptyStateView(
                     icon: Icons.people_outline,
-                    title: AppStrings.noPeopleYet,
+                    title: l10n.noPeopleYet,
                     description: 'Add people to track transactions with them',
                   ),
                 )
@@ -636,8 +638,8 @@ class _PeopleTabState extends State<PeopleTab> {
                                           const SizedBox(height: 2),
                                           Text(
                                             isPositive
-                                                ? AppStrings.youGet
-                                                : AppStrings.youGive,
+                                                ? l10n.youGet
+                                                : l10n.youGive,
                                             style: GoogleFonts.dmSans(
                                               fontSize: 11,
                                               color: theme.colorScheme.onSurface
@@ -693,7 +695,7 @@ class _PeopleTabState extends State<PeopleTab> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: people.isEmpty
-          ? _buildAddPersonFab(context)
+          ? _buildAddPersonFab(context, l10n)
           : AnimatedSlide(
               offset: _showFab ? Offset.zero : const Offset(0, 2),
               duration: const Duration(milliseconds: 300),
@@ -701,7 +703,7 @@ class _PeopleTabState extends State<PeopleTab> {
               child: AnimatedOpacity(
                 opacity: _showFab ? 1.0 : 0.5,
                 duration: const Duration(milliseconds: 300),
-                child: _buildAddPersonFab(context),
+                child: _buildAddPersonFab(context, l10n),
               ),
             ),
     );
@@ -713,6 +715,7 @@ class _PeopleTabState extends State<PeopleTab> {
     final double totalYouGive = personViewModel.overallTotalGiven;
 
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return ClipRRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
@@ -729,7 +732,7 @@ class _PeopleTabState extends State<PeopleTab> {
                   children: [
                     _buildSummaryInfo(
                       context,
-                      label: AppStrings.youGet,
+                      label: l10n.youGet,
                       amount: totalYouGet,
                       color: AppColors.accentGreen,
                       icon: SvgAppIcons.incomeIcon,
@@ -752,7 +755,7 @@ class _PeopleTabState extends State<PeopleTab> {
                     ),
                     _buildSummaryInfo(
                       context,
-                      label: AppStrings.youGive,
+                      label: l10n.youGive,
                       amount: totalYouGive,
                       color: AppColors.accentRed,
                       icon: SvgAppIcons.expenseIcon,
@@ -763,7 +766,7 @@ class _PeopleTabState extends State<PeopleTab> {
                 const SizedBox(
                   height: 12,
                 ),
-                _buildSearchSection(context),
+                _buildSearchSection(context, l10n),
               ],
             ),
           ),
@@ -772,7 +775,7 @@ class _PeopleTabState extends State<PeopleTab> {
     );
   }
 
-  Widget _buildSearchSection(BuildContext context) {
+  Widget _buildSearchSection(BuildContext context, AppLocalizations l10n) {
     final theme = Theme.of(context);
     final themeViewModel = context.watch<ThemeViewModel>();
     final isDark = themeViewModel.isDarkMode;
@@ -857,7 +860,7 @@ class _PeopleTabState extends State<PeopleTab> {
                         });
                       },
                       decoration: InputDecoration(
-                        hintText: AppStrings.searchPeople,
+                        hintText: l10n.searchPeople,
                         hintStyle: GoogleFonts.dmSans(
                           fontSize: AppTypography.fontSizeSmall,
                           color: theme.colorScheme.onSurface
@@ -895,7 +898,7 @@ class _PeopleTabState extends State<PeopleTab> {
           ZoomTapAnimation(
             onTap: () {
               HapticFeedback.mediumImpact();
-              _showSortDialog(context);
+              _showSortDialog(context, l10n);
             },
             child: Container(
               width: 54,
@@ -951,7 +954,7 @@ class _PeopleTabState extends State<PeopleTab> {
     );
   }
 
-  void _showSortDialog(BuildContext context) {
+  void _showSortDialog(BuildContext context, AppLocalizations l10n) {
     final theme = Theme.of(context);
     final vm = context.read<PersonViewModel>();
 
@@ -980,7 +983,7 @@ class _PeopleTabState extends State<PeopleTab> {
             ),
             const SizedBox(height: 24),
             Text(
-              'Sort By',
+              l10n.sortBy,
               style: GoogleFonts.dmSans(
                 fontSize: AppTypography.fontSizeLarge,
                 fontWeight: AppTypography.fontWeightBold,
@@ -988,12 +991,12 @@ class _PeopleTabState extends State<PeopleTab> {
             ),
             const SizedBox(height: 16),
             _buildSortOption(
-                context, 'Name (A-Z)', PersonSortOption.nameAZ, vm),
+                context, l10n.sortByNameAZ, PersonSortOption.nameAZ, vm),
             _buildSortOption(
-                context, 'Name (Z-A)', PersonSortOption.nameZA, vm),
-            _buildSortOption(context, 'Balance (Highest)',
+                context, l10n.sortByNameZA, PersonSortOption.nameZA, vm),
+            _buildSortOption(context, l10n.sortByBalanceHighest,
                 PersonSortOption.balanceHighest, vm),
-            _buildSortOption(context, 'Balance (Lowest)',
+            _buildSortOption(context, l10n.sortByBalanceLowest,
                 PersonSortOption.balanceLowest, vm),
             const SizedBox(height: 16),
           ],
@@ -1028,7 +1031,7 @@ class _PeopleTabState extends State<PeopleTab> {
     );
   }
 
-  Widget _buildAddPersonFab(BuildContext context) {
+  Widget _buildAddPersonFab(BuildContext context, AppLocalizations l10n) {
     final theme = Theme.of(context);
     return ZoomTapAnimation(
       onTap: () {
@@ -1057,7 +1060,7 @@ class _PeopleTabState extends State<PeopleTab> {
                 elevation: 0,
                 icon: const Icon(Icons.person_add_alt, size: 24),
                 label: Text(
-                  AppStrings.addPerson,
+                  l10n.addPerson,
                   style: GoogleFonts.dmSans(
                       fontSize: AppTypography.fontSizeMedium,
                       fontWeight: AppTypography.fontWeightSemiBold,

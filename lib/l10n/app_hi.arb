@@ -1,0 +1,323 @@
+{
+  "appName": "निर्भर करता है",
+  "appTagline": "स्मार्ट खर्च, सरलीकृत।",
+  "totalBalance": "कुल शेष",
+  "income": "आय",
+  "expense": "व्यय",
+  "monthlyBudget": "मासिक बजट",
+  "transactions": "लेनदेन",
+  "recentTransactions": "हाल के लेनदेन",
+  "seeAll": "सभी देखें",
+  "settings": "सेटिंग्स",
+  "language": "भाषा",
+  "theme": "विषय",
+  "darkMode": "डार्क मोड",
+  "lightMode": "लाइट मोड",
+  "systemDefault": "प्रणालीगत चूक",
+  "adaptiveColor": "अनुकूली रंग",
+  "customColor": "कस्टम रंग",
+  "backup": "बैकअप और पुनर्स्थापना",
+  "export": "डेटा निर्यात करें",
+  "import": "डेटा आयात करें",
+  "privacyPolicy": "गोपनीयता नीति",
+  "telegramSupport": "टेलीग्राम समर्थन",
+  "addTransaction": "लेन-देन जोड़ें",
+  "editTransaction": "लेन-देन संपादित करें",
+  "deleteTransaction": "लेन-देन हटाएँ",
+  "amount": "मात्रा",
+  "category": "वर्ग",
+  "account": "खाता",
+  "date": "तारीख",
+  "note": "नोट (वैकल्पिक)",
+  "save": "बचाना",
+  "cancel": "रद्द करना",
+  "delete": "मिटाना",
+  "search": "लेनदेन खोजें...",
+  "noTransactions": "कोई परिणाम नहीं मिले",
+  "voiceInput": "ध्वनि इनपुट",
+  "speechUnavailable": "वाक् पहचान अनुपलब्ध",
+  "microPermissionDenied": "माइक्रोफ़ोन की अनुमति अस्वीकृत",
+  "appearance": "उपस्थिति",
+  "security": "सुरक्षा",
+  "autoDetection": "ऑटो लेनदेन का पता लगाना",
+  "backupExport": "बैकअप और निर्यात",
+  "dataManagement": "डेटा प्रबंधन",
+  "budgetingBalance": "बजट और संतुलन",
+  "customDropdowns": "कस्टम ड्रॉपडाउन आइटम",
+  "appInformation": "ऐप की जानकारी",
+  "developedBy": "Sthrnilshaa द्वारा ❤️ के साथ विकसित किया गया",
+  "chooseTheme": "अपनी पसंदीदा थीम चुनें",
+  "appLock": "ऐप लॉक",
+  "appLockDesc": "ऐप खोलने के लिए डिवाइस प्रमाणीकरण की आवश्यकता है",
+  "upiId": "यूपीआई आईडी",
+  "upiIdDesc": "धन अनुरोधों के लिए अपनी UPI आईडी सेट करें",
+  "upiName": "प्रदर्शित होने वाला नाम",
+  "upiNameDesc": "वैकल्पिक: UPI अनुरोध में दिखाया गया नाम",
+  "analytics": "एनालिटिक्स",
+  "people": "लोग",
+  "charts": "चार्ट",
+  "sortBy": "इसके अनुसार क्रमबद्ध करें",
+  "holdToRecord": "लेन-देन रिकॉर्ड करने के लिए होल्ड करें",
+  "couldNotFindAmount": "राशि नहीं मिल सकी. आज़माएँ: 'भोजन पर 500 खर्च किए'",
+  "savedAmount": "₹{amount} को {category} के लिए सहेजा गया",
+  "@savedAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "logsDeleted": "{count} लॉग हटा दिए गए",
+  "@logsDeleted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "patternsIgnored": "{count} पैटर्न को स्थायी रूप से अनदेखा कर दिया गया",
+  "@patternsIgnored": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recheckComplete": "पुन: जाँच पूर्ण करें",
+  "aboutApp": "Aspendes के बारे में",
+  "developerDesigner": "डेवलपर एवं डिज़ाइनर",
+  "leadDesigner": "लीड डिज़ाइनर",
+  "developer": "डेवलपर",
+  "supportLegal": "समर्थन एवं कानूनी",
+  "privacyPolicyDesc": "हमारा गोपनीयता नीति दस्तावेज़ पढ़ें",
+  "helpSupport": "सहायता एवं सहायता",
+  "telegramSupportDesc": "सहायता के लिए हमारे टेलीग्राम से जुड़ें",
+  "projectInfo": "परियोजना की जानकारी",
+  "openSource": "खुला स्त्रोत",
+  "openSourceDesc": "GitHub पर गर्व से खुला स्रोत",
+  "rateApp": "दर निर्भर करती है",
+  "rateAppDesc": "5-स्टार रेटिंग के साथ हमारा समर्थन करें",
+  "howAspendWorks": "एस्पेंड कैसे काम करता है",
+  "howItWorksTitle1": "1. बुद्धिमान अवरोधन",
+  "howItWorksDesc1": "एक सुरक्षित, बैटरी-अनुकूलित पृष्ठभूमि सेवा आने वाले एसएमएस और बैंकिंग सूचनाओं को सुनती है।",
+  "howItWorksTitle2": "2. जीरो-क्लाउड स्थानीय पार्सिंग",
+  "howItWorksDesc2": "स्मार्ट ऑफ़लाइन एल्गोरिदम आपके डिवाइस पर रकम, श्रेणियां और व्यापारियों को तुरंत निकालता है—100%।",
+  "howItWorksTitle3": "3. ऑफलाइन ऑटो-रिकवरी",
+  "howItWorksDesc3": "हर बार जब आप एस्पेंड खोलते हैं या फिर से शुरू करते हैं, तो यह आपकी अनुपस्थिति के दौरान छूटे हुए लेनदेन के इतिहास को स्वचालित रूप से स्कैन करता है।",
+  "howItWorksTitle4": "4. अल्टीमेट प्राइवेसी लॉक",
+  "howItWorksDesc4": "कोई सर्वर नहीं, कोई वेब अनुरोध नहीं। आपका वित्तीय डेटा एन्क्रिप्टेड हाइव स्टोरेज के अंदर स्थानीय रूप से सुरक्षित है।",
+  "autoDetectionSetup": "ऑटो-डिटेक्शन सेटअप",
+  "autoDetectionSetupDesc": "लेनदेन का स्वचालित रूप से पता लगाने के लिए, हमें विशिष्ट अनुमतियों की आवश्यकता होती है। सभी बैंकिंग और लेनदेन ऐप्स की सुरक्षित निगरानी की जाएगी।",
+  "notificationAccess": "1. अधिसूचना पहुंच",
+  "notificationAccessDesc": "हमें बैंक और भुगतान ऐप्स से लेनदेन अलर्ट पढ़ने की अनुमति देता है।",
+  "smsPermission": "2. एसएमएस अनुमति",
+  "smsPermissionDesc": "आपके बैंक से लेनदेन एसएमएस पढ़ने में सक्षम बनाता है।",
+  "finishSetup": "सेटअप समाप्त करें",
+  "grant": "अनुदान",
+  "appNameShort": "निर्भर करता है",
+  "splashTagline": "स्मार्ट मनी मैनेजमेंट",
+  "budget": "बजट",
+  "balanceDetailsTitle": "शेष विवरण",
+  "editBalanceTitle": "संतुलन संपादित करें",
+  "newBalanceLabel": "नया शेष",
+  "viewAll": "सभी को देखें",
+  "searchHint": "श्रेणियाँ या नोट्स खोजें...",
+  "emptyWalletTitle": "आपका बटुआ शांत है",
+  "emptyWalletDesc": "लेन-देन को मैन्युअल रूप से जोड़कर प्रारंभ करें या अपने खर्च को आसानी से ट्रैक करने के लिए ऑटो-डिटेक्शन सक्षम करें।",
+  "addPerson": "व्यक्ति जोड़ें",
+  "addNewPerson": "नया व्यक्ति जोड़ें",
+  "editPerson": "व्यक्ति संपादित करें",
+  "addPhoto": "तस्वीर जोड़ो",
+  "personName": "व्यक्ति का नाम",
+  "youGet": "आपका अपना",
+  "youGive": "आप उधार लें",
+  "youWillGet": "आपका स्वामित्व होगा",
+  "youWillGive": "आप उधार लेंगे",
+  "noPeopleYet": "अभी तक कोई व्यक्ति नहीं जोड़ा गया",
+  "searchPeople": "लोगों को खोजें...",
+  "enterNameHint": "उस व्यक्ति का नाम दर्ज करें जिसके साथ आप लेनदेन ट्रैक करना चाहते हैं",
+  "updateDetailsHint": "इस व्यक्ति का विवरण अपडेट करें",
+  "expenses": "खर्च",
+  "history": "इतिहास",
+  "overview": "सिंहावलोकन",
+  "trends": "प्रवृत्तियों",
+  "categories": "श्रेणियाँ",
+  "noDataFound": "कोई डेटा रिकॉर्ड नहीं मिला",
+  "appColor": "ऐप का रंग",
+  "selectColor": "एक कस्टम ऐप रंग चुनें",
+  "welcomeTitle": "एस्पेंड्स ट्रैकर में आपका स्वागत है",
+  "welcomeSubtitle": "आपका व्यक्तिगत वित्त साथी",
+  "welcomeDesc": "अपनी आय, खर्चों पर नज़र रखें और आसानी से अपने पैसे का प्रबंधन करें। अपने वित्तीय लक्ष्यों के शीर्ष पर रहें.",
+  "smartTrackingTitle": "स्मार्ट लेनदेन ट्रैकिंग",
+  "smartTrackingSubtitle": "अपने वित्त को व्यवस्थित करें",
+  "smartTrackingDesc": "लेन-देन को वर्गीकृत करें, नोट्स जोड़ें और अपने खर्च पैटर्न के बारे में विस्तृत जानकारी प्राप्त करें।",
+  "peopleTrackingTitle": "व्यक्ति-से-व्यक्ति ट्रैकिंग",
+  "peopleTrackingSubtitle": "साझा खर्चों का प्रबंधन करें",
+  "peopleTrackingDesc": "उन पैसों का पता लगाएं जो आप पर बकाया हैं या दूसरों पर बकाया हैं। रूममेट्स, दोस्तों और परिवार के लिए बिल्कुल सही।",
+  "analyticsTitle": "सुंदर विश्लेषण",
+  "analyticsSubtitle": "अपना डेटा विज़ुअलाइज़ करें",
+  "analyticsDesc": "चार्ट और ग्राफ़ आपकी खर्च करने की आदतों और वित्तीय रुझानों को समझने में आपकी मदद करते हैं।",
+  "offlineTitle": "पूर्णतः ऑफ़लाइन",
+  "offlineSubtitle": "आपका डेटा निजी रहता है",
+  "offlineDesc": "आपका सारा वित्तीय डेटा आपके डिवाइस पर स्थानीय रूप से संग्रहीत है। इंटरनेट की आवश्यकता नहीं, पूर्ण गोपनीयता।",
+  "autoDetectTitle": "ऑटो लेनदेन का पता लगाना",
+  "autoDetectSubtitle": "स्मार्ट एवं स्वचालित",
+  "autoDetectDesc": "बैंकिंग सूचनाओं से स्वचालित रूप से लेनदेन का पता लगाएं। कोई और मैन्युअल प्रविष्टि नहीं - आपके लेनदेन तुरंत कैप्चर किए जाते हैं!",
+  "readyTitle": "शुरू करने के लिए तैयार हैं?",
+  "readySubtitle": "आइए अपनी यात्रा शुरू करें",
+  "readyDesc": "तुम सब सेट हो! अपने वित्त पर नज़र रखना शुरू करें और आज ही अपने पैसे पर नियंत्रण रखें।",
+  "settingUpApp": "आपका ऐप सेट किया जा रहा है...",
+  "skip": "छोडना",
+  "next": "अगला",
+  "getStarted": "शुरू हो जाओ",
+  "requestMoney": "पैसे का अनुरोध",
+  "generateQr": "भुगतान क्यूआर उत्पन्न करें",
+  "sortByNameAZ": "नाम (ए-जेड)",
+  "sortByNameZA": "नाम (जेड-ए)",
+  "sortByBalanceHighest": "शेष (उच्चतम)",
+  "sortByBalanceLowest": "शेष (न्यूनतम)",
+  "upiIdNotSet": "इस व्यक्ति के लिए UPI आईडी सेट नहीं है. कृपया इसे संपादन से जोड़ें.",
+  "couldNotFindUpiApp": "UPI भुगतान ऐप नहीं मिल सका",
+  "noTransactionsYet": "अभी तक कोई लेन-देन नहीं",
+  "addFirstTransaction": "उस व्यक्ति के साथ अपना पहला लेन-देन जोड़ें",
+  "settleBalance": "संतुलन व्यवस्थित करें",
+  "settleBalanceDesc": "इससे शेष राशि को शून्य पर लाने के लिए ₹{amount} का लेनदेन जोड़ा जाएगा। जारी रखना?",
+  "@settleBalanceDesc": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "settle": "निपटारा करना",
+  "deletePerson": "व्यक्ति हटाएं",
+  "deletePersonDesc": "क्या आप वाकई {name} को हटाना चाहते हैं? इस एक्शन को वापस नहीं किया जा सकता।",
+  "@deletePersonDesc": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteTransactionDesc": "क्या आप वाकई इस लेन-देन को हटाना चाहते हैं?",
+  "update": "अद्यतन",
+  "sortTransactionsBy": "लेनदेन को इसके अनुसार क्रमबद्ध करें",
+  "sortByDateRecent": "दिनांक (हाल का)",
+  "sortByDateOldest": "दिनांक (सबसे पुराना)",
+  "sortByAmountHighest": "राशि (उच्चतम)",
+  "sortByAmountLowest": "राशि (न्यूनतम)",
+  "rangeAll": "सभी",
+  "rangeDay": "दिन",
+  "rangeWeek": "सप्ताह",
+  "rangeMonth": "महीना",
+  "rangeYear": "वर्ष",
+  "topCategory": "शीर्ष श्रेणी",
+  "noSpending": "कोई खर्च नहीं",
+  "avgDailySpend": "औसत दैनिक खर्च",
+  "perDay": "प्रति दिन",
+  "monitoredApps": "मॉनिटर किए गए ऐप्स",
+  "searchAppsHint": "भुगतान या बैंकिंग ऐप्स खोजें...",
+  "noEligibleApps": "कोई योग्य ऐप्स नहीं मिला",
+  "noAppsMatchSearch": "कोई भी ऐप्स आपकी खोज से मेल नहीं खाता",
+  "unknownApp": "अज्ञात ऐप",
+  "errorLoadingApps": "ऐप्स लोड करने में त्रुटि: {error}",
+  "@errorLoadingApps": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "selectedCount": "{count} चयनित",
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ignorePatternsTooltip": "पैटर्न पर ध्यान न दें",
+  "deleteSelectedTooltip": "चयनित को हटाओ",
+  "clearHistoryTitle": "इतिहास मिटा दें?",
+  "clearHistoryDesc": "इससे सभी सहेजे गए डिटेक्शन लॉग हटा दिए जाएंगे.",
+  "clear": "स्पष्ट",
+  "transactionDetected": "लेन-देन का पता चला",
+  "notificationLogged": "अधिसूचना लॉग की गई",
+  "patternNotMatched": "पैटर्न मेल नहीं खाता",
+  "notificationDataTitle": "अधिसूचना डेटा",
+  "copiedToClipboard": "संदेश क्लिपबोर्ड पर कॉपी किया गया",
+  "copy": "कॉपी",
+  "smsMessage": "एसएमएस संदेश",
+  "received": "प्राप्त",
+  "paid": "चुकाया गया",
+  "listeningHint": "सुनना...",
+  "keepSpeaking": "बोलते रहो...",
+  "done": "हो गया",
+  "fullBackupTitle": "पूर्ण बैकअप (JSON)",
+  "fullBackupDesc": "सभी डेटा का JSON पर बैकअप लें",
+  "restoreBackupTitle": "बैकअप पुनर्स्थापित करें (JSON)",
+  "restoreBackupDesc": "JSON बैकअप से सभी डेटा पुनर्स्थापित करें",
+  "backupCompleted": "बैकअप पूरा हुआ!",
+  "backupFailed": "बैकअप विफल: {error}",
+  "@backupFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "restoreCompleted": "डेटा सफलतापूर्वक बहाल हो गया!",
+  "restoreFailedCancelled": "पुनर्स्थापना विफल या रद्द कर दी गई",
+  "restoreFailed": "पुनर्स्थापना विफल: {error}",
+  "@restoreFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "pdfExported": "पीडीएफ सफलतापूर्वक निर्यात किया गया!",
+  "pdfExportFailed": "पीडीएफ निर्यात विफल: {error}",
+  "@pdfExportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "peopleExported": "लोगों का डेटा निर्यात किया गया!",
+  "peopleExportFailed": "लोगों का डेटा निर्यात विफल: {error}",
+  "@peopleExportFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "allDataDeleted": "सारा डेटा सफलतापूर्वक हटा दिया गया!",
+  "introReset": "परिचय रीसेट सफलतापूर्वक!",
+  "selectRestoreMode": "पुनर्स्थापना मोड का चयन करें",
+  "restoreModeDesc": "डेटा पुनर्स्थापना के दौरान मौजूदा लेनदेन रिकॉर्ड को संभालने का तरीका चुनें।",
+  "mergeSkipDuplicates": "डुप्लिकेट को मर्ज करें और छोड़ें",
+  "mergeSkipDesc": "सभी अद्वितीय नई वस्तुओं को रखते हुए डुप्लिकेट प्रविष्टियों से बचें।",
+  "overwriteConflicts": "विरोधों को अधिलेखित एवं अद्यतन करें",
+  "overwriteConflictsDesc": "टकराव की स्थिति में मौजूदा लेनदेन रिकॉर्ड को बैकअप संस्करणों से बदलें।",
+  "exportCsvTitle": "निर्यात लेनदेन (सीएसवी)",
+  "exportCsvDesc": "अपने लेनदेन को सीएसवी में निर्यात करें",
+  "exportCsvSuccess": "निर्यात सफलतापूर्वक पूरा हुआ!",
+  "exportCsvFailed": "निर्यात विफल: {error}",
+  "@exportCsvFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "exportPeopleTitle": "लोगों का डेटा निर्यात करें",
+  "exportPeopleDesc": "बैकअप लोगों के लेनदेन",
+  "exportPdfTitle": "पीडीएफ के रूप में निर्यात करें",
+  "exportPdfDesc": "पीडीएफ रिपोर्ट तैयार करें"
+}

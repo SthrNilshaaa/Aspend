@@ -21,6 +21,7 @@ import '../../widgets/person_transaction_item.dart';
 import '../../widgets/person_detail_header.dart';
 import '../core/const/app_typography.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:aspends_tracker/l10n/generated/app_localizations.dart';
 
 class PersonDetailPage extends StatefulWidget {
   final Person person;
@@ -93,10 +94,11 @@ class _PersonDetailPageState extends State<PersonDetailPage>
   }
 
   Future<void> _payNow(double total, Person person) async {
+    final l10n = AppLocalizations.of(context)!;
     if (person.upiId == null || person.upiId!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('UPI ID not set for this person. please add it from edit.'),
+        SnackBar(
+          content: Text(l10n.upiIdNotSet),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -113,8 +115,8 @@ class _PersonDetailPageState extends State<PersonDetailPage>
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Could not find a UPI payment app'),
+          SnackBar(
+            content: Text(l10n.couldNotFindUpiApp),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -124,6 +126,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final viewModel = context.read<PersonViewModel>();
     // Optimized rebuilds with select
     final person =
@@ -312,12 +315,12 @@ class _PersonDetailPageState extends State<PersonDetailPage>
             ),
           ),
           if (groupedTxs.isEmpty)
-            const SliverFillRemaining(
+            SliverFillRemaining(
               hasScrollBody: false,
               child: EmptyStateView(
                 icon: Icons.receipt_long_outlined,
-                title: 'No transactions yet',
-                description: 'Add your first transaction with the person',
+                title: l10n.noTransactionsYet,
+                description: l10n.addFirstTransaction,
               ),
             )
           else
@@ -376,22 +379,23 @@ class _PersonDetailPageState extends State<PersonDetailPage>
   void _settleBalance(
       BuildContext context, double currentTotal, Person currentPerson) {
     if (currentTotal == 0) return;
+    final l10n = AppLocalizations.of(context)!;
 
     showDialog(
       context: context,
       builder: (ctx) => BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
         child: AlertDialog(
-          title: Text('Settle Balance',
+          title: Text(l10n.settleBalance,
               style: GoogleFonts.dmSans(fontWeight: FontWeight.bold)),
           content: Text(
-            'This will add a transaction of ₹${currentTotal.abs().toStringAsFixed(2)} to bring the balance to zero. Continue?',
+            l10n.settleBalanceDesc(currentTotal.abs().toStringAsFixed(2)),
             style: GoogleFonts.dmSans(),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: Text('Cancel', style: GoogleFonts.dmSans()),
+              child: Text(l10n.cancel, style: GoogleFonts.dmSans()),
             ),
             ElevatedButton(
               onPressed: () {
@@ -412,7 +416,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                 );
                 HapticFeedback.mediumImpact();
               },
-              child: Text('Settle', style: GoogleFonts.dmSans()),
+              child: Text(l10n.settle, style: GoogleFonts.dmSans()),
             ),
           ],
         ),
@@ -421,6 +425,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
   }
 
   void _showDeleteConfirmation(BuildContext context, Person currentPerson) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (_) => BackdropFilter(
@@ -429,7 +434,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Text(
-            'Delete Person',
+            l10n.deletePerson,
             style: GoogleFonts.dmSans(
               fontSize: 22,
               fontWeight: FontWeight.bold,
@@ -437,14 +442,14 @@ class _PersonDetailPageState extends State<PersonDetailPage>
             ),
           ),
           content: Text(
-            'Are you sure you want to delete ${currentPerson.name}? This action cannot be undone.',
+            l10n.deletePersonDesc(currentPerson.name),
             style: GoogleFonts.dmSans(fontSize: 16),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text(
-                'Cancel',
+                l10n.cancel,
                 style: GoogleFonts.dmSans(
                     fontSize: 16, fontWeight: FontWeight.w600),
               ),
@@ -463,7 +468,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                     borderRadius: BorderRadius.circular(12)),
               ),
               child: Text(
-                'Delete',
+                l10n.delete,
                 style: GoogleFonts.dmSans(
                     fontSize: 16, fontWeight: FontWeight.w600),
               ),
@@ -476,6 +481,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
 
   void _showDeleteTransactionDialog(
       BuildContext context, PersonTransaction tx) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (_) => BackdropFilter(
@@ -484,7 +490,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Text(
-            'Delete Transaction',
+            l10n.deleteTransaction,
             style: GoogleFonts.dmSans(
               fontSize: 22,
               fontWeight: FontWeight.bold,
@@ -492,14 +498,14 @@ class _PersonDetailPageState extends State<PersonDetailPage>
             ),
           ),
           content: Text(
-            'Are you sure you want to delete this transaction?',
+            l10n.deleteTransactionDesc,
             style: GoogleFonts.dmSans(fontSize: 16),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: Text(
-                'Cancel',
+                l10n.cancel,
                 style: GoogleFonts.dmSans(
                     fontSize: 16, fontWeight: FontWeight.w600),
               ),
@@ -517,7 +523,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                     borderRadius: BorderRadius.circular(12)),
               ),
               child: Text(
-                'Delete',
+                l10n.delete,
                 style: GoogleFonts.dmSans(
                     fontSize: 16, fontWeight: FontWeight.w600),
               ),
@@ -532,6 +538,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
     final controller = TextEditingController(text: person.name);
     final upiController = TextEditingController(text: person.upiId);
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     String? selectedPhotoPath = person.photoPath;
 
     showDialog(
@@ -543,7 +550,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             title: Text(
-              'Edit Person',
+              l10n.editPerson,
               style: GoogleFonts.dmSans(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
@@ -606,7 +613,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Add Photo',
+                                l10n.addPhoto,
                                 style: GoogleFonts.dmSans(
                                   fontSize: 12,
                                   color: theme.colorScheme.primary,
@@ -619,7 +626,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'Update the details for this person',
+                  l10n.updateDetailsHint,
                   style: GoogleFonts.dmSans(
                     fontSize: 14,
                     color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
@@ -630,7 +637,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                 TextField(
                   controller: controller,
                   decoration: InputDecoration(
-                    labelText: 'Person Name',
+                    labelText: l10n.personName,
                     labelStyle: GoogleFonts.dmSans(fontSize: 16),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -647,7 +654,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                 TextField(
                   controller: upiController,
                   decoration: InputDecoration(
-                    labelText: 'UPI ID',
+                    labelText: l10n.upiId,
                     labelStyle: GoogleFonts.dmSans(fontSize: 16),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -670,7 +677,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
               TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: Text(
-                  'Cancel',
+                  l10n.cancel,
                   style: GoogleFonts.dmSans(
                       fontSize: 16, fontWeight: FontWeight.w600),
                 ),
@@ -698,7 +705,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
                       borderRadius: BorderRadius.circular(12)),
                 ),
                 child: Text(
-                  'Update',
+                  l10n.update,
                   style: GoogleFonts.dmSans(
                       fontSize: 16, fontWeight: FontWeight.w600),
                 ),
@@ -712,6 +719,7 @@ class _PersonDetailPageState extends State<PersonDetailPage>
 
   void _showSortOptions(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     showModalBottomSheet(
       context: context,
@@ -742,20 +750,20 @@ class _PersonDetailPageState extends State<PersonDetailPage>
               ),
               const SizedBox(height: 24),
               Text(
-                'Sort Transactions By',
+                l10n.sortTransactionsBy,
                 style: GoogleFonts.dmSans(
                   fontSize: AppTypography.fontSizeLarge,
                   fontWeight: AppTypography.fontWeightBold,
                 ),
               ),
               const SizedBox(height: 16),
-              _buildSortOption(context, 'Date (Recent)',
+              _buildSortOption(context, l10n.sortByDateRecent,
                   PersonTransactionSortOption.dateNewest),
-              _buildSortOption(context, 'Date (Oldest)',
+              _buildSortOption(context, l10n.sortByDateOldest,
                   PersonTransactionSortOption.dateOldest),
-              _buildSortOption(context, 'Amount (Highest)',
+              _buildSortOption(context, l10n.sortByAmountHighest,
                   PersonTransactionSortOption.amountHighest),
-              _buildSortOption(context, 'Amount (Lowest)',
+              _buildSortOption(context, l10n.sortByAmountLowest,
                   PersonTransactionSortOption.amountLowest),
               const SizedBox(height: 16),
             ],

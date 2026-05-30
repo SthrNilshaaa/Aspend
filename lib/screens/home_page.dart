@@ -13,7 +13,9 @@ import 'package:google_fonts/google_fonts.dart';
 import '../core/view_models/theme_view_model.dart';
 import '../core/view_models/transaction_view_model.dart';
 import '../core/services/native_bridge.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../core/services/transaction_detection_service.dart';
+import 'package:aspends_tracker/l10n/generated/app_localizations.dart';
 import '../../core/const/app_strings.dart';
 import '../core/const/app_constants.dart';
 import '../core/const/app_colors.dart';
@@ -26,6 +28,7 @@ import '../../widgets/header_delegate.dart';
 import '../../widgets/add_transaction_dialog.dart';
 import '../../widgets/empty_state_view.dart';
 import '../../widgets/glass_action_button.dart';
+import '../../widgets/monitoring_setup_dialog.dart';
 import '../../widgets/recording_hud.dart';
 import '../core/view_models/person_view_model.dart';
 import '../core/models/person_transaction.dart';
@@ -130,6 +133,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Future<void> _startRecording() async {
+    final l10n = AppLocalizations.of(context)!;
+    // Check permission first
+    var status = await Permission.microphone.status;
+    if (status.isDenied) {
+      status = await Permission.microphone.request();
+      if (!status.isGranted) {
+        Fluttertoast.showToast(msg: l10n.microPermissionDenied);
+        return;
+      }
+    }
+
     final success = await _speechService.initSpeech();
     if (success) {
       HapticFeedback.heavyImpact();
@@ -141,11 +155,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         setState(() => _recordingText = text);
       });
     } else {
-      Fluttertoast.showToast(msg: "Speech recognition unavailable");
+      Fluttertoast.showToast(msg: l10n.speechUnavailable);
     }
   }
 
   Future<void> _stopAndSaveRecording() async {
+    final l10n = AppLocalizations.of(context)!;
     if (!_isRecording) return;
     
     HapticFeedback.mediumImpact();
@@ -200,14 +215,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       }
 
       Fluttertoast.showToast(
-        msg: "Saved ₹${result.amount} for ${result.category ?? 'Other'}",
+        msg: l10n.savedAmount(tx.amount.toStringAsFixed(0), tx.category),
         backgroundColor: Colors.green,
         textColor: Colors.white,
       );
     } else {
       HapticFeedback.vibrate();
       Fluttertoast.showToast(
-        msg: "Couldn't find amount. Try: 'Spent 500 on Food'",
+        msg: l10n.couldNotFindAmount,
         backgroundColor: Colors.orange,
         textColor: Colors.white,
       );
@@ -297,7 +312,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       isListening: _isRecording,
                     )
                   : const SizedBox.shrink(key: ValueKey('empty')),
-            ),
+          ),
           ),
           AnimatedSlide(
             offset: _showFab ? Offset.zero : const Offset(0, 2),
@@ -348,13 +363,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildTransactionHeaderRow(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 3),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            AppStrings.transactionsTitle,
+            l10n.transactions,
             style: GoogleFonts.dmSans(
               fontSize: AppTypography.fontSizeSubHeader +
                   2, // Slightly larger for section header
@@ -382,7 +398,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             child: Row(
               children: [
                 Text(
-                  AppStrings.viewAllLabel,
+                  l10n.seeAll,
                   style: GoogleFonts.dmSans(
                     fontSize: AppTypography.fontSizeSmall + 1,
                     fontWeight: AppTypography.fontWeightBold,
@@ -406,6 +422,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void _showSortDialog(BuildContext context) {
     final theme = Theme.of(context);
     final vm = context.read<TransactionViewModel>();
+    final l10n = AppLocalizations.of(context)!;
 
     BlurUtils.showBlurredBottomSheet(
       context: context,
@@ -432,7 +449,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ),
             const SizedBox(height: 24),
             Text(
-              'Sort By',
+              l10n.sortBy,
               style: GoogleFonts.dmSans(
                 fontSize: AppTypography.fontSizeLarge,
                 fontWeight: AppTypography.fontWeightBold,
@@ -495,40 +512,86 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildEmptyState() {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return EmptyStateView(
       icon: Icons.account_balance_wallet_outlined,
-      title: AppStrings.emptyWalletTitle,
-      description: AppStrings.emptyWalletDesc,
+      title: l10n.emptyWalletTitle,
+      description: l10n.emptyWalletDesc,
       action: FutureBuilder<bool>(
         future: TransactionDetectionService.isEnabled(),
         builder: (context, snapshot) {
           final isEnabled = snapshot.data ?? false;
-          if (isEnabled) return const SizedBox.shrink();
+          if (isEnabled) {
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              decoration: BoxDecoration(
+                color: AppColors.primaryGreen.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(AppDimensions.borderRadiusMedium),
+                border: Border.all(
+                  color: AppColors.primaryGreen.withValues(alpha: 0.25),
+                  width: 1.5,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const _PulsingDot(),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Auto-Detection Active',
+                    style: GoogleFonts.dmSans(
+                      color: isDark ? AppColors.accentGreen : AppColors.primaryGreen,
+                      fontWeight: AppTypography.fontWeightBold,
+                      fontSize: AppTypography.fontSizeSmall + 1,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
 
           return ZoomTapAnimation(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SettingsPage()),
+            onTap: () async {
+              HapticFeedback.mediumImpact();
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (context) => BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                  child: const MonitoringSetupDialog(),
+                ),
               );
+
+              if (confirmed == true) {
+                await TransactionDetectionService.setEnabled(true);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Auto-detection enabled successfully!'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                  setState(() {});
+                }
+              }
             },
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Theme.of(context).colorScheme.primary,
-                    Theme.of(context).colorScheme.secondary,
+                    theme.colorScheme.primary,
+                    theme.colorScheme.secondary,
                   ],
                 ),
                 borderRadius:
                     BorderRadius.circular(AppDimensions.borderRadiusLarge),
                 boxShadow: [
                   BoxShadow(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .primary
-                        .withValues(alpha: 0.3),
+                    color: theme.colorScheme.primary.withValues(alpha: 0.3),
                     blurRadius: AppDimensions.blurRadiusStandard,
                     offset: const Offset(0, 8),
                   ),
@@ -540,7 +603,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   const Icon(Icons.auto_awesome, color: Colors.white, size: 20),
                   const SizedBox(width: 12),
                   Text(
-                    AppStrings.enableAutoDetection,
+                    l10n.autoDetection,
                     style: GoogleFonts.dmSans(
                       color: Colors.white,
                       fontWeight: AppTypography.fontWeightBold,
@@ -557,6 +620,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildDualFab(ThemeData theme) {
+    final l10n = AppLocalizations.of(context)!;
     return GlassFab(
       marginBottom: 65,
       children: [
@@ -584,7 +648,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               icon: Icons.mic_rounded,
               color: theme.colorScheme.primary,
               onTap: () {
-                Fluttertoast.showToast(msg: "Hold to record transaction");
+                Fluttertoast.showToast(msg: l10n.holdToRecord);
               },
             ),
           ),
@@ -598,6 +662,64 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _PulsingDot extends StatefulWidget {
+  const _PulsingDot();
+
+  @override
+  State<_PulsingDot> createState() => _PulsingDotState();
+}
+
+class _PulsingDotState extends State<_PulsingDot>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Container(
+          width: 8,
+          height: 8,
+          decoration: const BoxDecoration(
+            color: AppColors.accentGreen,
+            shape: BoxShape.circle,
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.accentGreen.withValues(
+                    alpha: 0.3 + (_controller.value * 0.5),
+                  ),
+                  blurRadius: 4 + (_controller.value * 8),
+                  spreadRadius: _controller.value * 3,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
