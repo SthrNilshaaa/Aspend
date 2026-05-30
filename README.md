@@ -21,25 +21,25 @@
 <div align="center">
   <table style="width:100%; border-collapse: collapse;">
     <tr>
-      <td align="center" style="width: 50%; padding: 10px;">
+      <td align="center" style="width: 50%; padding: 1px;">
         <img src="screenshots/01.png" width="250" style="border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.15);" /><br/>
         <b>☀️ Home </b>
       </td>
-      <td align="center" style="width: 50%; padding: 10px;">
+      <td align="center" style="width: 50%; padding: 1px;">
         <img src="screenshots/02.png" width="250" style="border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.15);" /><br/>
         <b>🌙Transactions</b>
       </td> 
-      <td align="center" style="width: 50%; padding: 10px;">
+      <td align="center" style="width: 50%; padding: 1px;">
         <img src="screenshots/05.png" width="250" style="border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.15);" /><br/>
         <b>Try</b>
       </td>
     </tr>
     <tr>
-      <td align="center" style="width: 50%; padding: 10px;">
+      <td align="center" style="width: 50%; padding: 1px;">
         <img src="screenshots/03.png" width="250" style="border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.15);" /><br/>
         <b>📊 Analysis & Insights</b>
       </td>
-      <td align="center" style="width: 50%; padding: 10px;">
+      <td align="center" style="width: 50%; padding: 1px;">
         <img src="screenshots/04.png" width="250" style="border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.15);" /><br/>
         <b>⚙️ Person Support</b>
       </td>
