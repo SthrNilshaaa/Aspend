@@ -2,6 +2,12 @@
 
 **Aspend** is a modern Flutter application that embraces **Material You** design principles with **dynamic color theming** for an immersive and personalized user experience.
 
+<p align="left">
+  <a href="https://play.google.com/store/apps/details?id=org.x.aspend.ns">
+    <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" height="80">
+  </a>
+</p>
+
 ---
 
 ## ✨ Features
